@@ -1,0 +1,17 @@
+---
+# Playbook to test authentication with SCM
+- name: Test SCM Authentication
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Verify SCM authentication
+      cdot65.scm.auth:
+        client_id: "{{ scm_client_id | default(lookup('env', 'SCM_CLIENT_ID')) }}"
+        client_secret: "{{ scm_client_secret | default(lookup('env', 'SCM_CLIENT_SECRET')) }}"
+        tsg_id: "{{ scm_tsg_id | default(lookup('env', 'SCM_TSG_ID')) }}"
+        log_level: "DEBUG"
+      register: auth_result
+
+    - name: Display authentication result
+      debug:
+        var: auth_result

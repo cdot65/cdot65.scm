@@ -1,0 +1,79 @@
+---
+# Integration tests for folder module
+
+- name: Create a test folder
+  cdot65.scm.folder:
+    name: "Integration Test Folder"
+    description: "Created by integration test"
+    state: present
+  register: folder_creation
+
+- name: Verify folder creation
+  assert:
+    that:
+      - folder_creation is changed
+      - folder_creation.folder.name == "Integration Test Folder"
+      - folder_creation.folder.description == "Created by integration test"
+
+- name: Create the same folder again (idempotence test)
+  cdot65.scm.folder:
+    name: "Integration Test Folder"
+    description: "Created by integration test"
+    state: present
+  register: folder_idempotence
+
+- name: Verify idempotence
+  assert:
+    that:
+      - not folder_idempotence is changed
+      - folder_idempotence.folder.name == "Integration Test Folder"
+
+- name: Update folder description
+  cdot65.scm.folder:
+    folder_id: "{{ folder_creation.folder.id }}"
+    description: "Updated by integration test"
+    state: present
+  register: folder_update
+
+- name: Verify folder update
+  assert:
+    that:
+      - folder_update is changed
+      - folder_update.folder.description == "Updated by integration test"
+
+- name: Create a child folder
+  cdot65.scm.folder:
+    name: "Child Test Folder"
+    description: "Child folder for testing"
+    parent_folder_id: "{{ folder_creation.folder.id }}"
+    state: present
+  register: child_folder
+
+- name: Verify child folder creation
+  assert:
+    that:
+      - child_folder is changed
+      - child_folder.folder.name == "Child Test Folder"
+      - child_folder.folder.parent_folder_id == folder_creation.folder.id
+
+- name: Delete child folder
+  cdot65.scm.folder:
+    folder_id: "{{ child_folder.folder.id }}"
+    state: absent
+  register: delete_child_folder
+
+- name: Verify child folder deletion
+  assert:
+    that:
+      - delete_child_folder is changed
+
+- name: Delete parent folder
+  cdot65.scm.folder:
+    folder_id: "{{ folder_creation.folder.id }}"
+    state: absent
+  register: delete_parent_folder
+
+- name: Verify parent folder deletion
+  assert:
+    that:
+      - delete_parent_folder is changed

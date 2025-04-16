@@ -1,0 +1,21 @@
+Our project is a collection of Ansible modules for Strata Cloud Manager (SCM).
+
+## Building
+
+The collection is built using [poetry](https://python-poetry.org/) version 2.1.1 so we can use the `poetry run` command to run our commands.
+Always run each command for Ansible, linting with ansible-lint and yamllint, formatting with ruff, import sorting with isort, with the `poetry run` command prefixed so we can execute within our python virtual enviornment.
+
+## SDK References
+
+Our SDK is built on Python Pydantic and has two main components: Pydantic data models for representing the API responses and an SDK service file to provide a set of functions for making API calls.
+
+The SDK will also have documentation in the form of mkdocs pages and extensive pytests.
+
+We will use each of these components when building our Ansible modules and example playbooks.
+
+You will find each of these files within the `tmp/.WINDSURFFILES` directory.
+
+## Makefile
+
+We have a Makefile that contains targets for building, testing, and publishing the collection. Use this with `poetry run` to build and install our ansible collections before running any kind of tests.
+
