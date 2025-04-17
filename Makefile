@@ -58,6 +58,9 @@ dev-setup:
 example:
 	poetry run ansible-playbook docs/examples/folder_management.yml
 
+test-integration:
+	poetry run ansible-test integration --color --docker
+
 # All-in-one targets
 all: clean build install
 

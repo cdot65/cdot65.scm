@@ -11,9 +11,8 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 # Import Python libs
-import os
-import sys
-from typing import Any, Dict, List, Optional, Union
+from typing import Optional
+import logging
 
 HAS_SCM_SDK = False
 SCM_SDK_IMPORT_ERROR = None
@@ -24,10 +23,15 @@ try:
         AuthenticationError,
         BadRequestError,
         NotFoundError,
-        ResourceNotFoundError,
     )
+
     HAS_SCM_SDK = True
 except ImportError as e:
+    ScmClient = None
+    APIError = Exception
+    AuthenticationError = Exception
+    BadRequestError = Exception
+    NotFoundError = Exception
     SCM_SDK_IMPORT_ERROR = e
 
 from ansible.module_utils.basic import missing_required_lib
@@ -41,26 +45,14 @@ def get_scm_client_argument_spec():
         dict: Standard SCM module argument spec for authentication parameters
     """
     return dict(
-        client_id=dict(type="str", required=False),
-        client_secret=dict(type="str", required=False, no_log=True),
-        tsg_id=dict(type="str", required=False),
-        api_key=dict(type="str", required=False, no_log=True),
-        api_base_url=dict(
-            type="str",
-            required=False,
-            default="https://api.strata.paloaltonetworks.com"
-        ),
-        token_url=dict(
-            type="str",
-            required=False,
-            default="https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"
-        ),
-        log_level=dict(
-            type="str",
-            required=False,
-            default="ERROR",
-            choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-        ),
+        client_id=dict(type="str", required=True, no_log=True),
+        client_secret=dict(type="str", required=True, no_log=True),
+        tsg_id=dict(type="str", required=True),
+        api_base_url=dict(type="str", required=False, default="https://api.strata.paloaltonetworks.com"),
+        token_url=dict(type="str", required=False,
+                       default="https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"),
+        scopes=dict(type="list", elements="str", required=False, default=None),
+        log_level=dict(type="str", required=False, default="ERROR"),
     )
 
 
@@ -75,47 +67,23 @@ def get_scm_client(module):
         ScmClient: Initialized SCM client object
 
     Raises:
-        Exception: If SDK is not installed or client cannot be initialized
+        APIError: If SDK is not installed or client cannot be initialized
     """
     if not HAS_SCM_SDK:
-        module.fail_json(msg=missing_required_lib('pan-scm-sdk', exception=SCM_SDK_IMPORT_ERROR))
-
-    # Check if using API key or OAuth2 for authentication
-    api_key = module.params.get('api_key') or os.environ.get('SCM_API_KEY')
-    
-    # OAuth2 credentials
-    client_id = module.params.get('client_id') or os.environ.get('SCM_CLIENT_ID')
-    client_secret = module.params.get('client_secret') or os.environ.get('SCM_CLIENT_SECRET')
-    tsg_id = module.params.get('tsg_id') or os.environ.get('SCM_TSG_ID')
-    
-    # Common parameters
-    api_base_url = module.params.get('api_base_url') or os.environ.get('SCM_API_BASE_URL')
-    token_url = module.params.get('token_url') or os.environ.get('SCM_TOKEN_URL')
-    log_level = module.params.get('log_level') or os.environ.get('SCM_LOG_LEVEL', 'ERROR')
-
-    # Validate authentication parameters
-    if api_key:
-        # API key auth is not directly supported by the SDK yet
-        module.fail_json(msg="API key authentication is not supported by the current SCM SDK. Use OAuth2 authentication instead.")
-    
-    if not all([client_id, client_secret, tsg_id]):
-        module.fail_json(
-            msg="OAuth2 authentication requires client_id, client_secret, and tsg_id. "
-            "Provide via parameters or SCM_CLIENT_ID, SCM_CLIENT_SECRET, SCM_TSG_ID environment variables."
-        )
-    
+        module.fail_json(msg=missing_required_lib("pan-scm-sdk"))
     try:
         client = ScmClient(
-            client_id=client_id,
-            client_secret=client_secret,
-            tsg_id=tsg_id,
-            api_base_url=api_base_url,
-            token_url=token_url,
-            log_level=log_level
+            client_id=module.params["client_id"],
+            client_secret=module.params["client_secret"],
+            tsg_id=module.params["tsg_id"],
+            api_base_url=module.params.get("api_base_url", "https://api.strata.paloaltonetworks.com"),
+            token_url=module.params.get("token_url", "https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"),
+            log_level=module.params.get("log_level", "ERROR"),
         )
         return client
-    except Exception as e:
-        handle_scm_error(module, e)
+    except (APIError, AuthenticationError, BadRequestError, NotFoundError,) as exc:
+        module.fail_json(msg=f"Failed to initialize SCM client: {exc}")
+    return None
 
 
 def handle_scm_error(module, error):
@@ -129,22 +97,72 @@ def handle_scm_error(module, error):
     Returns:
         None
     """
-    msg = "An error occurred while interacting with SCM API"
-    
-    if isinstance(error, AuthenticationError):
-        msg = f"Authentication error: {str(error)}"
-    elif isinstance(error, BadRequestError):
-        msg = f"Bad request error: {str(error)}"
-    elif isinstance(error, ResourceNotFoundError):
-        msg = f"Resource not found: {str(error)}"
-    elif isinstance(error, NotFoundError):
-        msg = f"Not found error: {str(error)}"
-    elif isinstance(error, APIError):
-        msg = f"API error: {str(error)}"
-    else:
-        msg = f"Unknown error occurred: {str(error)}"
-    
-    module.fail_json(msg=msg)
+    module.fail_json(msg=str(error))
+
+
+def get_oauth2_token(
+        client_id: str,
+        client_secret: str,
+        tsg_id: str,
+        token_url: str = "https://auth.apps.paloaltonetworks.com/am/oauth2/access_token",
+        scopes: Optional[list] = None,
+        log_level: str = "ERROR",
+) -> dict:
+    """
+    Obtain an OAuth2 token from Strata Cloud Manager using the SDK.
+
+    Returns:
+        dict: {
+            "access_token": str,
+            "expires_in": int,
+            "token_type": str,
+            "scope": str,
+            "raw": dict,  # Full token response
+        }
+
+    Raises:
+        APIError: On authentication failure or SDK errors.
+    """
+    if not HAS_SCM_SDK:
+        raise ImportError(f"pan-scm-sdk is not available: {SCM_SDK_IMPORT_ERROR}")
+
+    # Set logging level for debugging if needed
+    logging.basicConfig(level=getattr(logging, log_level.upper(), logging.ERROR))
+
+    try:
+        from scm.models.auth import AuthRequestModel
+        # AuthRequestModel expects 'scope' (string), not 'scopes' (list)
+        scope = None
+        if scopes is not None:
+            # If provided as list, join as space-separated per OAuth spec
+            scope = " ".join([str(s) for s in scopes])
+        if scope is not None and not isinstance(scope, str):
+            scope = str(scope)
+        auth_request = AuthRequestModel(
+            client_id=client_id,
+            client_secret=client_secret,
+            tsg_id=tsg_id,
+            token_url=token_url,
+            scope=scope if scope is not None else None,
+        )
+        from scm.auth import OAuth2Client
+        oauth_client = OAuth2Client(auth_request)
+        token_data = oauth_client.session.token
+        
+        # Ensure we're returning a serializable dict that Ansible can handle
+        if not isinstance(token_data, dict):
+            # Convert to dict if it's not already
+            token_data = dict(token_data)
+            
+        return {
+            "access_token": token_data.get("access_token"),
+            "expires_in": token_data.get("expires_in"),
+            "token_type": token_data.get("token_type", "Bearer"),
+            "scope": token_data.get("scope", ""),
+            "raw": dict(token_data),  # Ensure raw is also a plain dict
+        }
+    except (APIError, AuthenticationError, BadRequestError, NotFoundError,) as exc:
+        raise APIError(f"Failed to obtain OAuth2 token: {exc}")
 
 
 def is_resource_exists(client, resource_type, resource_id=None, resource_name=None):
@@ -192,9 +210,9 @@ def is_resource_exists(client, resource_type, resource_id=None, resource_name=No
             try:
                 response = service.get(resource_id)
                 return True, response
-            except ResourceNotFoundError:
-                pass
-
+            except (APIError, AuthenticationError, BadRequestError, NotFoundError,):
+                # handle or re-raise
+                raise
         # If not found by ID or ID not provided, check by name
         if resource_name:
             # List all resources and filter by name
@@ -203,10 +221,7 @@ def is_resource_exists(client, resource_type, resource_id=None, resource_name=No
                 for res in response.data:
                     if res.get('name') == resource_name:
                         return True, res
-                
+
         return False, None
-    except ResourceNotFoundError:
-        return False, None
-    except Exception:
-        # Other errors should be handled by the calling module
+    except (APIError, AuthenticationError, BadRequestError, NotFoundError,):
         raise

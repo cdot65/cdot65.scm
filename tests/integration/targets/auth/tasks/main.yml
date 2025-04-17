@@ -1,0 +1,19 @@
+---
+- name: Test SCM OAuth2 Authentication Module
+  hosts: localhost
+  gather_facts: no
+  vars:
+    client_id: "{{ lookup('env', 'CLIENT_ID') }}"
+    client_secret: "{{ lookup('env', 'CLIENT_SECRET') }}"
+    tsg_id: "{{ lookup('env', 'TSG_ID') }}"
+  tasks:
+    - name: Authenticate with SCM
+      cdot65.scm.auth:
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+        tsg_id: "{{ tsg_id }}"
+      register: auth_result
+
+    - name: Show authentication result
+      debug:
+        var: auth_result
