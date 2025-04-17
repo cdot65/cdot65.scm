@@ -1,0 +1,38 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars:
+    # Explicitly set all required values to ensure they're available
+    scm_client_id: "{{ lookup('env', 'CLIENT_ID') }}"
+    scm_client_secret: "{{ lookup('env', 'CLIENT_SECRET') }}"
+    scm_tsg_id: "{{ lookup('env', 'TSG_ID') }}"
+    scm_api_base_url: "https://api.strata.paloaltonetworks.com"
+    scm_token_url: "https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"
+    scm_log_level: "DEBUG"
+
+- name: Perform SCM operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Example of how other modules would use the authentication
+    # - name: Create a folder
+    #   cdot65.scm.folder:
+    #     name: "Network Objects"
+    #     description: "Folder for network objects"
+    #   # No need to provide auth credentials - they're already set as facts
+    
+    # - name: Get folder info
+    #   cdot65.scm.folder_info:
+    #     name: "Network Objects"
+    #   register: folder_result
+    
+    # - name: Display folder result
+    #   debug:
+    #     var: folder_result
