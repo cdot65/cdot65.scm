@@ -399,3 +399,4 @@ tests/integration/inventory
 tmp/
 .vault_pass
 vault.yml
+ai_docs
