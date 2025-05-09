@@ -20,40 +20,22 @@ poetry run ansible-galaxy collection install git+https://github.com/cdot65/cdot6
 
 ## Authentication
 
-The collection supports API key and OAuth2 authentication. You can provide credentials in the following ways:
+The collection supports OAuth2 authentication. **All secrets (client ID, secret, TSG ID, etc.) must be provided via Ansible Vault-encrypted variable files. Do NOT use .env files or commit secrets to source control.**
 
-1. **Module Parameters**:
-   ```yaml
-   - name: Create a folder
-     cdot65.scm.folder:
-       api_key: "your-api-key"
-       api_url: "https://api.strata.paloaltonetworks.com"
-       name: "My Folder"
-       state: present
-   ```
+Example:
 
-2. **Environment Variables**:
-   ```bash
-   export SCM_CLIENT_ID="your-client-id"
-   export SCM_CLIENT_SECRET="your-client-secret"
-   export SCM_TSG_ID="your-tsg-id"
-   export SCM_API_URL="https://api.strata.paloaltonetworks.com"
-   export SCM_TOKEN_URL="https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"
-   ```
+```yaml
+- name: Authenticate with SCM
+  hosts: localhost
+  vars_files:
+    - ../vault.yml  # Store secrets here (encrypted with Ansible Vault)
+  roles:
+    - cdot65.scm.auth
+```
 
-3. **Vault Files**:
-   Reference a `vault.yml` or similar secrets file in your playbook:
-   ```yaml
-   vars_files:
-     - ../vault.yml
-   ```
+See `examples/auth.yml` for a full example.
 
-4. **.env Files**:
-   Ansible does NOT load .env files automatically. To use .env variables, source them in your shell before running playbooks:
-   ```sh
-   set -a; source .env; set +a
-   poetry run ansible-playbook playbooks/auth_role_example.yml
-   ```
+> **Note:** Environment variables may be used for development only, but are NOT recommended or supported for production or in documentation. All examples and defaults require Ansible Vault.
 
 ## Best Practices for Secrets
 - Use `vault.yml` for secrets and encrypt it with Ansible Vault.
