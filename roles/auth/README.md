@@ -17,28 +17,20 @@ the authentication token available to other tasks in your playbook.
 - name: Authenticate with SCM
   hosts: localhost
   vars_files:
-    - ../vault.yml  # Store secrets here (can be encrypted with Ansible Vault)
+    - ../vault.yml  # Store secrets here (must be encrypted with Ansible Vault)
   roles:
     - cdot65.scm.auth
-  
-- name: Use the authenticated session
-  hosts: localhost
-  tasks:
-    - name: Create a folder in SCM
-      cdot65.scm.folder:
-        name: "My Folder"
-        # No authentication parameters needed
-      # The role has already set scm_access_token and other auth facts
 ```
 
-## Providing Secrets
-- **vault.yml**: Store `scm_client_id`, `scm_client_secret`, and `scm_tsg_id` here. Encrypt with `ansible-vault` for security.
-- **.env file**: If you use a `.env` file, source it before running Ansible. Example:
-  ```sh
-  set -a; source .env; set +a
-  poetry run ansible-playbook playbooks/auth_role_example.yml
-  ```
-- **Environment Variables**: You can export secrets directly in your shell.
+- **All authentication secrets must be provided via Ansible Vault-encrypted variable files.**
+- `.env` files are not supported. Do not commit secrets to source control.
+- See `examples/auth.yml` for a full usage example.
+
+## How the Auth Role Works
+- Loads secrets from vars (preferably from a vault-encrypted file).
+- Authenticates with SCM and sets facts for downstream tasks.
+- No secrets are logged or exposed.
+- If a token expires, re-run the role to refresh.
 
 ## Security Notes
 - This role never logs secrets (`no_log: true` is enforced).
@@ -160,3 +152,4 @@ To see detailed debug information, run your playbook with verbosity:
 
 ```bash
 ansible-playbook your_playbook.yml -vvv
+```
