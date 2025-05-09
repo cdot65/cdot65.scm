@@ -1,0 +1,81 @@
+---
+# NOTE: This role expects secrets (client_id, client_secret, tsg_id) to be provided via vars,
+# environment variables, or loaded from vault.yml (see playbook example). .env files are NOT
+# loaded automatically by Ansible—source them in your shell or use a pre-task. See README for details.
+
+# ensure we have default values set in case env vars are missing
+- name: Set default API values if not provided
+  set_fact:
+    scm_api_base_url: "https://api.strata.paloaltonetworks.com" 
+    scm_token_url: "https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"
+  when: (not scm_api_base_url) or (not scm_token_url)
+
+- name: Debug environment and variables
+  debug:
+    msg: |
+      client_id: {{ scm_client_id | default('MISSING', true) }}
+      tsg_id: {{ scm_tsg_id | default('MISSING', true) }}
+      api_base_url: {{ scm_api_base_url | default('MISSING', true) }}
+      token_url: {{ scm_token_url | default('MISSING', true) }}
+      log_level: {{ scm_log_level | default('ERROR', true) }}
+    verbosity: 1
+
+# Ensure all sensitive variables are protected
+- name: Authenticate with SCM
+  cdot65.scm.auth:
+    client_id: "{{ scm_client_id }}"
+    client_secret: "{{ scm_client_secret }}"
+    tsg_id: "{{ scm_tsg_id }}"
+    api_base_url: "{{ scm_api_base_url }}"
+    token_url: "{{ scm_token_url }}"
+    log_level: "{{ scm_log_level }}"
+  register: scm_auth_result
+  failed_when: false
+  no_log: true
+
+- name: Display authentication result for debugging (when using verbose mode)
+  debug:
+    var: scm_auth_result
+    verbosity: 2
+
+- name: Fail if authentication was unsuccessful
+  fail:
+    msg: "SCM authentication failed: {{ scm_auth_result.msg | default(scm_auth_result.exception | default('Unknown error')) }}"
+  when: scm_auth_result is failed or scm_auth_result.access_token is not defined
+
+- name: Set SCM authentication facts
+  set_fact:
+    scm_access_token: "{{ scm_auth_result.access_token }}"
+    scm_token_type: "{{ scm_auth_result.token_type }}"
+    scm_token_expires_in: "{{ scm_auth_result.expires_in }}"
+    scm_token_scope: "{{ scm_auth_result.scope }}"
+    scm_auth_header: "{{ scm_auth_result.token_type }} {{ scm_auth_result.access_token }}"
+  no_log: true
+
+- name: Save token to file (optional)
+  block:
+    - name: Ensure token directory exists
+      file:
+        path: "{{ scm_token_path | dirname }}"
+        state: directory
+        mode: '0700'
+      
+    - name: Write token to file
+      copy:
+        content: "{{ scm_auth_result | to_json }}"
+        dest: "{{ scm_token_path }}"
+        mode: '0600'
+  when: scm_save_token | bool
+
+- name: Set SCM token dict fact
+  set_fact:
+    scm_token_dict: "{{ scm_auth_result.raw }}"
+
+- name: Set SCM session fact for downstream modules
+  set_fact:
+    scm_session:
+      client_id: "{{ scm_client_id }}"
+      client_secret: "{{ scm_client_secret }}"
+      tsg_id: "{{ scm_tsg_id }}"
+      token: "{{ scm_token_dict }}"
+      log_level: "{{ (scm_log_level | default('INFO')) if scm_log_level|default('')|length > 0 else 'INFO' }}"
