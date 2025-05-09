@@ -4,10 +4,12 @@ _Last updated: 2025-04-16_
 
 ## Immediate Tasks
 
+- [x] Implement authentication role (`roles/auth`)
+    - [x] Example playbook at `playbooks/auth.yml`
+- [ ] Implement folder management module:
+    - [ ] `plugins/modules/folder.py` (CRUD operations for SCM folders)
 - [ ] Complete/fix unit tests for module_utils components (client, authentication, error handling)
-- [ ] Implement folder management modules:
-    - [ ] `folder` (stateful)
-    - [ ] `folder_info` (info)
+- [ ] Implement folder_info module
 - [ ] Implement address object modules:
     - [ ] `address_object`
     - [ ] `address_object_info`

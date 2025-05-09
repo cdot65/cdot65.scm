@@ -42,6 +42,7 @@
 10. [Next Steps & Immediate Tasks](#10-next-steps--immediate-tasks)
 11. [Future Considerations](#11-future-considerations)
 12. [Open Issues / Questions](#12-open-issues--questions)
+13. [Recent Progress](#13-recent-progress)
 
 ---
 
@@ -323,3 +324,7 @@ The initial release will focus on core SCM objects and actions:
 *   What is the best approach for handling potentially long-running asynchronous jobs (e.g., deployments) in Ansible modules? (Polling, async status checks?)
 *   How to best handle pagination for large resource collections?
 *   Most effective approach for testing modules against real SCM instances versus mocked responses?
+
+## 13. Recent Progress
+
+- The authentication role (`roles/auth`) has been successfully implemented, enabling secure authentication with Strata Cloud Manager. An example playbook demonstrating its use is provided at `playbooks/auth.yml`.
