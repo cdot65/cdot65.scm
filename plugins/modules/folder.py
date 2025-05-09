@@ -5,6 +5,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import json
 
 __metaclass__ = type
 
@@ -234,23 +235,23 @@ def main():
                         from scm.models.setup.folder import FolderUpdateModel
                         update_model = FolderUpdateModel(id=folder_obj.id, name=folder_obj.name, parent=parent or folder_obj.parent, **update_fields)
                         updated = folders.update(update_model)
-                        result['folder'] = updated.model_dump(exclude_unset=True)
+                        result['folder'] = json.loads(updated.model_dump_json(exclude_unset=True))
                     result['changed'] = True
                 else:
-                    result['folder'] = folder_obj.model_dump(exclude_unset=True)
+                    result['folder'] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
             else:
                 # Create new folder
                 if not module.check_mode:
                     create_payload = {k: params[k] for k in ['name', 'parent', 'description', 'labels', 'snippets', 'display_name', 'model', 'serial_number', 'type', 'device_only'] if params.get(k) is not None}
                     created = folders.create(create_payload)
-                    result['folder'] = created.model_dump(exclude_unset=True)
+                    result['folder'] = json.loads(created.model_dump_json(exclude_unset=True))
                 result['changed'] = True
         elif state == 'absent':
             if folder_obj:
                 if not module.check_mode:
                     folders.delete(folder_obj.id)
                 result['changed'] = True
-                result['folder'] = folder_obj.model_dump(exclude_unset=True)
+                result['folder'] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
         module.exit_json(**result)
     except (ObjectNotPresentError, InvalidObjectError) as e:
         module.fail_json(msg=str(e), error_code=getattr(e, 'error_code', None), details=getattr(e, 'details', None))
