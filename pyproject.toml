@@ -6,16 +6,16 @@ authors = [
     {name = "cdot65", email = "calvin@cdot.io"}
 ]
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
-# Dependencies below are for developer environment only. Runtime dependencies for collection users go in galaxy.yml.
-dependencies = [
-    "ansible-core>=2.17.0",
-    "pan-scm-sdk==0.3.30"
-]
+requires-python = ">=3.11,<3.14"
 
 [tool.poetry]
 # This is an Ansible collection, not a standard Python package. Poetry is used for developer tooling only.
 package-mode = false
+
+
+[tool.poetry.dependencies]
+ansible-core = "^2.17.0"
+pan-scm-sdk = "^0.3.32"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
@@ -30,6 +30,7 @@ mock = "^5.2.0"
 black = "^25.1.0"
 isort = "^6.0.1"
 python-dotenv = "^1.1.0"
+ipython = "^9.2.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
