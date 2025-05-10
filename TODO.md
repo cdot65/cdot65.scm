@@ -14,9 +14,9 @@ _Last updated: 2025-05-09_
 - [x] Implement label management modules (template: folder modules):
     - [x] `plugins/modules/label.py`
     - [x] `plugins/modules/label_info.py`
-- [ ] Implement snippet management modules (template: folder modules):
-    - [ ] `plugins/modules/snippet.py`
-    - [ ] `plugins/modules/snippet_info.py`
+- [x] Implement snippet management modules (template: folder modules):
+    - [x] `plugins/modules/snippet.py`
+    - [x] `plugins/modules/snippet_info.py`
 - [ ] Implement device management modules (template: folder modules):
     - [ ] `plugins/modules/device.py`
     - [ ] `plugins/modules/device_info.py`
