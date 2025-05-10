@@ -17,7 +17,14 @@
 
     - name: Create a label
       cdot65.scm.label:
-        name: environment
-        description: Environment classification label
+        name: dmz
+        description: DMZ label
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a label
+      cdot65.scm.label:
+        name: iot
+        description: IoT label
         scm_access_token: "{{ scm_access_token }}"
         state: present
