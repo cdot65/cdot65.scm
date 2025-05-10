@@ -1,6 +1,6 @@
 # TODO: cdot65.scm Ansible Collection (Strata Cloud Manager)
 
-_Last updated: 2025-05-09_
+_Last updated: 2025-05-10_
 
 ## Immediate Tasks
 
@@ -17,9 +17,8 @@ _Last updated: 2025-05-09_
 - [x] Implement snippet management modules (template: folder modules):
     - [x] `plugins/modules/snippet.py`
     - [x] `plugins/modules/snippet_info.py`
-- [ ] Implement device management modules (template: folder modules):
-    - [ ] `plugins/modules/device.py`
-    - [ ] `plugins/modules/device_info.py`
+- [x] Implement device management modules:
+    - [x] `plugins/modules/device_info.py` (read-only operations for SCM devices)
 - [ ] Implement variable management modules (template: folder modules):
     - [ ] `plugins/modules/variable.py`
     - [ ] `plugins/modules/variable_info.py`

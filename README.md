@@ -51,17 +51,18 @@ This collection includes the following modules:
 - `folder`, `folder_info`: Manage and retrieve folders
 - `label`, `label_info`: Manage and retrieve labels
 - `snippet`, `snippet_info`: Manage and retrieve snippets
-- `config_scope`, `config_scope_info`: Manage and retrieve configuration scopes
-- `device`, `device_info`: Manage and retrieve devices
-- `address_object`, `address_object_info`: Manage and retrieve address objects
-- `address_group`, `address_group_info`: Manage and retrieve address groups
-- `service_object`, `service_object_info`: Manage and retrieve service objects
-- `service_group`, `service_group_info`: Manage and retrieve service groups
+- `device_info`: Retrieve device information
+- `config_scope`, `config_scope_info`: Manage and retrieve configuration scopes (planned)
+- `variable`, `variable_info`: Manage and retrieve variables (planned)
+- `address_object`, `address_object_info`: Manage and retrieve address objects (planned)
+- `address_group`, `address_group_info`: Manage and retrieve address groups (planned)
+- `service_object`, `service_object_info`: Manage and retrieve service objects (planned)
+- `service_group`, `service_group_info`: Manage and retrieve service groups (planned)
 
 ### Action Modules
 
-- `deployment`: Trigger configuration push/deployment
-- `job_info`: Check job status
+- `deployment`: Trigger configuration push/deployment (planned)
+- `job_info`: Check job status (planned)
 
 ## Examples
 
@@ -85,6 +86,21 @@ This collection includes the following modules:
 - name: Display folders
   debug:
     var: folders_result.resources
+```
+
+### Retrieving device information
+
+```yaml
+- name: Get all devices
+  cdot65.scm.device_info:
+    scm_access_token: "{{ scm_access_token }}"
+  register: all_devices
+
+- name: Get VM-series firewalls
+  cdot65.scm.device_info:
+    model: "PA-VM"
+    scm_access_token: "{{ scm_access_token }}"
+  register: vm_devices
 ```
 
 ## Development

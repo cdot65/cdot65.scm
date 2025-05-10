@@ -1,7 +1,7 @@
 # PRD: Ansible Collection - cdot65.scm (Strata Cloud Manager Integration)
 
 **Version:** 1.1
-**Date:** 2025.04.16
+**Date:** 2025.05.10
 **Author:** Calvin Remsburg
 **Status:** In Development
 
@@ -77,10 +77,10 @@ Users are expected to be familiar with Ansible concepts (playbooks, modules, rol
 The initial release focuses on core SCM objects and actions, with a strong emphasis on robust, reusable Ansible module patterns for each resource type. All new resource modules will follow the folder/folder_info design as the canonical template for structure, authentication, and serialization.
 
 *   **Resource Modules (`_info` and main stateful modules):**
-    *   Folders (`folder`, `folder_info`) — Complete
-    *   Labels (`label`, `label_info`) — Complete
-    *   Snippets (`snippet`, `snippet_info`) — Complete
-    *   Devices (`device`, `device_info`) — Next up, will follow folder module template
+    *   Folders (`folder`, `folder_info`) — Complete ✅
+    *   Labels (`label`, `label_info`) — Complete ✅
+    *   Snippets (`snippet`, `snippet_info`) — Complete ✅
+    *   Devices (`device_info`) — Complete ✅ (read-only operations due to SCM API limitations)
     *   Variables (`variable`, `variable_info`) — Next up, will follow folder module template
     *   Configuration Scopes (`config_scope`, `config_scope_info`)
     *   Address Objects (`address_object`, `address_object_info`)
@@ -279,22 +279,25 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 **Completed:**
 - Folder management modules (`folder`, `folder_info`) fully implemented with modern authentication (bearer token), robust serialization (Pydantic `.model_dump_json()`), and idempotent CRUD/query workflows. These serve as the reference for all future resource modules.
 - Label management modules (`label`, `label_info`) fully implemented.
+- Snippet management modules (`snippet`, `snippet_info`) fully implemented.
+- Device information module (`device_info`) implemented for read-only operations.
 - Authentication role and workflow complete; token can be passed to all modules.
-- Example playbooks for folder and folder_info modules.
+- Example playbooks for all implemented modules.
 
 **In Progress / Next:**
-- Begin work on `snippet`, `device`, and `variable` modules using the folder module template for structure and best practices.
+- Begin work on `variable` modules using the folder module template for structure and best practices.
 - Expand test coverage and documentation for new modules.
 
 **Blocked/Issues:**
 - None major; dependency and serialization issues resolved.
+- Device management limited to read-only operations due to SCM API constraints.
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `snippet`, `device`, and `variable` modules using the folder/folder_info pattern.
-- Create corresponding `_info` modules for each.
+- Implement `variable` and `variable_info` modules using the folder/folder_info pattern.
 - Continue to build out example playbooks and integration tests.
 - Ensure all modules are documented and follow the unified authentication/serialization approach.
+- Conduct thorough testing of implemented modules against real SCM instances.
 
 ## 11. Future Considerations
 
@@ -314,5 +317,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
-- The authentication role (`roles/auth`) has been successfully implemented, enabling secure authentication with Strata Cloud Manager. An example playbook demonstrating its use is provided at `playbooks/auth.yml`.
-- Added support for `label` and `label_info` modules (CRUD/query for SCM labels)
+- The authentication role (`roles/auth`) has been successfully implemented, enabling secure authentication with Strata Cloud Manager. Example playbooks demonstrating its use are provided.
+- Added support for `label` and `label_info` modules (CRUD/query for SCM labels).
+- Added support for `snippet` and `snippet_info` modules (CRUD/query for SCM snippets).
+- Implemented `device_info` module for retrieving and filtering device information from SCM.

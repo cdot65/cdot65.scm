@@ -1,0 +1,50 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM device operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    - name: Get device information
+      cdot65.scm.device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_devices
+
+    - name: Display all devices
+      debug:
+        msg: "Found {{ all_devices.devices | default([]) | length }} devices"
+      when: all_devices.devices is defined
+
+    - name: Get a specific device by name
+      cdot65.scm.device_info:
+        name: "007954000527505"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_device
+      ignore_errors: yes
+
+    - name: Display specific device info
+      debug:
+        var: specific_device.devices
+      when: specific_device.devices is defined
+
+    - name: Get all VM-series firewalls
+      cdot65.scm.device_info:
+        model: "PA-VM"
+        scm_access_token: "{{ scm_access_token }}"
+      register: vm_firewalls
+      ignore_errors: yes
+
+    - name: Display VM-series firewalls
+      debug:
+        msg: "Found {{ vm_firewalls.devices | default([]) | length }} VM-series firewalls"
+      when: vm_firewalls.devices is defined
