@@ -74,13 +74,15 @@ Users are expected to be familiar with Ansible concepts (playbooks, modules, rol
 
 ### 4.1 In Scope (Initial Release - MVP)
 
-The initial release will focus on core SCM objects and actions:
+The initial release focuses on core SCM objects and actions, with a strong emphasis on robust, reusable Ansible module patterns for each resource type. All new resource modules will follow the folder/folder_info design as the canonical template for structure, authentication, and serialization.
 
 *   **Resource Modules (`_info` and main stateful modules):**
-    *   Folders (`folder`, `folder_info`)
-    *   Snippets (`snippet`, `snippet_info`)
+    *   Folders (`folder`, `folder_info`) — Complete
+    *   Labels (`label`, `label_info`) — Next up, will follow folder module template
+    *   Snippets (`snippet`, `snippet_info`) — Next up, will follow folder module template
+    *   Devices (`device`, `device_info`) — Next up, will follow folder module template
+    *   Variables (`variable`, `variable_info`) — Next up, will follow folder module template
     *   Configuration Scopes (`config_scope`, `config_scope_info`)
-    *   Device Management (Basic onboarding/listing - `device`, `device_info`)
     *   Address Objects (`address_object`, `address_object_info`)
     *   Address Groups (`address_group`, `address_group_info`)
     *   Service Objects (`service_object`, `service_object_info`)
@@ -88,7 +90,7 @@ The initial release will focus on core SCM objects and actions:
 *   **Action Modules:**
     *   Trigger Configuration Push/Deployment (`deployment`)
     *   Check Job Status (`job_info`)
-*   **Authentication:** Support for multiple authentication methods, including OAuth2.
+*   **Authentication:** Support for multiple authentication methods, including OAuth2 and bearer token (now implemented, see Progress).
 *   **Basic Documentation:** README, module documentation following Ansible standards, simple examples.
 *   **Testing Infrastructure:** Unit tests for module utilities, integration tests for core modules.
 
@@ -274,40 +276,24 @@ The initial release will focus on core SCM objects and actions:
 
 ## 9. Current Status & Implementation Progress
 
-*   **Infrastructure & Setup:**
-    *   Configured Poetry for dependency and environment management
-    *   Established Makefile with targets for building, testing, and publishing
-    *   Set up GitHub repository with basic structure
-    *   Configured basic test framework
+**Completed:**
+- Folder management modules (`folder`, `folder_info`) fully implemented with modern authentication (bearer token), robust serialization (Pydantic `.model_dump_json()`), and idempotent CRUD/query workflows. These serve as the reference for all future resource modules.
+- Authentication role and workflow complete; token can be passed to all modules.
+- Example playbooks for folder and folder_info modules.
 
-*   **Core Components:**
-    *   **Module Utils:** 
-        *   Implemented client module for SDK interaction and error handling
-        *   Created authentication module with OAuth2 support
-        *   Developed compatibility layer for existing tests
-    
-    *   **Testing:**
-        *   Basic unit tests for module_utils components
-        *   Framework for integration tests
+**In Progress / Next:**
+- Begin work on `label`, `snippet`, `device`, and `variable` modules using the folder module template for structure and best practices.
+- Expand test coverage and documentation for new modules.
 
-*   **Documentation:**
-    *   Initial README with installation and usage instructions
-    *   Example playbooks in development
+**Blocked/Issues:**
+- None major; dependency and serialization issues resolved.
 
 ## 10. Next Steps & Immediate Tasks
 
-*   **Immediate Tasks:**
-    *   Complete and fix unit tests for module_utils components
-    *   Implement folder management module and info module
-    *   Develop address object and service object modules
-    *   Enhance error handling for edge cases
-    *   Create integration tests for first modules
-
-*   **Short-term Goals:**
-    *   Complete all MVP modules listed in scope
-    *   Develop comprehensive test coverage
-    *   Create example playbooks for common workflows
-    *   Enhance documentation with real-world usage patterns
+- Implement `label`, `snippet`, `device`, and `variable` modules using the folder/folder_info pattern.
+- Create corresponding `_info` modules for each.
+- Continue to build out example playbooks and integration tests.
+- Ensure all modules are documented and follow the unified authentication/serialization approach.
 
 ## 11. Future Considerations
 

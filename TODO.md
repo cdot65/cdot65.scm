@@ -1,29 +1,37 @@
 # TODO: cdot65.scm Ansible Collection (Strata Cloud Manager)
 
-_Last updated: 2025-04-16_
+_Last updated: 2025-05-09_
 
 ## Immediate Tasks
 
 - [x] Implement authentication role (`roles/auth`)
     - [x] Example playbook at `playbooks/auth.yml`
-- [ ] Implement folder management module:
-    - [ ] `plugins/modules/folder.py` (CRUD operations for SCM folders)
-- [ ] Complete/fix unit tests for module_utils components (client, authentication, error handling)
-- [ ] Implement folder_info module
-- [ ] Implement address object modules:
-    - [ ] `address_object`
-    - [ ] `address_object_info`
-- [ ] Implement service object modules:
-    - [ ] `service_object`
-    - [ ] `service_object_info`
+- [x] Implement folder management module:
+    - [x] `plugins/modules/folder.py` (CRUD operations for SCM folders)
+    - [x] `plugins/modules/folder_info.py` (query/info for SCM folders)
+- [x] Example playbooks for folder and folder_info modules
+- [x] Resolve serialization issues (UUIDs, Pydantic)
+- [ ] Implement label management modules (template: folder modules):
+    - [ ] `plugins/modules/label.py`
+    - [ ] `plugins/modules/label_info.py`
+- [ ] Implement snippet management modules (template: folder modules):
+    - [ ] `plugins/modules/snippet.py`
+    - [ ] `plugins/modules/snippet_info.py`
+- [ ] Implement device management modules (template: folder modules):
+    - [ ] `plugins/modules/device.py`
+    - [ ] `plugins/modules/device_info.py`
+- [ ] Implement variable management modules (template: folder modules):
+    - [ ] `plugins/modules/variable.py`
+    - [ ] `plugins/modules/variable_info.py`
+- [ ] Complete/fix unit tests for new modules
 - [ ] Enhance error handling for edge cases
-- [ ] Create integration tests for first modules
+- [ ] Create integration tests for all resource modules
 
 ## Short-term Goals (MVP)
 
-- [ ] Complete all MVP modules listed in PRD scope
+- [ ] Complete all MVP modules listed in PRD scope (using folder/folder_info as template)
 - [ ] Develop comprehensive test coverage (unit + integration)
-- [ ] Create example playbooks for common SCM workflows
+- [ ] Create example playbooks for all resource types
 - [ ] Enhance documentation with real-world usage patterns
 - [ ] Ensure all modules support idempotency and check_mode
 
