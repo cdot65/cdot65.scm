@@ -20,4 +20,4 @@
         name: "Engineering"
         parent: "Texas"
         scm_access_token: "{{ scm_access_token }}"
-        state: absent
+        state: present

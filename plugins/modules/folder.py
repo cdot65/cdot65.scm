@@ -4,7 +4,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
-
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
@@ -23,7 +22,7 @@ options:
     name:
         description:
             - Name of the folder.
-            - Required for state=present and for absent if id is not provided.
+            - Required for both state=present and state=absent.
         type: str
         required: false
     parent:
@@ -74,12 +73,6 @@ options:
             - True if this is a device-only entry.
         type: bool
         required: false
-    id:
-        description:
-            - Unique identifier for the folder (UUID).
-            - Used for lookup/deletion if provided.
-        type: str
-        required: false
     scm_access_token:
         description:
             - Bearer access token for authenticating API calls, provided by the auth role.
@@ -118,15 +111,11 @@ EXAMPLES = r"""
     parent: "Network Objects"
     state: present
 
-- name: Delete a folder by name
+- name: Delete a folder
   cdot65.scm.folder:
     name: "Network Objects"
     state: absent
 
-- name: Delete a folder by ID
-  cdot65.scm.folder:
-    id: "12345678-1234-1234-1234-123456789012"
-    state: absent
 """
 
 RETURN = r"""
@@ -180,7 +169,6 @@ def main():
         serial_number=dict(type="str", required=False),
         type=dict(type="str", required=False),
         device_only=dict(type="bool", required=False),
-        id=dict(type="str", required=False),
         scm_access_token=dict(type="str", required=True, no_log=True),
         api_url=dict(type="str", required=False),
         state=dict(type="str", required=False, choices=["present", "absent"], default="present"),
@@ -195,56 +183,51 @@ def main():
         supports_check_mode=True,
     )
 
+    # Get parameters
     params = module.params
-    state = params["state"]
-    folder_id = params.get("id")
-    name = params.get("name")
-    parent = params.get("parent")
-    scm_access_token = params.get("scm_access_token")
 
+    # Initialize results
     result = {"changed": False, "folder": None}
 
     try:
         # Initialize SCM client
-        client = ScmClient(access_token=scm_access_token)
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
-        # Fetch folder by name (preferred) or id
+        # Initialize folder_exists boolean
+        folder_exists = False
         folder_obj = None
-        if folder_id:
-            try:
-                folder_obj = client.folder.get(folder_id)
-                if folder_obj:
-                    result["folders"] = [json.loads(folder_obj.model_dump_json(exclude_unset=True))]
-            except ObjectNotPresentError:
-                folder_obj = None
-        elif name:
-            folder_obj = client.folder.fetch(name)
 
-        if state == "present":
-            if folder_obj:
-                # Compare all updatable fields
-                update_fields = {}
-                for k in [
-                    "description",
-                    "labels",
-                    "snippets",
-                    "display_name",
-                    "model",
-                    "serial_number",
-                    "type",
-                    "device_only",
-                    "parent",
-                ]:
-                    v = params.get(k)
-                    if v is not None and getattr(folder_obj, k, None) != v:
-                        update_fields[k] = v
+        # Fetch folder by name
+        if params.get("name"):
+            try:
+                folder_obj = client.folder.fetch(params.get("name"))
+                if folder_obj:
+                    folder_exists = True
+            except ObjectNotPresentError:
+                folder_exists = False
+                folder_obj = None
+
+        if params.get("state") == "present":
+            if folder_exists:
+                # Only update fields that differ
+                update_fields = {
+                    k: params[k]
+                    for k in [
+                        "description",
+                        "labels",
+                        "snippets",
+                        "display_name",
+                        "model",
+                        "serial_number",
+                        "type",
+                        "device_only",
+                        "parent",
+                    ]
+                    if params.get(k) is not None and getattr(folder_obj, k, None) != params[k]
+                }
                 if update_fields:
                     if not module.check_mode:
-                        from scm.models.setup.folder import FolderUpdateModel
-
-                        update_model = FolderUpdateModel(
-                            id=folder_obj.id, name=folder_obj.name, parent=parent or folder_obj.parent, **update_fields
-                        )
+                        update_model = folder_obj.model_copy(update=update_fields)
                         updated = client.folder.update(update_model)
                         result["folder"] = json.loads(updated.model_dump_json(exclude_unset=True))
                     result["changed"] = True
@@ -272,8 +255,8 @@ def main():
                     created = client.folder.create(create_payload)
                     result["folder"] = json.loads(created.model_dump_json(exclude_unset=True))
                 result["changed"] = True
-        elif state == "absent":
-            if folder_obj:
+        elif params.get("state") == "absent":
+            if folder_exists:
                 if not module.check_mode:
                     client.folder.delete(folder_obj.id)
                 result["changed"] = True
