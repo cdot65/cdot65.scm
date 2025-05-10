@@ -5,6 +5,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import json
 
 __metaclass__ = type
 
@@ -19,19 +20,7 @@ version_added: "0.1.0"
 author:
     - "Calvin Remsburg (@cdot65)"
 options:
-    api_key:
-        description:
-            - The API key for SCM authentication.
-            - If not specified, the value of the SCM_API_KEY environment variable will be used.
-        type: str
-        required: false
-    api_url:
-        description:
-            - The URL for the SCM API.
-            - If not specified, the value of the SCM_API_URL environment variable will be used.
-        type: str
-        required: false
-    folder_id:
+    id:
         description:
             - The ID of the folder to retrieve.
             - If specified, the module will return information about this specific folder.
@@ -42,19 +31,30 @@ options:
         description:
             - The name of the folder to retrieve.
             - If specified, the module will search for folders with this name.
-            - Mutually exclusive with I(folder_id).
+            - Mutually exclusive with I(id).
         type: str
         required: false
-    parent_folder_id:
+    parent:
         description:
             - If specified, only folders under this parent folder will be returned.
-            - Ignored if I(folder_id) is specified.
+            - Ignored if I(id) is specified.
+        type: str
+        required: false
+    scm_access_token:
+        description:
+            - The access token for SCM authentication.
+        type: str
+        required: true
+        no_log: true
+    api_url:
+        description:
+            - The URL for the SCM API.
         type: str
         required: false
 notes:
     - Check mode is supported but does not change behavior since this is a read-only module.
-    - For authentication, you can set the C(SCM_API_KEY) and C(SCM_API_URL) environment variables
-      instead of providing them as module options.
+    - For authentication, you can set the C(SCM_ACCESS_TOKEN) environment variable
+      instead of providing it as a module option.
 '''
 
 EXAMPLES = r'''
@@ -64,7 +64,7 @@ EXAMPLES = r'''
 
 - name: Get a specific folder by ID
   cdot65.scm.folder_info:
-    folder_id: "12345678-1234-1234-1234-123456789012"
+    id: "12345678-1234-1234-1234-123456789012"
   register: folder_details
 
 - name: Get folders with a specific name
@@ -74,7 +74,7 @@ EXAMPLES = r'''
 
 - name: Get folders under a specific parent
   cdot65.scm.folder_info:
-    parent_folder_id: "87654321-4321-4321-4321-210987654321"
+    parent: "87654321-4321-4321-4321-210987654321"
   register: child_folders
 '''
 
@@ -100,7 +100,7 @@ folders:
             type: str
             returned: always
             sample: "Folder for network objects"
-        parent_folder_id:
+        parent:
             description: The ID of the parent folder
             type: str
             returned: when applicable
@@ -118,68 +118,61 @@ folders:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.scm import (
-    scm_argument_spec,
-    get_scm_client,
-    handle_scm_error
-)
+from scm.client import ScmClient
 
 
 def main():
     # Define the module argument specification
-    module_args = scm_argument_spec()
-    module_args.update(
-        folder_id=dict(type='str', required=False),
+    module_args = dict(
         name=dict(type='str', required=False),
-        parent_folder_id=dict(type='str', required=False)
+        id=dict(type='str', required=False),
+        parent=dict(type='str', required=False),
+        scm_access_token=dict(type='str', required=True, no_log=True),
+        api_url=dict(type='str', required=False),
     )
 
     # Create the module
     module = AnsibleModule(
         argument_spec=module_args,
-        mutually_exclusive=[['folder_id', 'name']],
+        mutually_exclusive=[['id', 'name']],
         supports_check_mode=True
     )
 
     # Get parameters
-    folder_id = module.params.get('folder_id')
-    name = module.params.get('name')
-    parent_folder_id = module.params.get('parent_folder_id')
-    
-    result = {
-        'folders': []
-    }
+    params = module.params
+    folder_id = params.get('id')
+    name = params.get('name')
+    parent = params.get('parent')
+
+    result = {'folders': []}
 
     try:
         # Initialize SCM client
-        client = get_scm_client(module)
-        
+        client = ScmClient(
+            access_token=params['scm_access_token'],
+            api_base_url=params.get('api_url') or "https://api.strata.paloaltonetworks.com",
+        )
+        folders_service = client.folder
+
         # Get folder by ID if specified
         if folder_id:
-            try:
-                folder = client.folder.get_by_id(folder_id)
-                if folder:
-                    result['folders'] = [folder]
-            except Exception as e:
-                handle_scm_error(module, e)
+            folder = folders_service.get(folder_id)
+            if folder:
+                result['folders'] = [json.loads(folder.model_dump_json(exclude_unset=True))]
         else:
             # List all folders
-            folders = client.folder.list()
-            
+            folders = folders_service.list()
+            folder_dicts = [json.loads(f.model_dump_json(exclude_unset=True)) for f in folders]
             # Filter by name if specified
             if name:
-                folders = [f for f in folders if f.get('name') == name]
-                
-            # Filter by parent_folder_id if specified
-            if parent_folder_id:
-                folders = [f for f in folders if f.get('parent_folder_id') == parent_folder_id]
-                
-            result['folders'] = folders
-    
+                folder_dicts = [f for f in folder_dicts if f.get('name') == name]
+            # Filter by parent if specified
+            if parent:
+                folder_dicts = [f for f in folder_dicts if f.get('parent') == parent]
+            result['folders'] = folder_dicts
+        module.exit_json(**result)
     except Exception as e:
-        handle_scm_error(module, e)
-    
-    module.exit_json(**result)
+        module.fail_json(msg=f"Failed to retrieve folder info: {e}")
 
 
 if __name__ == '__main__':

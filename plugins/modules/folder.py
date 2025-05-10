@@ -5,6 +5,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import json
 
 __metaclass__ = type
 
@@ -13,60 +14,94 @@ DOCUMENTATION = r'''
 module: folder
 short_description: Manage folders in Strata Cloud Manager (SCM)
 description:
-    - This module creates, updates, and deletes folders in Strata Cloud Manager.
-    - Folders are used to organize objects within the SCM hierarchy.
+    - Create, update, or delete folders in Strata Cloud Manager using pan-scm-sdk.
+    - Supports all folder attributes and robust idempotency.
 version_added: "0.1.0"
 author:
     - "Calvin Remsburg (@cdot65)"
 options:
-    api_key:
+    name:
         description:
-            - The API key for SCM authentication.
-            - If not specified, the value of the SCM_API_KEY environment variable will be used.
+            - Name of the folder.
+            - Required for state=present and for absent if id is not provided.
         type: str
         required: false
+    parent:
+        description:
+            - Name of the parent folder (empty string for root).
+            - Required for state=present.
+        type: str
+        required: false
+    description:
+        description:
+            - Description of the folder.
+        type: str
+        required: false
+    labels:
+        description:
+            - List of labels to apply to the folder.
+        type: list
+        elements: str
+        required: false
+    snippets:
+        description:
+            - List of snippet IDs associated with the folder.
+        type: list
+        elements: str
+        required: false
+    display_name:
+        description:
+            - Display name for the folder/device, if present.
+        type: str
+        required: false
+    model:
+        description:
+            - Device model, if present (e.g., 'PA-VM').
+        type: str
+        required: false
+    serial_number:
+        description:
+            - Device serial number, if present.
+        type: str
+        required: false
+    type:
+        description:
+            - Type of folder or device (e.g., 'on-prem', 'container', 'cloud').
+        type: str
+        required: false
+    device_only:
+        description:
+            - True if this is a device-only entry.
+        type: bool
+        required: false
+    id:
+        description:
+            - Unique identifier for the folder (UUID).
+            - Used for lookup/deletion if provided.
+        type: str
+        required: false
+    scm_access_token:
+        description:
+            - Bearer access token for authenticating API calls, provided by the auth role.
+        type: str
+        required: true
+        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
             - If not specified, the value of the SCM_API_URL environment variable will be used.
         type: str
         required: false
-    folder_id:
-        description:
-            - The ID of the folder to manage.
-            - Required when I(state=absent) if I(name) is not specified.
-            - Mutually exclusive with I(name) when used for identification.
-        type: str
-        required: false
-    name:
-        description:
-            - The name of the folder.
-            - Required when I(state=present).
-            - Can be used for folder identification when I(state=absent) instead of I(folder_id).
-        type: str
-        required: false
-    description:
-        description:
-            - A description for the folder.
-        type: str
-        required: false
-    parent_folder_id:
-        description:
-            - The ID of the parent folder.
-            - If not specified, the folder will be created at the root level.
-        type: str
-        required: false
     state:
         description:
-            - The desired state of the folder.
+            - Desired state of the folder.
         type: str
-        required: false
         choices: ['present', 'absent']
         default: present
 notes:
     - Check mode is supported.
-    - For authentication, you can set the C(SCM_API_KEY) and C(SCM_API_URL) environment variables
-      instead of providing them as module options.
+    - All operations are idempotent.
+    - Uses pan-scm-sdk via unified client and bearer token from the auth role.
 '''
 
 EXAMPLES = r'''
@@ -80,7 +115,7 @@ EXAMPLES = r'''
   cdot65.scm.folder:
     name: "Address Objects"
     description: "Folder for address objects"
-    parent_folder_id: "{{ parent_folder_id }}"
+    parent: "Network Objects"
     state: present
 
 - name: Delete a folder by name
@@ -90,7 +125,7 @@ EXAMPLES = r'''
 
 - name: Delete a folder by ID
   cdot65.scm.folder:
-    folder_id: "12345678-1234-1234-1234-123456789012"
+    id: "12345678-1234-1234-1234-123456789012"
     state: absent
 '''
 
@@ -115,11 +150,11 @@ folder:
             type: str
             returned: always
             sample: "Folder for network objects"
-        parent_folder_id:
-            description: The ID of the parent folder
+        parent:
+            description: The name of the parent folder
             type: str
             returned: when applicable
-            sample: "87654321-4321-4321-4321-210987654321"
+            sample: "Network Objects"
         created_at:
             description: The creation timestamp
             type: str
@@ -133,117 +168,97 @@ folder:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.scm import (
-    scm_argument_spec,
-    get_scm_client,
-    handle_scm_error,
-    is_resource_exists
-)
-
+from scm.client import ScmClient
+from scm.exceptions import ObjectNotPresentError, InvalidObjectError, APIError
 
 def main():
-    # Define the module argument specification
-    module_args = scm_argument_spec()
-    module_args.update(
-        folder_id=dict(type='str', required=False),
+    module_args = dict(
         name=dict(type='str', required=False),
+        parent=dict(type='str', required=False),
         description=dict(type='str', required=False),
-        parent_folder_id=dict(type='str', required=False),
-        state=dict(type='str', required=False, choices=['present', 'absent'], default='present')
+        labels=dict(type='list', elements='str', required=False),
+        snippets=dict(type='list', elements='str', required=False),
+        display_name=dict(type='str', required=False),
+        model=dict(type='str', required=False),
+        serial_number=dict(type='str', required=False),
+        type=dict(type='str', required=False),
+        device_only=dict(type='bool', required=False),
+        id=dict(type='str', required=False),
+        scm_access_token=dict(type='str', required=True, no_log=True),
+        api_url=dict(type='str', required=False),
+        state=dict(type='str', required=False, choices=['present', 'absent'], default='present'),
     )
 
-    # Create the module
     module = AnsibleModule(
         argument_spec=module_args,
-        required_one_of=[['name', 'folder_id']],
         required_if=[
-            ['state', 'present', ['name']],
+            ['state', 'present', ['name', 'parent']],
+            ['state', 'absent', ['name']],
         ],
         supports_check_mode=True
     )
 
-    # Get parameters
-    state = module.params.get('state')
-    folder_id = module.params.get('folder_id')
-    name = module.params.get('name')
-    description = module.params.get('description')
-    parent_folder_id = module.params.get('parent_folder_id')
-    
-    result = {
-        'changed': False,
-        'folder': {}
-    }
+    params = module.params
+    state = params['state']
+    folder_id = params.get('id')
+    name = params.get('name')
+    parent = params.get('parent')
+
+    result = {'changed': False, 'folder': None}
 
     try:
-        # Initialize SCM client
-        client = get_scm_client(module)
-        
-        # Check if folder exists
-        exists, folder_data = is_resource_exists(client, 'folder', folder_id, name)
-        
-        if state == 'present':
-            # Create or update folder
-            if exists:
-                # Folder exists, check if update is needed
-                if folder_data:
-                    need_update = False
-                    
-                    # Capture current folder ID
-                    folder_id = folder_data.get('id')
-                    
-                    # Build update payload
-                    update_payload = {}
-                    
-                    # Check if description needs to be updated
-                    if description is not None and description != folder_data.get('description'):
-                        update_payload['description'] = description
-                        need_update = True
-                    
-                    # Check if parent_folder_id needs to be updated
-                    current_parent = folder_data.get('parent_folder_id')
-                    if parent_folder_id is not None and parent_folder_id != current_parent:
-                        update_payload['parent_folder_id'] = parent_folder_id
-                        need_update = True
-                        
-                    # Update folder if needed
-                    if need_update:
-                        if not module.check_mode:
-                            updated_folder = client.folder.update(folder_id, **update_payload)
-                            result['folder'] = updated_folder
-                        result['changed'] = True
-                    else:
-                        result['folder'] = folder_data
-            else:
-                # Folder doesn't exist, create it
-                if not module.check_mode:
-                    create_payload = {
-                        'name': name,
-                    }
-                    
-                    if description is not None:
-                        create_payload['description'] = description
-                        
-                    if parent_folder_id is not None:
-                        create_payload['parent_folder_id'] = parent_folder_id
-                        
-                    new_folder = client.folder.create(**create_payload)
-                    result['folder'] = new_folder
-                
-                result['changed'] = True
-        
-        elif state == 'absent':
-            # Delete folder if it exists
-            if exists:
-                if not module.check_mode:
-                    client.folder.delete(folder_data.get('id'))
-                result['changed'] = True
-                result['folder'] = folder_data
-    
-    except Exception as e:
-        handle_scm_error(module, e)
-    
-    module.exit_json(**result)
+        client = ScmClient(
+            access_token=params['scm_access_token'],
+        )
+        folders = client.folder
 
+        # Fetch folder by name (preferred) or id
+        folder_obj = None
+        if folder_id:
+            try:
+                folder_obj = folders.get(folder_id)
+            except ObjectNotPresentError:
+                folder_obj = None
+        elif name:
+            folder_obj = folders.fetch(name)
+
+        if state == 'present':
+            if folder_obj:
+                # Compare all updatable fields
+                update_fields = {}
+                for k in ['description', 'labels', 'snippets', 'display_name', 'model', 'serial_number', 'type', 'device_only', 'parent']:
+                    v = params.get(k)
+                    if v is not None and getattr(folder_obj, k, None) != v:
+                        update_fields[k] = v
+                if update_fields:
+                    if not module.check_mode:
+                        from scm.models.setup.folder import FolderUpdateModel
+                        update_model = FolderUpdateModel(id=folder_obj.id, name=folder_obj.name, parent=parent or folder_obj.parent, **update_fields)
+                        updated = folders.update(update_model)
+                        result['folder'] = json.loads(updated.model_dump_json(exclude_unset=True))
+                    result['changed'] = True
+                else:
+                    result['folder'] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
+            else:
+                # Create new folder
+                if not module.check_mode:
+                    create_payload = {k: params[k] for k in ['name', 'parent', 'description', 'labels', 'snippets', 'display_name', 'model', 'serial_number', 'type', 'device_only'] if params.get(k) is not None}
+                    created = folders.create(create_payload)
+                    result['folder'] = json.loads(created.model_dump_json(exclude_unset=True))
+                result['changed'] = True
+        elif state == 'absent':
+            if folder_obj:
+                if not module.check_mode:
+                    folders.delete(folder_obj.id)
+                result['changed'] = True
+                result['folder'] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
+        module.exit_json(**result)
+    except (ObjectNotPresentError, InvalidObjectError) as e:
+        module.fail_json(msg=str(e), error_code=getattr(e, 'error_code', None), details=getattr(e, 'details', None))
+    except APIError as e:
+        module.fail_json(msg="API error: " + str(e), error_code=getattr(e, 'error_code', None), details=getattr(e, 'details', None))
+    except Exception as e:
+        module.fail_json(msg="Unexpected error: " + str(e))
 
 if __name__ == '__main__':
     main()
