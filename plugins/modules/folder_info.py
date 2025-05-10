@@ -128,38 +128,36 @@ def main():
     )
 
     # Create the module
-    module = AnsibleModule(argument_spec=module_args, mutually_exclusive=[["id", "name"]], supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=module_args,
+        mutually_exclusive=[["id", "name"]],
+        supports_check_mode=True,
+    )
 
     # Get parameters
     params = module.params
-    folder_id = params.get("id")
-    name = params.get("name")
-    parent = params.get("parent")
 
     result = {"folders": []}
 
     try:
         # Initialize SCM client
-        client = ScmClient(
-            access_token=params["scm_access_token"],
-        )
-        folders_service = client.folder
+        client = ScmClient(access_token=params["scm_access_token"])
 
         # Get folder by ID if specified
-        if folder_id:
-            folder = folders_service.get(folder_id)
+        if params.get("id"):
+            folder = client.folder.get(params.get("id"))
             if folder:
                 result["folders"] = [json.loads(folder.model_dump_json(exclude_unset=True))]
         else:
             # List all folders
-            folders = folders_service.list()
+            folders = client.folder.list()
             folder_dicts = [json.loads(f.model_dump_json(exclude_unset=True)) for f in folders]
             # Filter by name if specified
-            if name:
-                folder_dicts = [f for f in folder_dicts if f.get("name") == name]
+            if params.get("name"):
+                folder_dicts = [f for f in folder_dicts if f.get("name") == params.get("name")]
             # Filter by parent if specified
-            if parent:
-                folder_dicts = [f for f in folder_dicts if f.get("parent") == parent]
+            if params.get("parent"):
+                folder_dicts = [f for f in folder_dicts if f.get("parent") == params.get("parent")]
             result["folders"] = folder_dicts
         module.exit_json(**result)
     except Exception as e:
