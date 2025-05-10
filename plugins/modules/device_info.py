@@ -1,15 +1,15 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-# Copyright: (c) 2025, Calvin Remsburg <cremsburg@paloaltonetworks.com>
+# Copyright: (c) 2025, Calvin Remsburg (@cdot65) <dev@cdot.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 import json
 
-__metaclass__ = type
+from ansible.module_utils.basic import AnsibleModule
+from scm.client import ScmClient
+from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: device_info
 short_description: Get information about devices in Strata Cloud Manager (SCM)
@@ -76,9 +76,9 @@ notes:
     - Check mode is supported but does not change behavior since this is a read-only module.
     - This module uses the pan-scm-sdk for interacting with the SCM API.
     - Pagination is handled internally when retrieving large device lists.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Get all devices
   cdot65.scm.device_info:
     scm_access_token: "{{ scm_access_token }}"
@@ -107,9 +107,9 @@ EXAMPLES = r'''
     folder: "Datacenter"
     scm_access_token: "{{ scm_access_token }}"
   register: datacenter_devices
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 devices:
     description: List of device resources
     returned: always
@@ -176,104 +176,85 @@ devices:
             type: str
             returned: when applicable
             sample: "10.2.3"
-'''
+"""
 
-from ansible.module_utils.basic import AnsibleModule
-from scm.client import ScmClient
-from scm.exceptions import ObjectNotPresentError, InvalidObjectError, APIError
 
 def main():
     # Define the module argument specification
     module_args = dict(
-        name=dict(type='str', required=False),
-        id=dict(type='str', required=False),
-        serial_number=dict(type='str', required=False),
-        model=dict(type='str', required=False),
-        type=dict(type='str', required=False),
-        folder=dict(type='str', required=False),
-        device_only=dict(type='bool', required=False),
-        scm_access_token=dict(type='str', required=True, no_log=True),
-        api_url=dict(type='str', required=False),
+        id=dict(type="str", required=False),
+        serial_number=dict(type="str", required=False),
+        model=dict(type="str", required=False),
+        type=dict(type="str", required=False),
+        device_only=dict(type="bool", required=False),
+        scm_access_token=dict(type="str", required=True, no_log=True),
+        api_url=dict(type="str", required=False),
     )
 
     # Create the module
     module = AnsibleModule(
         argument_spec=module_args,
-        mutually_exclusive=[['id', 'name']],
-        supports_check_mode=True
+        mutually_exclusive=[["id", "name"]],
+        supports_check_mode=True,
     )
 
     # Get parameters
     params = module.params
-    device_id = params.get('id')
-    name = params.get('name')
-    serial_number = params.get('serial_number')
-    model = params.get('model')
-    device_type = params.get('type')
-    folder = params.get('folder')
-    device_only = params.get('device_only')
 
-    result = {'devices': []}
+    # Initialize results
+    result = {"devices": []}
 
     try:
         # Initialize SCM client
-        client = ScmClient(
-            access_token=params['scm_access_token'],
-            api_base_url=params.get('api_url') or "https://api.strata.paloaltonetworks.com",
-        )
-        devices_service = client.device
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
-        # Get device by ID if specified
-        if device_id:
+        # Fetch a device by id
+        if params.get("id"):
             try:
-                device = devices_service.get(device_id)
-                if device:
-                    result['devices'] = [json.loads(device.model_dump_json(exclude_unset=True))]
-            except ObjectNotPresentError:
-                # Return empty list if device not found
-                result['devices'] = []
-        
-        # Get device by serial number if specified
-        elif serial_number:
+                device_obj = client.device.get(params.get("id"))
+                if device_obj:
+                    result["devices"] = [json.loads(device_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve device info: {e}")
+
+        # Fetch a device by serial number
+        elif params.get("serial_number"):
             try:
-                # Try direct lookup since serial number is often the ID
-                device = devices_service.get(serial_number)
+                device = client.device.fetch(name=params.get("serial_number"))
                 if device:
-                    result['devices'] = [json.loads(device.model_dump_json(exclude_unset=True))]
-            except ObjectNotPresentError:
-                # If not found by direct ID lookup, try filtering the list
-                devices = devices_service.list(serial_number=serial_number)
-                device_dicts = [json.loads(d.model_dump_json(exclude_unset=True)) for d in devices]
-                result['devices'] = device_dicts
-        
+                    result["devices"] = [json.loads(device.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve device info: {e}")
+
         else:
             # Prepare filter parameters for the SDK
             filter_params = {}
-            if model:
-                filter_params['model'] = model
-            if device_type:
-                filter_params['type'] = device_type
-            if device_only is not None:
-                filter_params['device_only'] = device_only
-            
+            if params.get("model"):
+                filter_params["model"] = params.get("model")
+            if params.get("type"):
+                filter_params["type"] = params.get("type")
+            if params.get("device_only"):
+                filter_params["device_only"] = params.get("device_only")
+
             # List devices with filters
-            devices = devices_service.list(**filter_params)
+            if filter_params:
+                devices = client.device.list(**filter_params)
+            else:
+                devices = client.device.list()
             device_dicts = [json.loads(d.model_dump_json(exclude_unset=True)) for d in devices]
-            
-            # Apply additional filtering that may not be supported server-side
-            if name:
-                device_dicts = [d for d in device_dicts if d.get('name') == name]
-            if folder:
-                device_dicts = [d for d in device_dicts if d.get('folder') == folder]
-            
-            result['devices'] = device_dicts
+
+            result["devices"] = device_dicts
 
         module.exit_json(**result)
     except (InvalidObjectError, APIError) as e:
-        module.fail_json(msg=f"API error: {e}", error_code=getattr(e, 'error_code', None), details=getattr(e, 'details', None))
+        module.fail_json(
+            msg=f"API error: {e}",
+            error_code=getattr(e, "error_code", None),
+            details=getattr(e, "details", None),
+        )
     except Exception as e:
         module.fail_json(msg=f"Failed to retrieve device info: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -44,8 +44,6 @@ the authentication token available to other tasks in your playbook.
 | scm_client_id     | OAuth client ID                 | CLIENT_ID or SCM_CLIENT_ID env var                            |
 | scm_client_secret | OAuth client secret             | CLIENT_SECRET or SCM_CLIENT_SECRET env var                    |
 | scm_tsg_id        | Tenant Service Group ID         | TSG_ID or SCM_TSG_ID env var                                  |
-| scm_api_base_url  | Base URL for SCM API            | https://api.strata.paloaltonetworks.com                       |
-| scm_token_url     | OAuth token URL                 | https://auth.apps.paloaltonetworks.com/am/oauth2/access_token |
 | scm_log_level     | Logging level                   | ERROR                                                         |
 | scm_save_token    | Whether to save token to a file | false                                                         |
 | scm_token_path    | Path to save token file         | ~/.scm_token.json                                             |
@@ -139,7 +137,6 @@ SCM tokens typically expire after 15 minutes. If you have a long-running playboo
 
 2. **Connection Problems**:
    - Use `scm_log_level: "DEBUG"` to get more verbose output
-   - Check that the `scm_api_base_url` and `scm_token_url` are correct
 
 3. **Authentication Errors**:
    - Verify that your credentials are correct

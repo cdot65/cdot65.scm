@@ -27,7 +27,7 @@
 
     - name: Get a specific device by name
       cdot65.scm.device_info:
-        name: "007954000527505"
+        serial_number: "007954000527505"
         scm_access_token: "{{ scm_access_token }}"
       register: specific_device
       ignore_errors: yes

@@ -1,15 +1,14 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-# Copyright: (c) 2025, Calvin Remsburg <cremsburg@paloaltonetworks.com>
+# Copyright: (c) 2025, Calvin Remsburg (@cdot65) <dev@cdot.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 import json
 
-__metaclass__ = type
+from ansible.module_utils.basic import AnsibleModule
+from scm.client import ScmClient
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: label_info
 short_description: Get information about labels in Strata Cloud Manager (SCM)
@@ -48,9 +47,9 @@ options:
 notes:
     - Check mode is supported but does not change behavior since this is a read-only module.
     - For authentication, you can set the C(SCM_ACCESS_TOKEN) environment variable instead of providing it as a module option.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Get all labels
   cdot65.scm.label_info:
     scm_access_token: "{{ scm_access_token }}"
@@ -67,9 +66,9 @@ EXAMPLES = r'''
     name: "environment"
     scm_access_token: "{{ scm_access_token }}"
   register: named_label
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 labels:
     description: List of label resources
     returned: always
@@ -91,59 +90,49 @@ labels:
             type: str
             returned: always
             sample: "Environment classification label"
-'''
-
-from ansible.module_utils.basic import AnsibleModule
-from scm.client import ScmClient
+"""
 
 
 def main():
     module_args = dict(
-        id=dict(type='str', required=False),
-        name=dict(type='str', required=False),
-        scm_access_token=dict(type='str', required=True, no_log=True),
-        api_url=dict(type='str', required=False),
+        id=dict(type="str", required=False),
+        name=dict(type="str", required=False),
+        scm_access_token=dict(type="str", required=True, no_log=True),
+        api_url=dict(type="str", required=False),
     )
 
-    module = AnsibleModule(
-        argument_spec=module_args,
-        mutually_exclusive=[['id', 'name']],
-        supports_check_mode=True
-    )
+    module = AnsibleModule(argument_spec=module_args, mutually_exclusive=[["id", "name"]], supports_check_mode=True)
 
     params = module.params
-    label_id = params.get('id')
-    name = params.get('name')
-    scm_access_token = params.get('scm_access_token')
-    api_url = params.get('api_url')
+    label_id = params.get("id")
+    name = params.get("name")
+    scm_access_token = params.get("scm_access_token")
+    api_url = params.get("api_url")
 
-    result = dict(
-        changed=False,
-        labels=[]
-    )
+    result = dict(changed=False, labels=[])
 
     try:
         sdk_args = dict(access_token=scm_access_token)
         if api_url:
-            sdk_args['base_url'] = api_url
+            sdk_args["base_url"] = api_url
         client = ScmClient(**sdk_args)
         label_service = client.label
 
         if label_id:
             label_obj = label_service.get(label_id)
             if label_obj:
-                result['labels'] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
+                result["labels"] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
         elif name:
             label_obj = label_service.fetch(name=name)
             if label_obj:
-                result['labels'] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
+                result["labels"] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
         else:
             labels = label_service.list()
-            result['labels'] = [json.loads(l.model_dump_json(exclude_unset=True)) for l in labels]
+            result["labels"] = [json.loads(l.model_dump_json(exclude_unset=True)) for l in labels]
         module.exit_json(**result)
     except Exception as e:
         module.fail_json(msg=f"Failed to retrieve label info: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

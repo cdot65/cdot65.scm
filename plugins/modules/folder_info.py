@@ -1,15 +1,14 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-# Copyright: (c) 2025, Calvin Remsburg <cremsburg@paloaltonetworks.com>
+# Copyright: (c) 2025, Calvin Remsburg (@cdot65) <dev@cdot.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 import json
 
-__metaclass__ = type
+from ansible.module_utils.basic import AnsibleModule
+from scm.client import ScmClient
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: folder_info
 short_description: Get information about folders in Strata Cloud Manager (SCM)
@@ -55,9 +54,9 @@ notes:
     - Check mode is supported but does not change behavior since this is a read-only module.
     - For authentication, you can set the C(SCM_ACCESS_TOKEN) environment variable
       instead of providing it as a module option.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Get all folders
   cdot65.scm.folder_info:
   register: all_folders
@@ -76,9 +75,9 @@ EXAMPLES = r'''
   cdot65.scm.folder_info:
     parent: "87654321-4321-4321-4321-210987654321"
   register: child_folders
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 folders:
     description: List of folder resources
     returned: always
@@ -115,42 +114,34 @@ folders:
             type: str
             returned: always
             sample: "2025-04-16T13:28:36.000Z"
-'''
-
-from ansible.module_utils.basic import AnsibleModule
-from scm.client import ScmClient
+"""
 
 
 def main():
     # Define the module argument specification
     module_args = dict(
-        name=dict(type='str', required=False),
-        id=dict(type='str', required=False),
-        parent=dict(type='str', required=False),
-        scm_access_token=dict(type='str', required=True, no_log=True),
-        api_url=dict(type='str', required=False),
+        name=dict(type="str", required=False),
+        id=dict(type="str", required=False),
+        parent=dict(type="str", required=False),
+        scm_access_token=dict(type="str", required=True, no_log=True),
+        api_url=dict(type="str", required=False),
     )
 
     # Create the module
-    module = AnsibleModule(
-        argument_spec=module_args,
-        mutually_exclusive=[['id', 'name']],
-        supports_check_mode=True
-    )
+    module = AnsibleModule(argument_spec=module_args, mutually_exclusive=[["id", "name"]], supports_check_mode=True)
 
     # Get parameters
     params = module.params
-    folder_id = params.get('id')
-    name = params.get('name')
-    parent = params.get('parent')
+    folder_id = params.get("id")
+    name = params.get("name")
+    parent = params.get("parent")
 
-    result = {'folders': []}
+    result = {"folders": []}
 
     try:
         # Initialize SCM client
         client = ScmClient(
-            access_token=params['scm_access_token'],
-            api_base_url=params.get('api_url') or "https://api.strata.paloaltonetworks.com",
+            access_token=params["scm_access_token"],
         )
         folders_service = client.folder
 
@@ -158,22 +149,22 @@ def main():
         if folder_id:
             folder = folders_service.get(folder_id)
             if folder:
-                result['folders'] = [json.loads(folder.model_dump_json(exclude_unset=True))]
+                result["folders"] = [json.loads(folder.model_dump_json(exclude_unset=True))]
         else:
             # List all folders
             folders = folders_service.list()
             folder_dicts = [json.loads(f.model_dump_json(exclude_unset=True)) for f in folders]
             # Filter by name if specified
             if name:
-                folder_dicts = [f for f in folder_dicts if f.get('name') == name]
+                folder_dicts = [f for f in folder_dicts if f.get("name") == name]
             # Filter by parent if specified
             if parent:
-                folder_dicts = [f for f in folder_dicts if f.get('parent') == parent]
-            result['folders'] = folder_dicts
+                folder_dicts = [f for f in folder_dicts if f.get("parent") == parent]
+            result["folders"] = folder_dicts
         module.exit_json(**result)
     except Exception as e:
         module.fail_json(msg=f"Failed to retrieve folder info: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

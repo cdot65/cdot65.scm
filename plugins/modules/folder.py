@@ -1,15 +1,15 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-# Copyright: (c) 2025, Calvin Remsburg <cremsburg@paloaltonetworks.com>
+# Copyright: (c) 2025, Calvin Remsburg (@cdot65) <dev@cdot.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 import json
 
-__metaclass__ = type
+from ansible.module_utils.basic import AnsibleModule
+from scm.client import ScmClient
+from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: folder
 short_description: Manage folders in Strata Cloud Manager (SCM)
@@ -102,9 +102,9 @@ notes:
     - Check mode is supported.
     - All operations are idempotent.
     - Uses pan-scm-sdk via unified client and bearer token from the auth role.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a folder
   cdot65.scm.folder:
     name: "Network Objects"
@@ -127,9 +127,9 @@ EXAMPLES = r'''
   cdot65.scm.folder:
     id: "12345678-1234-1234-1234-123456789012"
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 folder:
     description: Information about the folder that was managed
     returned: on success
@@ -165,100 +165,129 @@ folder:
             type: str
             returned: always
             sample: "2025-04-16T13:28:36.000Z"
-'''
+"""
 
-from ansible.module_utils.basic import AnsibleModule
-from scm.client import ScmClient
-from scm.exceptions import ObjectNotPresentError, InvalidObjectError, APIError
 
 def main():
     module_args = dict(
-        name=dict(type='str', required=False),
-        parent=dict(type='str', required=False),
-        description=dict(type='str', required=False),
-        labels=dict(type='list', elements='str', required=False),
-        snippets=dict(type='list', elements='str', required=False),
-        display_name=dict(type='str', required=False),
-        model=dict(type='str', required=False),
-        serial_number=dict(type='str', required=False),
-        type=dict(type='str', required=False),
-        device_only=dict(type='bool', required=False),
-        id=dict(type='str', required=False),
-        scm_access_token=dict(type='str', required=True, no_log=True),
-        api_url=dict(type='str', required=False),
-        state=dict(type='str', required=False, choices=['present', 'absent'], default='present'),
+        name=dict(type="str", required=False),
+        parent=dict(type="str", required=False),
+        description=dict(type="str", required=False),
+        labels=dict(type="list", elements="str", required=False),
+        snippets=dict(type="list", elements="str", required=False),
+        display_name=dict(type="str", required=False),
+        model=dict(type="str", required=False),
+        serial_number=dict(type="str", required=False),
+        type=dict(type="str", required=False),
+        device_only=dict(type="bool", required=False),
+        id=dict(type="str", required=False),
+        scm_access_token=dict(type="str", required=True, no_log=True),
+        api_url=dict(type="str", required=False),
+        state=dict(type="str", required=False, choices=["present", "absent"], default="present"),
     )
 
     module = AnsibleModule(
         argument_spec=module_args,
         required_if=[
-            ['state', 'present', ['name', 'parent']],
-            ['state', 'absent', ['name']],
+            ["state", "present", ["name", "parent"]],
+            ["state", "absent", ["name"]],
         ],
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     params = module.params
-    state = params['state']
-    folder_id = params.get('id')
-    name = params.get('name')
-    parent = params.get('parent')
+    state = params["state"]
+    folder_id = params.get("id")
+    name = params.get("name")
+    parent = params.get("parent")
+    scm_access_token = params.get("scm_access_token")
 
-    result = {'changed': False, 'folder': None}
+    result = {"changed": False, "folder": None}
 
     try:
-        client = ScmClient(
-            access_token=params['scm_access_token'],
-        )
-        folders = client.folder
+        # Initialize SCM client
+        client = ScmClient(access_token=scm_access_token)
 
         # Fetch folder by name (preferred) or id
         folder_obj = None
         if folder_id:
             try:
-                folder_obj = folders.get(folder_id)
+                folder_obj = client.folder.get(folder_id)
+                if folder_obj:
+                    result["folders"] = [json.loads(folder_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError:
                 folder_obj = None
         elif name:
-            folder_obj = folders.fetch(name)
+            folder_obj = client.folder.fetch(name)
 
-        if state == 'present':
+        if state == "present":
             if folder_obj:
                 # Compare all updatable fields
                 update_fields = {}
-                for k in ['description', 'labels', 'snippets', 'display_name', 'model', 'serial_number', 'type', 'device_only', 'parent']:
+                for k in [
+                    "description",
+                    "labels",
+                    "snippets",
+                    "display_name",
+                    "model",
+                    "serial_number",
+                    "type",
+                    "device_only",
+                    "parent",
+                ]:
                     v = params.get(k)
                     if v is not None and getattr(folder_obj, k, None) != v:
                         update_fields[k] = v
                 if update_fields:
                     if not module.check_mode:
                         from scm.models.setup.folder import FolderUpdateModel
-                        update_model = FolderUpdateModel(id=folder_obj.id, name=folder_obj.name, parent=parent or folder_obj.parent, **update_fields)
-                        updated = folders.update(update_model)
-                        result['folder'] = json.loads(updated.model_dump_json(exclude_unset=True))
-                    result['changed'] = True
+
+                        update_model = FolderUpdateModel(
+                            id=folder_obj.id, name=folder_obj.name, parent=parent or folder_obj.parent, **update_fields
+                        )
+                        updated = client.folder.update(update_model)
+                        result["folder"] = json.loads(updated.model_dump_json(exclude_unset=True))
+                    result["changed"] = True
                 else:
-                    result['folder'] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
+                    result["folder"] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
             else:
                 # Create new folder
                 if not module.check_mode:
-                    create_payload = {k: params[k] for k in ['name', 'parent', 'description', 'labels', 'snippets', 'display_name', 'model', 'serial_number', 'type', 'device_only'] if params.get(k) is not None}
-                    created = folders.create(create_payload)
-                    result['folder'] = json.loads(created.model_dump_json(exclude_unset=True))
-                result['changed'] = True
-        elif state == 'absent':
+                    create_payload = {
+                        k: params[k]
+                        for k in [
+                            "name",
+                            "parent",
+                            "description",
+                            "labels",
+                            "snippets",
+                            "display_name",
+                            "model",
+                            "serial_number",
+                            "type",
+                            "device_only",
+                        ]
+                        if params.get(k) is not None
+                    }
+                    created = client.folder.create(create_payload)
+                    result["folder"] = json.loads(created.model_dump_json(exclude_unset=True))
+                result["changed"] = True
+        elif state == "absent":
             if folder_obj:
                 if not module.check_mode:
-                    folders.delete(folder_obj.id)
-                result['changed'] = True
-                result['folder'] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
+                    client.folder.delete(folder_obj.id)
+                result["changed"] = True
+                result["folder"] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
         module.exit_json(**result)
     except (ObjectNotPresentError, InvalidObjectError) as e:
-        module.fail_json(msg=str(e), error_code=getattr(e, 'error_code', None), details=getattr(e, 'details', None))
+        module.fail_json(msg=str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None))
     except APIError as e:
-        module.fail_json(msg="API error: " + str(e), error_code=getattr(e, 'error_code', None), details=getattr(e, 'details', None))
+        module.fail_json(
+            msg="API error: " + str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None)
+        )
     except Exception as e:
         module.fail_json(msg="Unexpected error: " + str(e))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

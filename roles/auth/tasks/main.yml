@@ -3,20 +3,11 @@
 # environment variables, or loaded from vault.yml (see playbook example). .env files are NOT
 # loaded automatically by Ansible—source them in your shell or use a pre-task. See README for details.
 
-# ensure we have default values set in case env vars are missing
-- name: Set default API values if not provided
-  set_fact:
-    scm_api_base_url: "https://api.strata.paloaltonetworks.com" 
-    scm_token_url: "https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"
-  when: (not scm_api_base_url) or (not scm_token_url)
-
 - name: Debug environment and variables
   debug:
     msg: |
       client_id: {{ scm_client_id | default('MISSING', true) }}
       tsg_id: {{ scm_tsg_id | default('MISSING', true) }}
-      api_base_url: {{ scm_api_base_url | default('MISSING', true) }}
-      token_url: {{ scm_token_url | default('MISSING', true) }}
       log_level: {{ scm_log_level | default('ERROR', true) }}
     verbosity: 1
 
@@ -26,8 +17,6 @@
     client_id: "{{ scm_client_id }}"
     client_secret: "{{ scm_client_secret }}"
     tsg_id: "{{ scm_tsg_id }}"
-    api_base_url: "{{ scm_api_base_url }}"
-    token_url: "{{ scm_token_url }}"
     log_level: "{{ scm_log_level }}"
   register: scm_auth_result
   failed_when: false

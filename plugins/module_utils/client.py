@@ -1,29 +1,22 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-# Copyright: (c) 2025, Calvin Remsburg (@cdot65) <cremsburg.dev@gmail.com>
+# Copyright: (c) 2025, Calvin Remsburg (@cdot65) <dev@cdot.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """Strata Cloud Manager API client module utilities."""
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+import logging
 
 # Import Python libs
-from typing import Optional
-import logging
 
 HAS_SCM_SDK = False
 SCM_SDK_IMPORT_ERROR = None
 try:
     from scm.client import ScmClient
-    from scm.exceptions import (
-        APIError,
-        AuthenticationError,
-        BadRequestError,
-        NotFoundError,
-    )
+    from scm.exceptions import APIError
+    from scm.exceptions import AuthenticationError
+    from scm.exceptions import BadRequestError
+    from scm.exceptions import NotFoundError
 
     HAS_SCM_SDK = True
 except ImportError as e:
@@ -38,8 +31,7 @@ from ansible.module_utils.basic import missing_required_lib
 
 
 def get_scm_client_argument_spec():
-    """
-    Return common SCM authentication and connection argument spec for modules.
+    """Return common SCM authentication and connection argument spec for modules.
 
     Returns:
         dict: Standard SCM module argument spec for authentication parameters
@@ -48,17 +40,13 @@ def get_scm_client_argument_spec():
         client_id=dict(type="str", required=True, no_log=True),
         client_secret=dict(type="str", required=True, no_log=True),
         tsg_id=dict(type="str", required=True),
-        api_base_url=dict(type="str", required=False, default="https://api.strata.paloaltonetworks.com"),
-        token_url=dict(type="str", required=False,
-                       default="https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"),
         scopes=dict(type="list", elements="str", required=False, default=None),
         log_level=dict(type="str", required=False, default="ERROR"),
     )
 
 
 def get_scm_client(module):
-    """
-    Initialize and return a SCM client using credentials from module parameters or environment variables.
+    """Initialize and return a SCM client using credentials from module parameters or environment variables.
 
     Args:
         module: Ansible module object
@@ -72,23 +60,24 @@ def get_scm_client(module):
     if not HAS_SCM_SDK:
         module.fail_json(msg=missing_required_lib("pan-scm-sdk"))
     try:
-        client = ScmClient(
+        return ScmClient(
             client_id=module.params["client_id"],
             client_secret=module.params["client_secret"],
             tsg_id=module.params["tsg_id"],
-            api_base_url=module.params.get("api_base_url", "https://api.strata.paloaltonetworks.com"),
-            token_url=module.params.get("token_url", "https://auth.apps.paloaltonetworks.com/am/oauth2/access_token"),
             log_level=module.params.get("log_level", "ERROR"),
         )
-        return client
-    except (APIError, AuthenticationError, BadRequestError, NotFoundError,) as exc:
+    except (
+        APIError,
+        AuthenticationError,
+        BadRequestError,
+        NotFoundError,
+    ) as exc:
         module.fail_json(msg=f"Failed to initialize SCM client: {exc}")
     return None
 
 
 def handle_scm_error(module, error):
-    """
-    Handle SCM API errors and translate them to Ansible module failures.
+    """Handle SCM API errors and translate them to Ansible module failures.
 
     Args:
         module: Ansible module object
@@ -101,15 +90,13 @@ def handle_scm_error(module, error):
 
 
 def get_oauth2_token(
-        client_id: str,
-        client_secret: str,
-        tsg_id: str,
-        token_url: str = "https://auth.apps.paloaltonetworks.com/am/oauth2/access_token",
-        scopes: Optional[list] = None,
-        log_level: str = "ERROR",
+    client_id: str,
+    client_secret: str,
+    tsg_id: str,
+    scopes: list | None = None,
+    log_level: str = "ERROR",
 ) -> dict:
-    """
-    Obtain an OAuth2 token from Strata Cloud Manager using the SDK.
+    """Obtain an OAuth2 token from Strata Cloud Manager using the SDK.
 
     Returns:
         dict: {
@@ -131,6 +118,7 @@ def get_oauth2_token(
 
     try:
         from scm.models.auth import AuthRequestModel
+
         # AuthRequestModel expects 'scope' (string), not 'scopes' (list)
         scope = None
         if scopes is not None:
@@ -142,18 +130,18 @@ def get_oauth2_token(
             client_id=client_id,
             client_secret=client_secret,
             tsg_id=tsg_id,
-            token_url=token_url,
             scope=scope if scope is not None else None,
         )
         from scm.auth import OAuth2Client
+
         oauth_client = OAuth2Client(auth_request)
         token_data = oauth_client.session.token
-        
+
         # Ensure we're returning a serializable dict that Ansible can handle
         if not isinstance(token_data, dict):
             # Convert to dict if it's not already
             token_data = dict(token_data)
-            
+
         return {
             "access_token": token_data.get("access_token"),
             "expires_in": token_data.get("expires_in"),
@@ -161,13 +149,17 @@ def get_oauth2_token(
             "scope": token_data.get("scope", ""),
             "raw": dict(token_data),  # Ensure raw is also a plain dict
         }
-    except (APIError, AuthenticationError, BadRequestError, NotFoundError,) as exc:
+    except (
+        APIError,
+        AuthenticationError,
+        BadRequestError,
+        NotFoundError,
+    ) as exc:
         raise APIError(f"Failed to obtain OAuth2 token: {exc}")
 
 
 def is_resource_exists(client, resource_type, resource_id=None, resource_name=None):
-    """
-    Check if a resource exists in SCM by ID or name.
+    """Check if a resource exists in SCM by ID or name.
 
     Args:
         client: SCM client object
@@ -184,17 +176,17 @@ def is_resource_exists(client, resource_type, resource_id=None, resource_name=No
     try:
         # Map resource types to service attributes
         resource_mapping = {
-            'address': 'address',
-            'address_group': 'address_group',
-            'agent_version': 'agent_version',
-            'application': 'application',
-            'application_filter': 'application_filter',
-            'application_group': 'application_group',
-            'device': 'device',
-            'folder': 'folder',
-            'service': 'service',
-            'service_group': 'service_group',
-            'tag': 'tag',
+            "address": "address",
+            "address_group": "address_group",
+            "agent_version": "agent_version",
+            "application": "application",
+            "application_filter": "application_filter",
+            "application_group": "application_group",
+            "device": "device",
+            "folder": "folder",
+            "service": "service",
+            "service_group": "service_group",
+            "tag": "tag",
         }
 
         service_name = resource_mapping.get(resource_type)
@@ -210,18 +202,28 @@ def is_resource_exists(client, resource_type, resource_id=None, resource_name=No
             try:
                 response = service.get(resource_id)
                 return True, response
-            except (APIError, AuthenticationError, BadRequestError, NotFoundError,):
+            except (
+                APIError,
+                AuthenticationError,
+                BadRequestError,
+                NotFoundError,
+            ):
                 # handle or re-raise
                 raise
         # If not found by ID or ID not provided, check by name
         if resource_name:
             # List all resources and filter by name
             response = service.list()
-            if hasattr(response, 'data') and response.data is not None:
+            if hasattr(response, "data") and response.data is not None:
                 for res in response.data:
-                    if res.get('name') == resource_name:
+                    if res.get("name") == resource_name:
                         return True, res
 
         return False, None
-    except (APIError, AuthenticationError, BadRequestError, NotFoundError,):
+    except (
+        APIError,
+        AuthenticationError,
+        BadRequestError,
+        NotFoundError,
+    ):
         raise

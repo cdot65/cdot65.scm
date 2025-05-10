@@ -14,9 +14,9 @@ poetry run ansible-galaxy collection install git+https://github.com/cdot65/cdot6
 
 ## Requirements
 
-- Ansible Core 2.12 or higher
-- Python 3.12 or higher
-- `pan-scm-sdk` version 0.3.30 (installed automatically as a dependency)
+- Ansible Core 2.17 or higher
+- Python 3.11 or higher
+- `pan-scm-sdk` version 0.3.32 (installed automatically as a dependency)
 
 ## Authentication
 
@@ -52,8 +52,8 @@ This collection includes the following modules:
 - `label`, `label_info`: Manage and retrieve labels
 - `snippet`, `snippet_info`: Manage and retrieve snippets
 - `device_info`: Retrieve device information
+- `variable`, `variable_info`: Manage and retrieve variables
 - `config_scope`, `config_scope_info`: Manage and retrieve configuration scopes (planned)
-- `variable`, `variable_info`: Manage and retrieve variables (planned)
 - `address_object`, `address_object_info`: Manage and retrieve address objects (planned)
 - `address_group`, `address_group_info`: Manage and retrieve address groups (planned)
 - `service_object`, `service_object_info`: Manage and retrieve service objects (planned)
@@ -108,14 +108,29 @@ This collection includes the following modules:
 This collection is built using [poetry](https://python-poetry.org/) version 2.1.1.
 
 ```bash
-# Install dependencies
-poetry install
+# Setup development environment
+make dev-setup
 
 # Build the collection
-poetry run ansible-galaxy collection build
+make build
 
 # Install the collection locally
-poetry run ansible-galaxy collection install cdot65-scm-*.tar.gz -f
+make install
+
+# Build and install in one step
+make all
+
+# Run all linting and formatting checks
+make lint-all
+
+# Format code
+make format
+
+# Fix linting issues automatically
+make lint-fix
+
+# Run all tests
+make test
 ```
 
 ## License

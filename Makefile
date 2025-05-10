@@ -1,4 +1,4 @@
-.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format
+.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format lint-all lint-fix
 
 COLLECTION_NAMESPACE := cdot65
 COLLECTION_NAME := scm
@@ -20,6 +20,23 @@ lint:
 	poetry run ansible-lint
 
 format:
+	poetry run black plugins tests
+	poetry run isort plugins tests
+
+lint-all:
+	./scripts/lint_and_format.sh || true
+
+lint-check:
+	./scripts/check-linting.sh
+
+flake8:
+	poetry run flake8 plugins tests
+
+ruff-check:
+	poetry run ruff check plugins tests
+
+lint-fix:
+	poetry run ruff check --fix plugins tests
 	poetry run black plugins tests
 	poetry run isort plugins tests
 

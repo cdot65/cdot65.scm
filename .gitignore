@@ -400,3 +400,4 @@ tmp/
 .vault_pass
 vault.yml
 ai_docs
+.ansible

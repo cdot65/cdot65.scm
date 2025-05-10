@@ -31,6 +31,7 @@ black = "^25.1.0"
 isort = "^6.0.1"
 python-dotenv = "^1.1.0"
 ipython = "^9.2.0"
+ansible-lint = "^25.4.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -40,24 +41,36 @@ build-backend = "poetry.core.masonry.api"
 skip_list = ["no-handler"]
 
 [tool.black]
-line-length = 120
+line-length = 128
 target-version = ['py310', 'py311', 'py312', 'py313']
 
 [tool.ruff]
-line-length = 120
+line-length = 128
 target-version = "py310"
-select = ["E", "F", "W"]
-ignore = ["E402", "E501"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "D", "UP", "S", "BLE", "C4", "T20", "RET", "SIM", "ERA"]
+ignore = ["E402", "E501", "D100", "D101", "D102", "D103", "D107", "D203", "D213"]
+
+# Ignore some rules in tests files and Ansible code
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S603", "S607", "T201", "ANN", "C408"]
+"plugins/modules/*.py" = ["C408"]  # Ansible module convention uses dict() calls for module specs
+"plugins/module_utils/*.py" = ["C408"]  # Ansible module utils also use dict() calls for argument specs
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.isort]
 profile = "black"
-line_length = 120
+line_length = 128
 force_single_line = true
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "ANSIBLE_CDOT65_SCM", "LOCALFOLDER"]
 known_first_party = ["pan_scm_sdk"]
 known_ansible_core = ["ansible"]
 known_ansible_cdot65_scm = ["ansible_collections.cdot65.scm"]
 from_first = false
+# Skip Ansible modules as they have specific import requirements
 skip_glob = ["plugins/modules/*.py"]
 
 [tool.mypy]

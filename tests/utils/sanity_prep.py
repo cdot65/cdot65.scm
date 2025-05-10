@@ -4,7 +4,6 @@
 # Based on amazon.aws collection structure
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -16,7 +15,7 @@ base_dir = Path(__file__).parent.parent.parent.absolute()
 try:
     env = os.environ.copy()
     env["ANSIBLE_COLLECTIONS_PATH"] = str(base_dir)
-    
+
     proc = subprocess.run(
         ["ansible-galaxy", "collection", "build", "--force"],
         check=True,
@@ -25,18 +24,18 @@ try:
         env=env,
     )
     print(proc.stdout.decode())
-    
+
     # Find the built .tar.gz file
     collection_file = None
     for file in os.listdir(base_dir):
         if file.startswith("cdot65-scm-") and file.endswith(".tar.gz"):
             collection_file = os.path.join(base_dir, file)
             break
-    
+
     if not collection_file:
         print("Could not find built collection archive")
         sys.exit(1)
-    
+
     # Install the collection to a temporary directory
     proc = subprocess.run(
         ["ansible-galaxy", "collection", "install", "-f", collection_file],
