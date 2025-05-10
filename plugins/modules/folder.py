@@ -4,6 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
+
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError

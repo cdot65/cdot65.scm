@@ -4,7 +4,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
-
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
@@ -23,7 +22,7 @@ options:
     name:
         description:
             - Name of the label (max 63 chars).
-            - Required for state=present and for absent if id is not provided.
+            - Required for both state=present and state=absent.
         type: str
         required: false
     description:
@@ -69,7 +68,7 @@ EXAMPLES = r"""
     state: present
     scm_access_token: "{{ scm_access_token }}"
 
-- name: Delete a label by name
+- name: Delete a label
   cdot65.scm.label:
     name: "environment"
     state: absent
@@ -102,10 +101,6 @@ changed:
     returned: always
     type: bool
     sample: true
-msg:
-    description: Informational message.
-    returned: always
-    type: str
 """
 
 
@@ -116,70 +111,72 @@ def main():
         id=dict(type="str", required=False),
         scm_access_token=dict(type="str", required=True, no_log=True),
         api_url=dict(type="str", required=False),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(type="str", choices=["present", "absent"], default="present"),
     )
 
-    result = dict(changed=False, label=None, msg="")
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=True,
+    )
+    params = module.params
 
-    module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
-
-    name = module.params.get("name")
-    description = module.params.get("description")
-    label_id = module.params.get("id")
-    scm_access_token = module.params.get("scm_access_token")
-    api_url = module.params.get("api_url")
-    state = module.params.get("state")
+    # Initialize results
+    result = {"changed": False, "label": None}
 
     try:
-        sdk_args = dict(access_token=scm_access_token)
-        if api_url:
-            sdk_args["base_url"] = api_url
-        client = ScmClient(**sdk_args)
-        label_service = client.label
+        # Initialize SCM client
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
-        if state == "present":
-            # Check if label exists by name
-            existing = label_service.fetch(name=name) if name else None
-            if existing:
-                changed = False
-                update_needed = False
-                if description is not None and existing.description != description:
-                    existing.description = description
-                    update_needed = True
-                if update_needed:
+        # Initialize label_exists boolean
+        label_exists = False
+        label_obj = None
+
+        # Fetch label by name
+        if params.get("name"):
+            try:
+                label_obj = client.label.fetch(params.get("name"))
+                if label_obj:
+                    label_exists = True
+            except ObjectNotPresentError:
+                label_exists = False
+                label_obj = None
+
+        if params.get("state") == "present":
+            if label_exists:
+                # Only update fields that differ
+                update_fields = {
+                    k: params[k]
+                    for k in ["description"]
+                    if params.get(k) is not None and getattr(label_obj, k, None) != params[k]
+                }
+                if update_fields:
                     if not module.check_mode:
-                        updated = label_service.update(existing)
+                        update_model = label_obj.model_copy(update=update_fields)
+                        updated = client.label.update(update_model)
                         result["label"] = json.loads(updated.model_dump_json(exclude_unset=True))
-                    changed = True
-                    result["msg"] = f"Label '{name}' updated."
+                    result["changed"] = True
                 else:
-                    result["label"] = json.loads(existing.model_dump_json(exclude_unset=True))
-                    result["msg"] = f"Label '{name}' already up to date."
-                result["changed"] = changed
+                    result["label"] = json.loads(label_obj.model_dump_json(exclude_unset=True))
             else:
-                if not name:
-                    module.fail_json(msg="'name' is required to create a label.")
-                label_config = dict(name=name)
-                if description:
-                    label_config["description"] = description
+                # Create new label
                 if not module.check_mode:
-                    new_label = label_service.create(label_config)
-                    result["label"] = json.loads(new_label.model_dump_json(exclude_unset=True))
+                    create_payload = {
+                        k: params[k]
+                        for k in [
+                            "name",
+                            "description",
+                        ]
+                        if params.get(k) is not None
+                    }
+                    created = client.label.create(create_payload)
+                    result["label"] = json.loads(created.model_dump_json(exclude_unset=True))
                 result["changed"] = True
-                result["msg"] = f"Label '{name}' created."
-        elif state == "absent":
-            obj = None
-            if label_id:
-                obj = label_service.get(label_id)
-            elif name:
-                obj = label_service.fetch(name=name)
-            if obj:
+        elif params.get("state") == "absent":
+            if label_exists:
                 if not module.check_mode:
-                    label_service.delete(obj.id)
+                    client.label.delete(label_obj.id)
                 result["changed"] = True
-                result["msg"] = f"Label '{obj.name}' deleted."
-            else:
-                result["msg"] = "Label not found; nothing to do."
+                result["label"] = json.loads(label_obj.model_dump_json(exclude_unset=True))
         module.exit_json(**result)
     except (ObjectNotPresentError, InvalidObjectError) as e:
         module.fail_json(msg=str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None))
