@@ -79,7 +79,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 *   **Resource Modules (`_info` and main stateful modules):**
     *   Folders (`folder`, `folder_info`) — Complete
     *   Labels (`label`, `label_info`) — Complete
-    *   Snippets (`snippet`, `snippet_info`) — Next up, will follow folder module template
+    *   Snippets (`snippet`, `snippet_info`) — Complete
     *   Devices (`device`, `device_info`) — Next up, will follow folder module template
     *   Variables (`variable`, `variable_info`) — Next up, will follow folder module template
     *   Configuration Scopes (`config_scope`, `config_scope_info`)
