@@ -11,9 +11,9 @@ _Last updated: 2025-05-09_
     - [x] `plugins/modules/folder_info.py` (query/info for SCM folders)
 - [x] Example playbooks for folder and folder_info modules
 - [x] Resolve serialization issues (UUIDs, Pydantic)
-- [ ] Implement label management modules (template: folder modules):
-    - [ ] `plugins/modules/label.py`
-    - [ ] `plugins/modules/label_info.py`
+- [x] Implement label management modules (template: folder modules):
+    - [x] `plugins/modules/label.py`
+    - [x] `plugins/modules/label_info.py`
 - [ ] Implement snippet management modules (template: folder modules):
     - [ ] `plugins/modules/snippet.py`
     - [ ] `plugins/modules/snippet_info.py`
