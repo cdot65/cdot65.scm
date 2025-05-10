@@ -28,3 +28,16 @@
         description: IoT label
         scm_access_token: "{{ scm_access_token }}"
         state: present
+
+    - name: Create a test label
+      cdot65.scm.label:
+        name: test-label
+        description: Test label
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Delete a test label
+      cdot65.scm.label:
+        name: test-label
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
