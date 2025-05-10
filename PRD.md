@@ -78,7 +78,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 *   **Resource Modules (`_info` and main stateful modules):**
     *   Folders (`folder`, `folder_info`) — Complete
-    *   Labels (`label`, `label_info`) — Next up, will follow folder module template
+    *   Labels (`label`, `label_info`) — Complete
     *   Snippets (`snippet`, `snippet_info`) — Next up, will follow folder module template
     *   Devices (`device`, `device_info`) — Next up, will follow folder module template
     *   Variables (`variable`, `variable_info`) — Next up, will follow folder module template
@@ -278,11 +278,12 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 **Completed:**
 - Folder management modules (`folder`, `folder_info`) fully implemented with modern authentication (bearer token), robust serialization (Pydantic `.model_dump_json()`), and idempotent CRUD/query workflows. These serve as the reference for all future resource modules.
+- Label management modules (`label`, `label_info`) fully implemented.
 - Authentication role and workflow complete; token can be passed to all modules.
 - Example playbooks for folder and folder_info modules.
 
 **In Progress / Next:**
-- Begin work on `label`, `snippet`, `device`, and `variable` modules using the folder module template for structure and best practices.
+- Begin work on `snippet`, `device`, and `variable` modules using the folder module template for structure and best practices.
 - Expand test coverage and documentation for new modules.
 
 **Blocked/Issues:**
@@ -290,7 +291,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `label`, `snippet`, `device`, and `variable` modules using the folder/folder_info pattern.
+- Implement `snippet`, `device`, and `variable` modules using the folder/folder_info pattern.
 - Create corresponding `_info` modules for each.
 - Continue to build out example playbooks and integration tests.
 - Ensure all modules are documented and follow the unified authentication/serialization approach.
@@ -314,3 +315,4 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 ## 13. Recent Progress
 
 - The authentication role (`roles/auth`) has been successfully implemented, enabling secure authentication with Strata Cloud Manager. An example playbook demonstrating its use is provided at `playbooks/auth.yml`.
+- Added support for `label` and `label_info` modules (CRUD/query for SCM labels)

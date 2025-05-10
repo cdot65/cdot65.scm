@@ -49,6 +49,7 @@ This collection includes the following modules:
 ### Resource Modules
 
 - `folder`, `folder_info`: Manage and retrieve folders
+- `label`, `label_info`: Manage and retrieve labels
 - `snippet`, `snippet_info`: Manage and retrieve snippets
 - `config_scope`, `config_scope_info`: Manage and retrieve configuration scopes
 - `device`, `device_info`: Manage and retrieve devices
