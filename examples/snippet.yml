@@ -15,16 +15,12 @@
       debug:
         msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
 
-    - name: Create a label
-      cdot65.scm.label:
-        name: dmz
-        description: DMZ label
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-
-    - name: Create a label
-      cdot65.scm.label:
-        name: iot
-        description: IoT label
+    - name: Create a snippet
+      cdot65.scm.snippet:
+        name: "DMZ IoT Snippet"
+        description: "Common security policy configurations for IoT and DMZ environments"
+        labels:
+          - dmz
+          - iot
         scm_access_token: "{{ scm_access_token }}"
         state: present
