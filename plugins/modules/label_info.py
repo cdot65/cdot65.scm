@@ -94,41 +94,46 @@ labels:
 
 
 def main():
+    # Define the module argument specification
     module_args = dict(
-        id=dict(type="str", required=False),
         name=dict(type="str", required=False),
+        id=dict(type="str", required=False),
         scm_access_token=dict(type="str", required=True, no_log=True),
         api_url=dict(type="str", required=False),
     )
 
-    module = AnsibleModule(argument_spec=module_args, mutually_exclusive=[["id", "name"]], supports_check_mode=True)
+    # Create the module
+    module = AnsibleModule(
+        argument_spec=module_args,
+        mutually_exclusive=[["id", "name"]],
+        supports_check_mode=True,
+    )
 
+    # Get parameters
     params = module.params
-    label_id = params.get("id")
-    name = params.get("name")
-    scm_access_token = params.get("scm_access_token")
-    api_url = params.get("api_url")
 
-    result = dict(changed=False, labels=[])
+    result = {"labels": []}
 
     try:
-        sdk_args = dict(access_token=scm_access_token)
-        if api_url:
-            sdk_args["base_url"] = api_url
+        # Initialize SCM client
+        sdk_args = dict(access_token=params["scm_access_token"])
+        if params.get("api_url"):
+            sdk_args["base_url"] = params.get("api_url")
         client = ScmClient(**sdk_args)
-        label_service = client.label
 
-        if label_id:
-            label_obj = label_service.get(label_id)
-            if label_obj:
-                result["labels"] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
-        elif name:
-            label_obj = label_service.fetch(name=name)
-            if label_obj:
-                result["labels"] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
+        # Get label by ID if specified
+        if params.get("id"):
+            label = client.label.get(params.get("id"))
+            if label:
+                result["labels"] = [json.loads(label.model_dump_json(exclude_unset=True))]
         else:
-            labels = label_service.list()
-            result["labels"] = [json.loads(l.model_dump_json(exclude_unset=True)) for l in labels]
+            # List all labels
+            labels = client.label.list()
+            label_dicts = [json.loads(l.model_dump_json(exclude_unset=True)) for l in labels]
+            # Filter by name if specified
+            if params.get("name"):
+                label_dicts = [l for l in label_dicts if l.get("name") == params.get("name")]
+            result["labels"] = label_dicts
         module.exit_json(**result)
     except Exception as e:
         module.fail_json(msg=f"Failed to retrieve label info: {e}")
