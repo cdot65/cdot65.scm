@@ -1,0 +1,68 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM folder information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    - name: Create a folder
+      cdot65.scm.folder:
+        name: "Engineering"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+
+    - name: Get all folders
+      cdot65.scm.folder_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_folders
+
+    - name: Show all folders
+      debug:
+        var: all_folders.folders
+
+    - name: Get folder by name
+      cdot65.scm.folder_info:
+        name: "Engineering"
+        scm_access_token: "{{ scm_access_token }}"
+      register: engineering_folder
+
+    - name: Show engineering folder info
+      debug:
+        var: engineering_folder.folders
+
+#    - name: Get folder by id (example)
+#      cdot65.scm.folder_info:
+#        id: "12345678-1234-1234-1234-123456789012"
+#        scm_access_token: "{{ scm_access_token }}"
+#      register: folder_by_id
+#
+#    - name: Show folder by id info
+#      debug:
+#        var: folder_by_id.folders
+
+    - name: Remove a folder
+      cdot65.scm.folder:
+        name: "Engineering"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Get folders by parent
+      cdot65.scm.folder_info:
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folders_by_parent
+
+    - name: Show folders by parent
+      debug:
+        var: folders_by_parent.folders
