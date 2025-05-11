@@ -8,7 +8,7 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
-from scm.models.objects import AddressGroupCreateModel
+from scm.models.objects.address_group import AddressGroupCreateModel, DynamicFilter
 
 DOCUMENTATION = r"""
 ---
@@ -40,10 +40,18 @@ options:
         type: list
         elements: str
         required: false
+    group_type:
+        description:
+            - Type of address group to create.
+            - Required for state=present.
+            - Will be inferred from static_addresses or dynamic_filter if not specified.
+        type: str
+        choices: ['static', 'dynamic']
+        required: false
     static_addresses:
         description:
             - List of address object names to include in the static address group.
-            - Required if I(dynamic_filter) is not provided.
+            - Required when group_type is 'static'.
             - Mutually exclusive with I(dynamic_filter).
         type: list
         elements: str
@@ -51,9 +59,11 @@ options:
     dynamic_filter:
         description:
             - Filter expression for dynamic address groups.
-            - Required if I(static_addresses) is not provided.
+            - Required when group_type is 'dynamic'.
             - Mutually exclusive with I(static_addresses).
             - Format should follow SCM's dynamic address group filter syntax.
+            - Use single-quoted paths for tag matching, e.g., "'aws.ec2.tag.Name.value'".
+            - Example: "'aws.ec2.tag.Environment.prod'" or "'aws.ec2.tag.Server.web' or 'aws.ec2.tag.Server.api'"
         type: str
         required: false
     folder:
@@ -110,10 +120,11 @@ notes:
 """
 
 EXAMPLES = r"""
-- name: Create a static address group in a folder
+- name: Create a static address group in a folder (explicitly specifying group_type)
   cdot65.scm.address_group:
     name: "web-servers"
     description: "Web server group"
+    group_type: "static"
     static_addresses:
       - "web-server-1"
       - "web-server-2"
@@ -121,15 +132,27 @@ EXAMPLES = r"""
     scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Create a dynamic address group in a snippet
+- name: Create a dynamic address group in a snippet (explicitly specifying group_type)
   cdot65.scm.address_group:
     name: "dynamic-servers"
     description: "Dynamic server group"
-    dynamic_filter: "tag.Server = 'web'"
+    group_type: "dynamic"
+    dynamic_filter: "'aws.ec2.tag.Server.web'"  # Proper SCM filter syntax
     snippet: "web-acl"
     tag:
       - "web"
       - "dynamic"
+    scm_access_token: "{{ scm_access_token }}"
+    state: present
+
+- name: Create a static address group with inferred group_type
+  cdot65.scm.address_group:
+    name: "inferred-static-group"
+    description: "Static group with inferred type"
+    static_addresses:
+      - "server-1"
+      - "server-2"
+    folder: "Network-Objects"
     scm_access_token: "{{ scm_access_token }}"
     state: present
 
@@ -194,8 +217,18 @@ address_group:
             type: list
             returned: for static address groups
             sample: ["web-server-1", "web-server-2"]
+        static:
+            description: List of address objects in the static group (native API format)
+            type: list
+            returned: for static address groups
+            sample: ["web-server-1", "web-server-2"]
         dynamic_filter:
             description: Filter expression for the dynamic group
+            type: str
+            returned: for dynamic address groups
+            sample: "tag.Server = 'web'"
+        dynamic:
+            description: Filter expression for the dynamic group (native API format)
             type: str
             returned: for dynamic address groups
             sample: "tag.Server = 'web'"
@@ -232,6 +265,7 @@ def main():
         name=dict(type="str", required=False),
         description=dict(type="str", required=False),
         tag=dict(type="list", elements="str", required=False),
+        group_type=dict(type="str", required=False, choices=["static", "dynamic"]),
         static_addresses=dict(type="list", elements="str", required=False),
         dynamic_filter=dict(type="str", required=False),
         folder=dict(type="str", required=False),
@@ -260,9 +294,28 @@ def main():
     # Custom validation for group type parameters
     params = module.params
     if params.get("state") == "present":
-        # For creation/update, one of the group types is required
-        if not any(params.get(group_type) for group_type in ["static_addresses", "dynamic_filter"]):
-            module.fail_json(msg="When state=present, one of the following is required: static_addresses, dynamic_filter")
+        # Handle group_type validation
+        group_type = params.get("group_type")
+        has_static = params.get("static_addresses") is not None
+        has_dynamic = params.get("dynamic_filter") is not None
+
+        # If group_type is not specified, try to infer it
+        if not group_type:
+            if has_static and not has_dynamic:
+                group_type = "static"
+            elif has_dynamic and not has_static:
+                group_type = "dynamic"
+            else:
+                module.fail_json(msg="When state=present, either specify group_type or provide exactly one of: static_addresses, dynamic_filter")
+
+        # Validate correct parameters based on group_type
+        if group_type == "static" and not has_static:
+            module.fail_json(msg="When group_type=static, static_addresses parameter is required")
+        elif group_type == "dynamic" and not has_dynamic:
+            module.fail_json(msg="When group_type=dynamic, dynamic_filter parameter is required")
+
+        # Add group_type to params for use in API payload
+        params["group_type"] = group_type
 
     # Get parameters
     params = module.params
@@ -314,14 +367,32 @@ def main():
                     for k in [
                         "description",
                         "tag",
-                        "static_addresses",
-                        "dynamic_filter",
                         "folder",
                         "snippet",
                         "device",
                     ]
                     if params[k] is not None and getattr(address_group_obj, k, None) != params[k]
                 }
+
+                # Handle group_type specific updates
+                if params.get("group_type") == "static" and params.get("static_addresses"):
+                    # Check if static_addresses need updating
+                    if getattr(address_group_obj, "static_addresses", None) != params.get("static_addresses"):
+                        update_fields["static"] = params.get("static_addresses")
+
+                elif params.get("group_type") == "dynamic" and params.get("dynamic_filter"):
+                    # Get the current dynamic filter if it exists
+                    current_filter = None
+                    if hasattr(address_group_obj, 'dynamic') and address_group_obj.dynamic:
+                        if hasattr(address_group_obj.dynamic, 'filter'):
+                            current_filter = address_group_obj.dynamic.filter
+
+                    # Check if it needs updating
+                    if current_filter != params.get("dynamic_filter"):
+                        # Create a dynamic filter using correct format
+                        update_fields["dynamic"] = {
+                            "filter": params.get("dynamic_filter")
+                        }
 
                 # Update the address group if needed
                 if update_fields:
@@ -347,8 +418,6 @@ def main():
                         "name",
                         "description",
                         "tag",
-                        "static_addresses",
-                        "dynamic_filter",
                         "folder",
                         "snippet",
                         "device",
@@ -356,13 +425,34 @@ def main():
                     if params.get(k) is not None
                 }
 
+                # Explicitly add the group type field based on group_type parameter
+                if params.get("group_type") == "static":
+                    create_payload["static"] = params.get("static_addresses")
+                elif params.get("group_type") == "dynamic":
+                    # Create a DynamicFilter object model directly
+                    create_payload["dynamic"] = {
+                        "filter": params.get("dynamic_filter")
+                    }
+
                 # Create an address group
                 if not module.check_mode:
-                    # Create an address group
-                    created = client.address_group.create(create_payload)
-
-                    # Return the created address group
-                    result["address_group"] = json.loads(created.model_dump_json(exclude_unset=True))
+                    try:
+                        # Create an address group
+                        created = client.address_group.create(create_payload)
+                        # Return the created address group
+                        result["address_group"] = json.loads(created.model_dump_json(exclude_unset=True))
+                    except (APIError, InvalidObjectError) as e:
+                        module.fail_json(
+                            msg=f"API Error creating address group: {str(e)}",
+                            error_code=getattr(e, "error_code", None),
+                            details=getattr(e, "details", None),
+                            payload=create_payload
+                        )
+                    except Exception as e:
+                        module.fail_json(
+                            msg=f"Error creating address group: {str(e)}",
+                            payload=create_payload
+                        )
                 else:
                     # Simulate a created address group (minimal info)
                     simulated = AddressGroupCreateModel(**create_payload)
