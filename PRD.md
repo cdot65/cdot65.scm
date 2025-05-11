@@ -81,7 +81,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Labels (`label`, `label_info`) — Complete ✅
     *   Snippets (`snippet`, `snippet_info`) — Complete ✅
     *   Devices (`device_info`) — Complete ✅ (read-only operations due to SCM API limitations)
-    *   Variables (`variable`, `variable_info`) — Next up, will follow folder module template
+    *   Variables (`variable`, `variable_info`) — Complete ✅
     *   Configuration Scopes (`config_scope`, `config_scope_info`)
     *   Address Objects (`address_object`, `address_object_info`)
     *   Address Groups (`address_group`, `address_group_info`)
@@ -281,12 +281,15 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Label management modules (`label`, `label_info`) fully implemented.
 - Snippet management modules (`snippet`, `snippet_info`) fully implemented.
 - Device information module (`device_info`) implemented for read-only operations.
+- Variable management modules (`variable`, `variable_info`) fully implemented.
 - Authentication role and workflow complete; token can be passed to all modules.
 - Example playbooks for all implemented modules.
+- Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
-- Begin work on `variable` modules using the folder module template for structure and best practices.
-- Expand test coverage and documentation for new modules.
+- Standardize all other info modules to follow the same pattern as folder_info/device_info.
+- Begin implementation of Address Objects and Address Groups.
+- Expand test coverage and integration tests for all modules.
 
 **Blocked/Issues:**
 - None major; dependency and serialization issues resolved.
@@ -294,10 +297,11 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `variable` and `variable_info` modules using the folder/folder_info pattern.
-- Continue to build out example playbooks and integration tests.
-- Ensure all modules are documented and follow the unified authentication/serialization approach.
-- Conduct thorough testing of implemented modules against real SCM instances.
+- Implement `address` and `address_info` modules for address object management.
+- Implement `address_group` and `address_group_info` modules for address group management.
+- Complete standardization of all info modules to follow consistent error handling.
+- Build integration tests to verify modules against real SCM instances.
+- Continue to enhance documentation and examples with real-world use cases.
 
 ## 11. Future Considerations
 
@@ -317,7 +321,9 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
-- The authentication role (`roles/auth`) has been successfully implemented, enabling secure authentication with Strata Cloud Manager. Example playbooks demonstrating its use are provided.
-- Added support for `label` and `label_info` modules (CRUD/query for SCM labels).
-- Added support for `snippet` and `snippet_info` modules (CRUD/query for SCM snippets).
-- Implemented `device_info` module for retrieving and filtering device information from SCM.
+- Added support for `variable` and `variable_info` modules (CRUD/query for SCM variables).
+- Standardized all info modules with consistent error handling and parameter usage.
+- Completed comprehensive README documentation with module matrix and examples.
+- Implemented enhanced serialization handling across all modules for consistency.
+- Improved folder handling in variable modules with proper validation of parent-child relationships.
+- Updated authentication examples and workflows throughout all modules.

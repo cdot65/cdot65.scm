@@ -1,6 +1,6 @@
 # TODO: cdot65.scm Ansible Collection (Strata Cloud Manager)
 
-_Last updated: 2025-05-10_
+_Last updated: 2025-05-15_
 
 ## Immediate Tasks
 
@@ -19,11 +19,20 @@ _Last updated: 2025-05-10_
     - [x] `plugins/modules/snippet_info.py`
 - [x] Implement device management modules:
     - [x] `plugins/modules/device_info.py` (read-only operations for SCM devices)
-- [ ] Implement variable management modules (template: folder modules):
-    - [ ] `plugins/modules/variable.py`
-    - [ ] `plugins/modules/variable_info.py`
-- [ ] Complete/fix unit tests for new modules
-- [ ] Enhance error handling for edge cases
+- [x] Implement variable management modules (template: folder modules):
+    - [x] `plugins/modules/variable.py`
+    - [x] `plugins/modules/variable_info.py`
+- [x] Update README documentation with module matrix and examples
+- [ ] Implement address object management modules:
+    - [ ] `plugins/modules/address.py`
+    - [ ] `plugins/modules/address_info.py`
+- [ ] Implement address group management modules:
+    - [ ] `plugins/modules/address_group.py`
+    - [ ] `plugins/modules/address_group_info.py`
+- [ ] Implement application management modules:
+    - [ ] `plugins/modules/application.py`
+    - [ ] `plugins/modules/application_info.py`
+- [ ] Enhance error handling for all modules with consistent patterns
 - [ ] Create integration tests for all resource modules
 
 ## Short-term Goals (MVP)
@@ -40,7 +49,10 @@ _Last updated: 2025-05-10_
 - Maintain dependency management with Poetry (pyproject.toml)
 - Use ruff, ansible-lint, yamllint, and isort for code quality
 - All sensitive parameters must use `no_log: true`
-- Follow Ansible module documentation standards
+- All info modules should follow consistent error handling pattern
+- Use Pydantic's model_dump_json(exclude_unset=True) for serialization
+- Follow standardized parameter naming and usage across all modules
+- Update examples directory with each new module implementation
 
 ## Open Issues / Watch Items
 
@@ -48,6 +60,16 @@ _Last updated: 2025-05-10_
 - Monitor for SCM API/SDK changes and update dependencies as needed
 - Assess SCM API rate limits and async job handling strategies
 - Plan for future: Vault integration, inventory/lookup plugins, CI/CD automation
+
+## [2025-05-15] Info Modules - Standardized Error Handling and Client Usage
+
+- All info modules now follow a consistent pattern for client initialization, error handling, and result formatting
+- Standardized approach for getting resources by ID versus list filtering
+- Unified exception handling with specific patterns for different error types
+- Consistent serialization using `model_dump_json(exclude_unset=True)` + `json.loads()` for all SCM objects
+- Added folder parameter requirement validation for variable modules when getting by name
+- All example playbooks updated to demonstrate proper usage patterns
+- Comprehensive README documentation with module matrix and usage examples
 
 ## [2025-05-10] plugins/modules/folder.py - Workflow & Serialization Improvements
 
