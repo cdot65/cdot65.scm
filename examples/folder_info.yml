@@ -29,6 +29,7 @@
     - name: Show all folders
       debug:
         var: all_folders.folders
+      when: all_folders.folders is defined
 
     - name: Get folder by name
       cdot65.scm.folder_info:
@@ -39,6 +40,7 @@
     - name: Show engineering folder info
       debug:
         var: engineering_folder.folders
+      when: engineering_folder.folders is defined
 
 #    - name: Get folder by id (example)
 #      cdot65.scm.folder_info:
@@ -49,6 +51,18 @@
 #    - name: Show folder by id info
 #      debug:
 #        var: folder_by_id.folders
+#      when: folder_by_id.folders is defined
+
+    - name: Get folders by parent
+      cdot65.scm.folder_info:
+        parent: "Texas"  # This can be either parent name or ID
+        scm_access_token: "{{ scm_access_token }}"
+      register: folders_by_parent
+
+    - name: Show folders by parent
+      debug:
+        var: folders_by_parent.folders
+      when: folders_by_parent.folders is defined
 
     - name: Remove a folder
       cdot65.scm.folder:
@@ -56,13 +70,3 @@
         parent: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: absent
-
-    - name: Get folders by parent
-      cdot65.scm.folder_info:
-        parent: "Texas"
-        scm_access_token: "{{ scm_access_token }}"
-      register: folders_by_parent
-
-    - name: Show folders by parent
-      debug:
-        var: folders_by_parent.folders

@@ -81,14 +81,14 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [variable_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/variable_info.py) | Retrieve variable information with filtering | ✅ |
 | [device_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/device_info.py) | Retrieve device information with filtering | ✅ |
 
-### Network Objects Modules (Planned)
+### Network Objects Modules
 
 | Module | Description | Status |
 |--------|-------------|--------|
-| [address](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address.py) | Manage address objects | 📝 |
-| [address_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_info.py) | Retrieve address object information | 📝 |
-| [address_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group.py) | Manage address groups | 📝 |
-| [address_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group_info.py) | Retrieve address group information | 📝 |
+| [address](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address.py) | Manage address objects | ✅ |
+| [address_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_info.py) | Retrieve address object information | ✅ |
+| [address_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group.py) | Manage address groups | ✅ |
+| [address_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group_info.py) | Retrieve address group information | ✅ |
 | [application](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application.py) | Manage application objects | 📝 |
 | [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | 📝 |
 
@@ -201,6 +201,10 @@ The collection includes several example playbooks in the `examples/` directory:
 - `variable.yml` - Create and manage variables
 - `variable_info.yml` - Retrieve variable information
 - `device_info.yml` - Retrieve device information
+- `address.yml` - Create and manage address objects
+- `address_info.yml` - Retrieve address information
+- `address_group.yml` - Create and manage address groups
+- `address_group_info.yml` - Retrieve address group information
 
 ## Development
 
