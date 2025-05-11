@@ -306,7 +306,9 @@ def main():
             elif has_dynamic and not has_static:
                 group_type = "dynamic"
             else:
-                module.fail_json(msg="When state=present, either specify group_type or provide exactly one of: static_addresses, dynamic_filter")
+                module.fail_json(
+                    msg="When state=present, either specify group_type or provide exactly one of: static_addresses, dynamic_filter"
+                )
 
         # Validate correct parameters based on group_type
         if group_type == "static" and not has_static:
@@ -383,16 +385,14 @@ def main():
                 elif params.get("group_type") == "dynamic" and params.get("dynamic_filter"):
                     # Get the current dynamic filter if it exists
                     current_filter = None
-                    if hasattr(address_group_obj, 'dynamic') and address_group_obj.dynamic:
-                        if hasattr(address_group_obj.dynamic, 'filter'):
+                    if hasattr(address_group_obj, "dynamic") and address_group_obj.dynamic:
+                        if hasattr(address_group_obj.dynamic, "filter"):
                             current_filter = address_group_obj.dynamic.filter
 
                     # Check if it needs updating
                     if current_filter != params.get("dynamic_filter"):
                         # Create a dynamic filter using the correct format
-                        update_fields["dynamic"] = {
-                            "filter": params.get("dynamic_filter")
-                        }
+                        update_fields["dynamic"] = {"filter": params.get("dynamic_filter")}
 
                 # Update the address group if needed
                 if update_fields:
@@ -430,9 +430,7 @@ def main():
                     create_payload["static"] = params.get("static_addresses")
                 elif params.get("group_type") == "dynamic":
                     # Create a DynamicFilter object model directly
-                    create_payload["dynamic"] = {
-                        "filter": params.get("dynamic_filter")
-                    }
+                    create_payload["dynamic"] = {"filter": params.get("dynamic_filter")}
 
                 # Create an address group
                 if not module.check_mode:
@@ -446,13 +444,10 @@ def main():
                             msg=f"API Error creating address group: {str(e)}",
                             error_code=getattr(e, "error_code", None),
                             details=getattr(e, "details", None),
-                            payload=create_payload
+                            payload=create_payload,
                         )
                     except Exception as e:
-                        module.fail_json(
-                            msg=f"Error creating address group: {str(e)}",
-                            payload=create_payload
-                        )
+                        module.fail_json(msg=f"Error creating address group: {str(e)}", payload=create_payload)
                 else:
                     # Simulate a created address group (minimal info)
                     simulated = AddressGroupCreateModel(**create_payload)
