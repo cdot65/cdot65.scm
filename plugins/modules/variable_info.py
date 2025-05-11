@@ -32,6 +32,7 @@ options:
         description:
             - The name of the variable to retrieve.
             - If specified, the module will search for variables with this name.
+            - When using name, the folder parameter is also required.
             - Mutually exclusive with I(id).
         type: str
         required: false
@@ -43,6 +44,7 @@ options:
     folder:
         description:
             - Filter variables by folder name.
+            - Required when retrieving variables by name.
             - Mutually exclusive with I(snippet) and I(device).
         type: str
         required: false
@@ -95,6 +97,7 @@ EXAMPLES = r"""
 - name: Get variable with a specific name
   cdot65.scm.variable_info:
     name: "subnet-variable"
+    folder: "Network-Variables"  # folder parameter is required when using name
     scm_access_token: "{{ scm_access_token }}"
   register: named_variable
 
@@ -204,65 +207,67 @@ def main():
 
     # Get parameters
     params = module.params
-    variable_id = params.get("id")
-    name = params.get("name")
-    variable_type = params.get("type")
-    folder = params.get("folder")
-    snippet = params.get("snippet")
-    device = params.get("device")
-    labels = params.get("labels")
 
     result = {"variables": []}
 
     try:
         # Initialize SCM client
-        client = ScmClient(access_token=params["scm_access_token"])
-        variables_service = client.variable
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
         # Get variable by ID if specified
-        if variable_id:
+        if params.get("id"):
             try:
-                variable = variables_service.get(variable_id)
-                if variable:
-                    result["variables"] = [json.loads(variable.model_dump_json(exclude_unset=True))]
-            except ObjectNotPresentError:
-                # Return empty list if variable not found
-                result["variables"] = []
+                variable_obj = client.variable.get(params.get("id"))
+                if variable_obj:
+                    result["variables"] = [json.loads(variable_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve variable info: {e}")
+        # Fetch a variable by name
+        elif params.get("name"):
+            try:
+                # For variable.fetch we need both name and folder
+                if not params.get("folder"):
+                    module.fail_json(msg="When retrieving a variable by name, 'folder' parameter is also required")
+
+                variable_obj = client.variable.fetch(
+                    name=params.get("name"),
+                    folder=params.get("folder")
+                )
+                if variable_obj:
+                    result["variables"] = [json.loads(variable_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve variable info: {e}")
+
         else:
             # Prepare filter parameters for the SDK
             filter_params = {}
 
             # Add SDK-supported server-side filters
-            if variable_type:
-                filter_params["type"] = variable_type
+            if params.get("type"):
+                filter_params["type"] = params.get("type")
 
-            # List variables with appropriate filters
-            variables = variables_service.list(**filter_params)
+            # Add container filters (folder, snippet, device) if specified
+            if params.get("folder"):
+                filter_params["folder"] = params.get("folder")
+            elif params.get("snippet"):
+                filter_params["snippet"] = params.get("snippet")
+            elif params.get("device"):
+                filter_params["device"] = params.get("device")
+
+            # Add labels filter if specified
+            if params.get("labels"):
+                filter_params["labels"] = params.get("labels")
+
+            # List variables with filters
+            if filter_params:
+                variables = client.variable.list(**filter_params)
+            else:
+                variables = client.variable.list()
+
+            # Convert to a list of dicts
             variable_dicts = [json.loads(v.model_dump_json(exclude_unset=True)) for v in variables]
 
-            # Apply additional client-side filtering
-            # Filter by name if specified (exact match)
-            if name:
-                variable_dicts = [v for v in variable_dicts if v.get("name") == name]
-
-            # Filter by container (folder, snippet, or device)
-            if folder:
-                variable_dicts = [v for v in variable_dicts if v.get("folder") == folder]
-            elif snippet:
-                variable_dicts = [v for v in variable_dicts if v.get("snippet") == snippet]
-            elif device:
-                variable_dicts = [v for v in variable_dicts if v.get("device") == device]
-
-            # Filter by labels if specified (any match)
-            if labels:
-                labels_set = set(labels)
-                filtered_vars = []
-                for v in variable_dicts:
-                    var_labels = v.get("labels", [])
-                    if var_labels and labels_set.intersection(set(var_labels)):
-                        filtered_vars.append(v)
-                variable_dicts = filtered_vars
-
+            # Add to results
             result["variables"] = variable_dicts
 
         module.exit_json(**result)

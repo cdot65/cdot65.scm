@@ -7,6 +7,7 @@ import json
 
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
+from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
 ---
@@ -116,25 +117,45 @@ def main():
 
     try:
         # Initialize SCM client
-        sdk_args = dict(access_token=params["scm_access_token"])
-        if params.get("api_url"):
-            sdk_args["base_url"] = params.get("api_url")
-        client = ScmClient(**sdk_args)
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
         # Get label by ID if specified
         if params.get("id"):
-            label = client.label.get(params.get("id"))
-            if label:
-                result["labels"] = [json.loads(label.model_dump_json(exclude_unset=True))]
+            try:
+                label_obj = client.label.get(params.get("id"))
+                if label_obj:
+                    result["labels"] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve label info: {e}")
+        # Fetch a label by name
+        elif params.get("name"):
+            try:
+                label_obj = client.label.fetch(name=params.get("name"))
+                if label_obj:
+                    result["labels"] = [json.loads(label_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve label info: {e}")
+
         else:
-            # List all labels
-            labels = client.label.list()
+            # Prepare filter parameters for the SDK
+            filter_params = {}
+            # Add more filters here if applicable to the label API
+
+            # List labels with filters
+            if filter_params:
+                labels = client.label.list(**filter_params)
+            else:
+                labels = client.label.list()
+
             label_dicts = [json.loads(l.model_dump_json(exclude_unset=True)) for l in labels]
-            # Filter by name if specified
-            if params.get("name"):
-                label_dicts = [l for l in label_dicts if l.get("name") == params.get("name")]
             result["labels"] = label_dicts
         module.exit_json(**result)
+    except (InvalidObjectError, APIError) as e:
+        module.fail_json(
+            msg=f"API error: {e}",
+            error_code=getattr(e, "error_code", None),
+            details=getattr(e, "details", None),
+        )
     except Exception as e:
         module.fail_json(msg=f"Failed to retrieve label info: {e}")
 

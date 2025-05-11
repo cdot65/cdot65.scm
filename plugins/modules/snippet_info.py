@@ -6,12 +6,8 @@
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-
-try:
-    from scm.client import ScmClient
-    from scm.exceptions import APIError, ObjectNotPresentError
-except ImportError:
-    pass
+from scm.client import ScmClient
+from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
 ---
@@ -107,61 +103,70 @@ def main():
         api_url=dict(type="str", required=False),
     )
 
-    result = dict(
-        changed=False,
-        failed=False,
-        msg="",
-        snippets=[],
+    # Initialize results
+    result = {"snippets": []}
+
+    # Create the module
+    module = AnsibleModule(
+        argument_spec=module_args,
+        mutually_exclusive=[["id", "name"]],
+        supports_check_mode=True,
     )
 
-    module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
-
+    # Get parameters
     params = module.params
-    snippet_id = params.get("id")
-    name = params.get("name")
-    labels = params.get("labels")
-    scm_access_token = params["scm_access_token"]
-
-    # Validate mutually exclusive arguments
-    if snippet_id and name:
-        result["msg"] = "id and name are mutually exclusive."
-        module.fail_json(**result)
 
     try:
-        client = ScmClient(access_token=scm_access_token)
-        snippets_service = client.snippet
-    except Exception as e:
-        result["msg"] = f"Failed to initialize SCM client: {e}"
-        module.fail_json(**result)
+        # Initialize SCM client
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
-    try:
-        if snippet_id:
-            snippet = snippets_service.get(snippet_id)
-            result["snippets"] = [json.loads(snippet.model_dump_json())]
-        elif name:
-            snippet = snippets_service.fetch(name)
-            if snippet:
-                result["snippets"] = [json.loads(snippet.model_dump_json())]
-            else:
-                result["snippets"] = []
+        # Get a snippet by id
+        if params.get("id"):
+            try:
+                snippet_obj = client.snippet.get(params.get("id"))
+                if snippet_obj:
+                    result["snippets"] = [json.loads(snippet_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve snippet info: {e}")
+
+        # Fetch a snippet by name
+        elif params.get("name"):
+            try:
+                snippet_obj = client.snippet.fetch(name=params.get("name"))
+                if snippet_obj:
+                    result["snippets"] = [json.loads(snippet_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve snippet info: {e}")
+
         else:
-            filters = {}
-            if labels:
-                filters["labels"] = labels
-            all_snippets = snippets_service.list(**filters)
-            result["snippets"] = [json.loads(s.model_dump_json()) for s in all_snippets]
-        result["msg"] = "Query successful."
-    except ObjectNotPresentError:
-        result["msg"] = "Snippet not found."
-        result["snippets"] = []
-    except APIError as e:
-        result["msg"] = f"API error: {e}"
-        module.fail_json(**result)
-    except Exception as e:
-        result["msg"] = f"Unexpected error: {e}"
-        module.fail_json(**result)
+            # Prepare filter parameters for the SDK
+            filter_params = {}
+            if params.get("labels"):
+                filter_params["labels"] = params.get("labels")
 
-    module.exit_json(**result)
+            # List snippets with filters
+            if filter_params:
+                snippets = client.snippet.list(**filter_params)
+            else:
+                snippets = client.snippet.list()
+
+            # Convert to a list of dicts
+            snippet_dicts = [json.loads(s.model_dump_json(exclude_unset=True)) for s in snippets]
+
+            # Add to results
+            result["snippets"] = snippet_dicts
+
+        # Return results
+        module.exit_json(**result)
+
+    except (InvalidObjectError, APIError) as e:
+        module.fail_json(
+            msg=f"API error: {e}",
+            error_code=getattr(e, "error_code", None),
+            details=getattr(e, "details", None),
+        )
+    except Exception as e:
+        module.fail_json(msg=f"Failed to retrieve snippet info: {e}")
 
 
 if __name__ == "__main__":
