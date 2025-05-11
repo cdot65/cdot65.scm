@@ -170,6 +170,8 @@ def main():
                 # Return existing label
                 else:
                     result["label"] = json.loads(label_obj.model_dump_json(exclude_unset=True))
+                    module.exit_json(**result)
+
             else:
                 # Create a new label
                 if not module.check_mode:

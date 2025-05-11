@@ -22,7 +22,7 @@
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
-    - name: Create a folder
+    - name: Delete a folder
       cdot65.scm.folder:
         name: "AnsibleTest"
         parent: "Texas"

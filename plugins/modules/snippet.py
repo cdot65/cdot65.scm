@@ -225,6 +225,7 @@ def main():
                 # Return existing snippet
                 else:
                     result["snippet"] = json.loads(snippet_obj.model_dump_json(exclude_unset=True))
+                    module.exit_json(**result)
             else:
                 # Create a new snippet
                 if not module.check_mode:

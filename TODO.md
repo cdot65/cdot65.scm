@@ -49,6 +49,16 @@ _Last updated: 2025-05-10_
 - Assess SCM API rate limits and async job handling strategies
 - Plan for future: Vault integration, inventory/lookup plugins, CI/CD automation
 
+## [2025-05-10] plugins/modules/folder.py - Workflow & Serialization Improvements
+
+- Refactored the module to keep Pydantic model objects (`folder_obj`) native throughout workflow, only serializing for Ansible output.
+- Switched all result serialization to use `model_dump_json(exclude_unset=True)` + `json.loads()` for folder objects.
+    - This ensures UUIDs and other non-JSON-serializable types are always safely converted to strings for Ansible.
+    - Prevents fatal errors from UUID serialization when returning results.
+- Removed previous manual UUID conversion logic and unnecessary uses of `serialize_as_any`.
+- Improved code maintainability and robustness by leveraging Pydantic's JSON encoder for all output.
+- This pattern should be adopted for other modules returning Pydantic models to Ansible.
+
 ---
 
 Refer to [PRD.md](./PRD.md) for full requirements, design, and future considerations.
