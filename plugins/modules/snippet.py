@@ -8,7 +8,7 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
-from scm.models.setup.snippet import SnippetUpdateModel
+from scm.models.setup import SnippetCreateModel
 
 DOCUMENTATION = r"""
 ---
@@ -156,113 +156,148 @@ def main():
         snippet_type=dict(type="str", required=False),
         display_name=dict(type="str", required=False),
         id=dict(type="str", required=False),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
         scm_access_token=dict(type="str", required=True, no_log=True),
         api_url=dict(type="str", required=False),
+        state=dict(type="str", required=False, choices=["present", "absent"], default="present"),
     )
 
-    result = {"changed": False, "msg": ""}
+    # Initialize module
+    module = AnsibleModule(
+        argument_spec=module_args,
+        required_if=[
+            ["state", "present", ["name"]],
+            ["state", "absent", ["name"]],
+        ],
+        supports_check_mode=True,
+    )
 
-    module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
-
+    # Get parameters
     params = module.params
-    state = params["state"]
-    snippet_id = params.get("id")
-    name = params.get("name")
-    scm_access_token = params["scm_access_token"]
 
-    # Initialize SDK client
-    try:
-        client = ScmClient(access_token=scm_access_token)
-        snippets = client.snippet
-    except Exception as e:
-        result["msg"] = f"Failed to initialize SCM client: {e}"
-        module.fail_json(**result)
+    # Initialize results
+    result = {"changed": False, "snippet": None}
 
+    # Perform operations
     try:
-        if state == "present":
-            # Try to fetch existing
-            existing = None
-            if snippet_id:
-                try:
-                    existing = snippets.get(snippet_id)
-                except ObjectNotPresentError:
-                    existing = None
-            elif name:
-                existing = snippets.fetch(name)
-            # Prepare data
-            snippet_data = dict(
-                name=name,
-                description=params.get("description"),
-                labels=params.get("labels"),
-                enable_prefix=params.get("enable_prefix"),
-                type=params.get("snippet_type"),  # API expects 'type' even though we use 'snippet_type' in the module
-                display_name=params.get("display_name"),
-            )
-            # Remove unset keys and keys with value None
-            snippet_data = {k: v for k, v in snippet_data.items() if v is not None}
-            # Remove invalid/empty string fields
-            snippet_data = {k: v for k, v in snippet_data.items() if v != ""}
-            if not existing:
-                if module.check_mode:
+        # Initialize SCM client
+        client = ScmClient(access_token=params.get("scm_access_token"))
+
+        # Initialize snippet_exists boolean
+        snippet_exists = False
+        snippet_obj = None
+
+        # Fetch snippet by name
+        if params.get("name"):
+            try:
+                snippet_obj = client.snippet.fetch(params.get("name"))
+                if snippet_obj:
+                    snippet_exists = True
+            except ObjectNotPresentError:
+                snippet_exists = False
+                snippet_obj = None
+
+        # Create or update or delete a folder
+        if params.get("state") == "present":
+            if snippet_exists:
+                # Only update fields that differ
+                update_fields = {
+                    k: params[k]
+                    for k in [
+                        "description",
+                        "labels",
+                        "enable_prefix",
+                        "snippet_type",
+                        "display_name",
+                    ]
+                    if params.get(k) is not None and getattr(snippet_obj, k, None) != params[k]
+                }
+
+                # Map 'snippet_type' to 'type' for SDK/model
+                if "snippet_type" in update_fields:
+                    update_fields["type"] = update_fields.pop("snippet_type")
+
+                # Update snippet if needed
+                if update_fields:
+                    if not module.check_mode:
+                        update_model = snippet_obj.model_copy(update=update_fields)
+                        updated = client.snippet.update(update_model)
+                        result["snippet"] = json.loads(updated.model_dump_json(exclude_unset=True))
+                    else:
+                        result["snippet"] = json.loads(
+                            snippet_obj.model_copy(update=update_fields).model_dump_json(exclude_unset=True)
+                        )
                     result["changed"] = True
-                    result["msg"] = "Would create snippet."
                     module.exit_json(**result)
-                created = snippets.create(snippet_data)
-                result["changed"] = True
-                result["snippet"] = json.loads(created.model_dump_json())
-                result["msg"] = "Snippet created."
-            else:
-                # Compare for idempotency
-                update_needed = False
-                for k, v in snippet_data.items():
-                    if getattr(existing, k, None) != v:
-                        update_needed = True
-                        break
-                if update_needed:
-                    if module.check_mode:
-                        result["changed"] = True
-                        result["msg"] = "Would update snippet."
-                        module.exit_json(**result)
-                    update_model = SnippetUpdateModel(id=existing.id, **snippet_data)
-                    updated = snippets.update(update_model)
-                    result["changed"] = True
-                    result["snippet"] = json.loads(updated.model_dump_json())
-                    result["msg"] = "Snippet updated."
                 else:
-                    result["snippet"] = json.loads(existing.model_dump_json())
-                    result["msg"] = "Snippet already present and up to date."
-        elif state == "absent":
-            # Try to fetch existing
-            existing = None
-            if snippet_id:
-                try:
-                    existing = snippets.get(snippet_id)
-                except ObjectNotPresentError:
-                    existing = None
-            elif name:
-                existing = snippets.fetch(name)
-            if existing:
-                if module.check_mode:
-                    result["changed"] = True
-                    result["msg"] = "Would delete snippet."
+                    # No update needed
+                    result["snippet"] = json.loads(snippet_obj.model_dump_json(exclude_unset=True))
+                    result["changed"] = False
                     module.exit_json(**result)
-                snippets.delete(existing.id)
-                result["changed"] = True
-                result["msg"] = "Snippet deleted."
             else:
-                result["msg"] = "Snippet already absent."
-    except InvalidObjectError as e:
-        result["msg"] = f"Invalid object data: {e}"
-        module.fail_json(**result)
-    except APIError as e:
-        result["msg"] = f"API error: {e}"
-        module.fail_json(**result)
-    except Exception as e:
-        result["msg"] = f"Error: {e}"
-        module.fail_json(**result)
+                # Create payload
+                create_payload = {
+                    k: params[k]
+                    for k in [
+                        "name",
+                        "description",
+                        "labels",
+                        "enable_prefix",
+                        "snippet_type",
+                        "display_name",
+                    ]
+                    if params.get(k) is not None
+                }
 
-    module.exit_json(**result)
+                # Create a new snippet
+                if not module.check_mode:
+
+                    # Map 'snippet_type' to 'type' for SDK/model
+                    if "snippet_type" in create_payload:
+                        create_payload["type"] = create_payload.pop("snippet_type")
+
+                    # Create snippet
+                    created = client.snippet.create(create_payload)
+
+                    # Return created snippet
+                    result["snippet"] = json.loads(created.model_dump_json(exclude_unset=True))
+
+                else:
+                    # Simulate created snippet (minimal info)
+                    simulated = SnippetCreateModel(**create_payload)
+                    result["snippet"] = simulated.model_dump(exclude_unset=True)
+
+                # Mark as changed
+                result["changed"] = True
+
+                # Exit
+                module.exit_json(**result)
+
+        # Delete a snippet
+        elif params.get("state") == "absent":
+            if snippet_exists:
+                if not module.check_mode:
+                    client.snippet.delete(snippet_obj.id)
+
+                # Mark as changed
+                result["changed"] = True
+
+                # Exit
+                result["snippet"] = json.loads(snippet_obj.model_dump_json(exclude_unset=True))
+                module.exit_json(**result)
+            else:
+                # Already absent
+                result["changed"] = False
+                module.exit_json(**result)
+
+    # Handle errors
+    except (ObjectNotPresentError, InvalidObjectError) as e:
+        module.fail_json(msg=str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None))
+    except APIError as e:
+        module.fail_json(
+            msg="API error: " + str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None)
+        )
+    except Exception as e:
+        module.fail_json(msg="Unexpected error: " + str(e))
 
 
 if __name__ == "__main__":

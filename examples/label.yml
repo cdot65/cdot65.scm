@@ -31,13 +31,20 @@
 
     - name: Create a test label
       cdot65.scm.label:
-        name: test-label
+        name: AnsibleTest
         description: Test label
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Update an existing test label
+      cdot65.scm.label:
+        name: AnsibleTest
+        description: Just another test
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
     - name: Delete a test label
       cdot65.scm.label:
-        name: test-label
+        name: AnsibleTest
         scm_access_token: "{{ scm_access_token }}"
         state: absent

@@ -8,6 +8,7 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
+from scm.models.setup import FolderCreateModel
 
 DOCUMENTATION = r"""
 ---
@@ -175,6 +176,7 @@ def main():
         state=dict(type="str", required=False, choices=["present", "absent"], default="present"),
     )
 
+    # Initialize module
     module = AnsibleModule(
         argument_spec=module_args,
         required_if=[
@@ -190,6 +192,7 @@ def main():
     # Initialize results
     result = {"changed": False, "folder": None}
 
+    # Perform operations
     try:
         # Initialize SCM client
         client = ScmClient(access_token=params.get("scm_access_token"))
@@ -208,6 +211,7 @@ def main():
                 folder_exists = False
                 folder_obj = None
 
+        # Create or update or delete a folder
         if params.get("state") == "present":
             if folder_exists:
                 # Only update fields that differ
@@ -226,43 +230,80 @@ def main():
                     ]
                     if params.get(k) is not None and getattr(folder_obj, k, None) != params[k]
                 }
+
+                # Update a folder if needed
                 if update_fields:
                     if not module.check_mode:
                         update_model = folder_obj.model_copy(update=update_fields)
                         updated = client.folder.update(update_model)
                         result["folder"] = json.loads(updated.model_dump_json(exclude_unset=True))
+                    else:
+                        result["folder"] = json.loads(
+                            folder_obj.model_copy(update=update_fields).model_dump_json(exclude_unset=True)
+                        )
                     result["changed"] = True
+                    module.exit_json(**result)
                 else:
+                    # No update needed
                     result["folder"] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
+                    result["changed"] = False
+                    module.exit_json(**result)
             else:
-                # Create new folder
+                # Create payload
+                create_payload = {
+                    k: params[k]
+                    for k in [
+                        "name",
+                        "parent",
+                        "description",
+                        "labels",
+                        "snippets",
+                        "display_name",
+                        "model",
+                        "serial_number",
+                        "type",
+                        "device_only",
+                    ]
+                    if params.get(k) is not None
+                }
+
+                # Create a new folder
                 if not module.check_mode:
-                    create_payload = {
-                        k: params[k]
-                        for k in [
-                            "name",
-                            "parent",
-                            "description",
-                            "labels",
-                            "snippets",
-                            "display_name",
-                            "model",
-                            "serial_number",
-                            "type",
-                            "device_only",
-                        ]
-                        if params.get(k) is not None
-                    }
+
+                    # Create folder
                     created = client.folder.create(create_payload)
+
+                    # Return the created folder
                     result["folder"] = json.loads(created.model_dump_json(exclude_unset=True))
+                else:
+                    # Simulate created folder (minimal info)
+                    simulated = FolderCreateModel(**create_payload)
+                    result["folder"] = simulated.model_dump(exclude_unset=True)
+
+                # Mark as changed
                 result["changed"] = True
+
+                # Exit
+                module.exit_json(**result)
+
+        # Delete a folder
         elif params.get("state") == "absent":
             if folder_exists:
                 if not module.check_mode:
                     client.folder.delete(folder_obj.id)
+
+                # Mark as changed
                 result["changed"] = True
+
+                # Exit
                 result["folder"] = json.loads(folder_obj.model_dump_json(exclude_unset=True))
-        module.exit_json(**result)
+                module.exit_json(**result)
+            else:
+                # Already absent
+                result["changed"] = False
+                module.exit_json(**result)
+
+    # Handle errors
     except (ObjectNotPresentError, InvalidObjectError) as e:
         module.fail_json(msg=str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None))
     except APIError as e:

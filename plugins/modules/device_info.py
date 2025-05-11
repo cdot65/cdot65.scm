@@ -208,7 +208,7 @@ def main():
         # Initialize SCM client
         client = ScmClient(access_token=params.get("scm_access_token"))
 
-        # Fetch a device by id
+        # Get a device by id
         if params.get("id"):
             try:
                 device_obj = client.device.get(params.get("id"))
@@ -241,11 +241,17 @@ def main():
                 devices = client.device.list(**filter_params)
             else:
                 devices = client.device.list()
+
+            # Convert to a list of dicts
             device_dicts = [json.loads(d.model_dump_json(exclude_unset=True)) for d in devices]
 
+            # Add to results
             result["devices"] = device_dicts
 
+        # Return results
         module.exit_json(**result)
+
+    # Handle errors
     except (InvalidObjectError, APIError) as e:
         module.fail_json(
             msg=f"API error: {e}",
