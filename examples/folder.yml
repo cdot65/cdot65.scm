@@ -17,7 +17,14 @@
 
     - name: Create a folder
       cdot65.scm.folder:
-        name: "Engineering"
+        name: "AnsibleTest"
         parent: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
+
+    - name: Create a folder
+      cdot65.scm.folder:
+        name: "AnsibleTest"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
