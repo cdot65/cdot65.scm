@@ -1,0 +1,123 @@
+---
+# Example playbook for managing address groups in Strata Cloud Manager
+# This playbook demonstrates how to create, list, and delete address groups
+
+- name: Manage address groups in SCM
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+
+  tasks:
+    # Authenticate with SCM
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        scm_client_id: "{{ scm_client_id }}"
+        scm_client_secret: "{{ scm_client_secret }}"
+        scm_tsg_id: "{{ scm_tsg_id }}"
+
+    # Create a static address group
+    - name: Create a static address group
+      cdot65.scm.address_group:
+        name: "web-servers"
+        description: "Web server group"
+        static_addresses:
+          - "web-server-1"
+          - "web-server-2" 
+        folder: "Network-Objects"
+        tag:
+          - "web"
+          - "servers"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: static_group_result
+
+    # Display the created static group
+    - name: Display static group details
+      ansible.builtin.debug:
+        var: static_group_result
+        verbosity: 1
+
+    # Create a dynamic address group
+    - name: Create a dynamic address group
+      cdot65.scm.address_group:
+        name: "dynamic-web-servers"
+        description: "Dynamic web server group"
+        dynamic_filter: "tag.Server = 'web'"
+        folder: "Network-Objects"
+        tag:
+          - "web"
+          - "dynamic"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: dynamic_group_result
+
+    # Display the created dynamic group
+    - name: Display dynamic group details
+      ansible.builtin.debug:
+        var: dynamic_group_result
+        verbosity: 1
+
+    # List all address groups
+    - name: List all address groups
+      cdot65.scm.address_group_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_address_groups
+
+    # Display all address groups
+    - name: Display all address groups
+      ansible.builtin.debug:
+        var: all_address_groups
+        verbosity: 1
+
+    # Get specific address group
+    - name: Get specific address group by name
+      cdot65.scm.address_group_info:
+        name: "web-servers"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_group
+
+    # Display specific address group
+    - name: Display specific address group
+      ansible.builtin.debug:
+        var: specific_group
+        verbosity: 1
+
+    # Update a static address group
+    - name: Update a static address group
+      cdot65.scm.address_group:
+        name: "web-servers"
+        description: "Updated web server group"
+        static_addresses:
+          - "web-server-1"
+          - "web-server-2"
+          - "web-server-3"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: update_result
+
+    # Display updated group
+    - name: Display updated group
+      ansible.builtin.debug:
+        var: update_result
+        verbosity: 1
+
+    # Delete the address groups (commented out for safety)
+    # - name: Delete static address group
+    #   cdot65.scm.address_group:
+    #     name: "web-servers"
+    #     folder: "Network-Objects"
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: absent
+    #
+    # - name: Delete dynamic address group
+    #   cdot65.scm.address_group:
+    #     name: "dynamic-web-servers"
+    #     folder: "Network-Objects"
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: absent

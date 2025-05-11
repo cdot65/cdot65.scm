@@ -1,0 +1,244 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM address information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test folder and address objects for examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Address-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create different types of address objects for testing
+    - name: Create an IP netmask address object
+      cdot65.scm.address:
+        name: "test-server"
+        description: "Test server IP address"
+        ip_netmask: "10.1.1.1/32"
+        folder: "Address-Test"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: test_address
+
+    - name: Create an FQDN address object
+      cdot65.scm.address:
+        name: "test-domain"
+        description: "Test domain name"
+        fqdn: "test.example.com"
+        folder: "Address-Test"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing address objects in snippets
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Address-Test-Snippet"
+        description: "Snippet for address testing"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a snippet-based IP range address object
+      cdot65.scm.address:
+        name: "test-range"
+        description: "Test IP range"
+        ip_range: "192.168.1.10-192.168.1.20"
+        snippet: "Address-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Query information examples - all queries require a container parameter
+
+    # Get addresses in a specific folder
+    - name: Get addresses in a specific folder
+      cdot65.scm.address_info:
+        folder: "Address-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_addresses
+
+    - name: Show addresses in folder
+      debug:
+        msg: "Found {{ folder_addresses.addresses | length }} addresses in the Address-Test folder"
+
+    - name: Display folder address details
+      debug:
+        msg: "Address: {{ item.name }} ({{ item.id }}) - {{ item.ip_netmask | default(item.fqdn) | default(item.ip_range) | default('unknown type') }}"
+      loop: "{{ folder_addresses.addresses }}"
+      when: folder_addresses.addresses | length > 0
+
+    # Get addresses in a specific snippet
+    - name: Get addresses in a specific snippet
+      cdot65.scm.address_info:
+        snippet: "Address-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_addresses
+
+    - name: Show addresses in snippet
+      debug:
+        msg: "Found {{ snippet_addresses.addresses | length }} addresses in the Address-Test-Snippet snippet"
+
+    - name: Display snippet address details
+      debug:
+        msg: "Address: {{ item.name }} ({{ item.id }}) - {{ item.ip_netmask | default(item.fqdn) | default(item.ip_range) | default('unknown type') }}"
+      loop: "{{ snippet_addresses.addresses }}"
+      when: snippet_addresses.addresses | length > 0
+
+    # Get a specific address by name (requires a container parameter)
+    - name: Get a specific address by name in a folder
+      cdot65.scm.address_info:
+        name: "test-server"
+        folder: "Address-Test"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_folder_address
+
+    - name: Show named address in folder
+      debug:
+        msg: >
+          Address: {{ named_folder_address.addresses[0].name }}
+          Type: {{ 'IP Netmask' if named_folder_address.addresses[0].ip_netmask is defined else
+                  'FQDN' if named_folder_address.addresses[0].fqdn is defined else
+                  'IP Range' if named_folder_address.addresses[0].ip_range is defined else
+                  'IP Wildcard' if named_folder_address.addresses[0].ip_wildcard is defined else 'Unknown' }}
+          Value: {{ named_folder_address.addresses[0].ip_netmask | default(
+                   named_folder_address.addresses[0].fqdn | default(
+                   named_folder_address.addresses[0].ip_range | default(
+                   named_folder_address.addresses[0].ip_wildcard | default('N/A')))) }}
+      when: named_folder_address.addresses | length > 0
+
+    # Get a specific address by name in a snippet
+    - name: Get a specific address by name in a snippet
+      cdot65.scm.address_info:
+        name: "test-range"
+        snippet: "Address-Test-Snippet"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_snippet_address
+
+    - name: Show named address in snippet
+      debug:
+        msg: >
+          Address: {{ named_snippet_address.addresses[0].name }}
+          Type: {{ 'IP Netmask' if named_snippet_address.addresses[0].ip_netmask is defined else
+                  'FQDN' if named_snippet_address.addresses[0].fqdn is defined else
+                  'IP Range' if named_snippet_address.addresses[0].ip_range is defined else
+                  'IP Wildcard' if named_snippet_address.addresses[0].ip_wildcard is defined else 'Unknown' }}
+          Value: {{ named_snippet_address.addresses[0].ip_netmask | default(
+                   named_snippet_address.addresses[0].fqdn | default(
+                   named_snippet_address.addresses[0].ip_range | default(
+                   named_snippet_address.addresses[0].ip_wildcard | default('N/A')))) }}
+      when: named_snippet_address.addresses | length > 0
+
+    # Get addresses by type
+    - name: Get netmask type addresses
+      cdot65.scm.address_info:
+        types: ["netmask"]
+        folder: "Address-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: netmask_addresses
+
+    - name: Show netmask addresses
+      debug:
+        msg: "Found {{ netmask_addresses.addresses | length }} netmask addresses"
+
+    - name: Display netmask address details
+      debug:
+        msg: "Netmask address: {{ item.name }} - {{ item.ip_netmask }}"
+      loop: "{{ netmask_addresses.addresses }}"
+      when: netmask_addresses.addresses | length > 0
+
+    # Get addresses by tag
+    - name: Get addresses with 'server' tag
+      cdot65.scm.address_info:
+        tags: ["Ansible"]
+        folder: "Address-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: server_addresses
+
+    - name: Show server tagged addresses
+      debug:
+        msg: "Found {{ server_addresses.addresses | length }} addresses tagged with 'Ansible'"
+
+    - name: Display tagged address details
+      debug:
+        msg: >
+          Tagged address: {{ item.name }}
+          Tags: {{ item.tag | default([]) }}
+          Type: {{ 'IP Netmask' if item.ip_netmask is defined else
+                  'FQDN' if item.fqdn is defined else
+                  'IP Range' if item.ip_range is defined else
+                  'IP Wildcard' if item.ip_wildcard is defined else 'Unknown' }}
+      loop: "{{ server_addresses.addresses }}"
+      when: server_addresses.addresses | length > 0
+
+    # Get addresses by ID (no container parameter needed)
+    - name: Get address by ID
+      cdot65.scm.address_info:
+        id: "{{ test_address.address.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: id_address
+      when: test_address.address is defined and test_address.address.id is defined
+
+    - name: Show address by ID
+      debug:
+        msg: >
+          Found address by ID:
+          Name: {{ id_address.addresses[0].name }}
+          ID: {{ id_address.addresses[0].id }}
+          Description: {{ id_address.addresses[0].description | default('No description') }}
+          Type: {{ 'IP Netmask' if id_address.addresses[0].ip_netmask is defined else
+                  'FQDN' if id_address.addresses[0].fqdn is defined else
+                  'IP Range' if id_address.addresses[0].ip_range is defined else
+                  'IP Wildcard' if id_address.addresses[0].ip_wildcard is defined else 'Unknown' }}
+          Value: {{ id_address.addresses[0].ip_netmask | default(
+                   id_address.addresses[0].fqdn | default(
+                   id_address.addresses[0].ip_range | default(
+                   id_address.addresses[0].ip_wildcard | default('N/A')))) }}
+          Tags: {{ id_address.addresses[0].tag | default([]) }}
+      when: id_address is defined and id_address.addresses | length > 0
+
+    # Cleanup
+    - name: Delete the test addresses in folder
+      cdot65.scm.address:
+        name: "{{ item }}"
+        folder: "Address-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "test-server"
+        - "test-domain"
+
+    - name: Delete the test address in snippet
+      cdot65.scm.address:
+        name: "test-range"
+        snippet: "Address-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Address-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Address-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
