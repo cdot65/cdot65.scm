@@ -1,0 +1,107 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM variable operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our variable examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Variables-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a folder-based variable
+    - name: Create a folder-based variable
+      cdot65.scm.variable:
+        name: "$subnet-variable"
+        type: "ip-netmask"
+        value: "192.168.1.0/24"
+        description: "Network subnet for test environment"
+        folder: "Variables-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: subnet_variable
+
+    - name: Display created variable information
+      debug:
+        var: subnet_variable.variable
+
+    # Update the variable with a new value
+    - name: Update the subnet variable
+      cdot65.scm.variable:
+        name: "$subnet-variable"
+        type: "ip-netmask"
+        value: "10.0.0.0/16"
+        description: "Updated network subnet for test environment"
+        folder: "Variables-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_variable
+
+    - name: Display updated variable information
+      debug:
+        var: updated_variable.variable
+
+    # Create a snippet and a snippet-based variable
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Variables-Test-Snippet"
+        description: "Snippet for variable testing"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a snippet-based variable
+      cdot65.scm.variable:
+        name: "web-port"
+        type: "port"
+        value: "8080"
+        description: "Web server port"
+        snippet: "Variables-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: snippet_variable
+
+    - name: Display snippet variable information
+      debug:
+        var: snippet_variable.variable
+
+    # Cleanup
+    - name: Delete the subnet variable
+      cdot65.scm.variable:
+        name: "$subnet-variable"
+        folder: "Variables-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the web-port variable
+      cdot65.scm.variable:
+        name: "web-port"
+        snippet: "Variables-Test-Snippet" 
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Variables-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Variables-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
