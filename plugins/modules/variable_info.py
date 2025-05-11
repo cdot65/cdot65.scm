@@ -229,10 +229,7 @@ def main():
                 if not params.get("folder"):
                     module.fail_json(msg="When retrieving a variable by name, 'folder' parameter is also required")
 
-                variable_obj = client.variable.fetch(
-                    name=params.get("name"),
-                    folder=params.get("folder")
-                )
+                variable_obj = client.variable.fetch(name=params.get("name"), folder=params.get("folder"))
                 if variable_obj:
                     result["variables"] = [json.loads(variable_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:

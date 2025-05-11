@@ -1,6 +1,6 @@
 # TODO: cdot65.scm Ansible Collection (Strata Cloud Manager)
 
-_Last updated: 2025-05-15_
+_Last updated: 2025-05-11_
 
 ## Immediate Tasks
 
@@ -23,12 +23,12 @@ _Last updated: 2025-05-15_
     - [x] `plugins/modules/variable.py`
     - [x] `plugins/modules/variable_info.py`
 - [x] Update README documentation with module matrix and examples
-- [ ] Implement address object management modules:
-    - [ ] `plugins/modules/address.py`
-    - [ ] `plugins/modules/address_info.py`
-- [ ] Implement address group management modules:
-    - [ ] `plugins/modules/address_group.py`
-    - [ ] `plugins/modules/address_group_info.py`
+- [x] Implement address object management modules:
+    - [x] `plugins/modules/address.py`
+    - [x] `plugins/modules/address_info.py`
+- [x] Implement address group management modules:
+    - [x] `plugins/modules/address_group.py`
+    - [x] `plugins/modules/address_group_info.py`
 - [ ] Implement application management modules:
     - [ ] `plugins/modules/application.py`
     - [ ] `plugins/modules/application_info.py`
@@ -60,6 +60,16 @@ _Last updated: 2025-05-15_
 - Monitor for SCM API/SDK changes and update dependencies as needed
 - Assess SCM API rate limits and async job handling strategies
 - Plan for future: Vault integration, inventory/lookup plugins, CI/CD automation
+
+## [2025-05-11] Address Group Modules Completed
+
+- Implemented address_group.py module with support for both static and dynamic address groups
+- Implemented address_group_info.py module with comprehensive filtering capabilities
+- Added example playbooks for address_group and address_group_info modules
+- Standardized container-based resource handling for all network object modules
+- Consistent error handling and parameter validation across modules
+- Both static (list of addresses) and dynamic (filter expression) address groups are supported
+- All modules maintain the established pattern for SCM resource management
 
 ## [2025-05-15] Info Modules - Standardized Error Handling and Client Usage
 
