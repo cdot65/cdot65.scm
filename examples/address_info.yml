@@ -75,13 +75,7 @@
 
     - name: Show addresses in folder
       debug:
-        msg: "Found {{ folder_addresses.addresses | length }} addresses in the Address-Test folder"
-
-    - name: Display folder address details
-      debug:
-        msg: "Address: {{ item.name }} ({{ item.id }}) - {{ item.ip_netmask | default(item.fqdn) | default(item.ip_range) | default('unknown type') }}"
-      loop: "{{ folder_addresses.addresses }}"
-      when: folder_addresses.addresses | length > 0
+        var: folder_addresses.addresses
 
     # Get addresses in a specific snippet
     - name: Get addresses in a specific snippet
@@ -92,13 +86,7 @@
 
     - name: Show addresses in snippet
       debug:
-        msg: "Found {{ snippet_addresses.addresses | length }} addresses in the Address-Test-Snippet snippet"
-
-    - name: Display snippet address details
-      debug:
-        msg: "Address: {{ item.name }} ({{ item.id }}) - {{ item.ip_netmask | default(item.fqdn) | default(item.ip_range) | default('unknown type') }}"
-      loop: "{{ snippet_addresses.addresses }}"
-      when: snippet_addresses.addresses | length > 0
+        var: snippet_addresses.addresses
 
     # Get a specific address by name (requires a container parameter)
     - name: Get a specific address by name in a folder
@@ -110,16 +98,7 @@
 
     - name: Show named address in folder
       debug:
-        msg: >
-          Address: {{ named_folder_address.addresses[0].name }}
-          Type: {{ 'IP Netmask' if named_folder_address.addresses[0].ip_netmask is defined else
-                  'FQDN' if named_folder_address.addresses[0].fqdn is defined else
-                  'IP Range' if named_folder_address.addresses[0].ip_range is defined else
-                  'IP Wildcard' if named_folder_address.addresses[0].ip_wildcard is defined else 'Unknown' }}
-          Value: {{ named_folder_address.addresses[0].ip_netmask | default(
-                   named_folder_address.addresses[0].fqdn | default(
-                   named_folder_address.addresses[0].ip_range | default(
-                   named_folder_address.addresses[0].ip_wildcard | default('N/A')))) }}
+        var: named_folder_address.addresses
       when: named_folder_address.addresses | length > 0
 
     # Get a specific address by name in a snippet
@@ -132,16 +111,7 @@
 
     - name: Show named address in snippet
       debug:
-        msg: >
-          Address: {{ named_snippet_address.addresses[0].name }}
-          Type: {{ 'IP Netmask' if named_snippet_address.addresses[0].ip_netmask is defined else
-                  'FQDN' if named_snippet_address.addresses[0].fqdn is defined else
-                  'IP Range' if named_snippet_address.addresses[0].ip_range is defined else
-                  'IP Wildcard' if named_snippet_address.addresses[0].ip_wildcard is defined else 'Unknown' }}
-          Value: {{ named_snippet_address.addresses[0].ip_netmask | default(
-                   named_snippet_address.addresses[0].fqdn | default(
-                   named_snippet_address.addresses[0].ip_range | default(
-                   named_snippet_address.addresses[0].ip_wildcard | default('N/A')))) }}
+        var: named_snippet_address.addresses
       when: named_snippet_address.addresses | length > 0
 
     # Get addresses by type
@@ -154,13 +124,7 @@
 
     - name: Show netmask addresses
       debug:
-        msg: "Found {{ netmask_addresses.addresses | length }} netmask addresses"
-
-    - name: Display netmask address details
-      debug:
-        msg: "Netmask address: {{ item.name }} - {{ item.ip_netmask }}"
-      loop: "{{ netmask_addresses.addresses }}"
-      when: netmask_addresses.addresses | length > 0
+        var: netmask_addresses.addresses
 
     # Get addresses by tag
     - name: Get addresses with 'server' tag
@@ -172,19 +136,7 @@
 
     - name: Show server tagged addresses
       debug:
-        msg: "Found {{ server_addresses.addresses | length }} addresses tagged with 'Ansible'"
-
-    - name: Display tagged address details
-      debug:
-        msg: >
-          Tagged address: {{ item.name }}
-          Tags: {{ item.tag | default([]) }}
-          Type: {{ 'IP Netmask' if item.ip_netmask is defined else
-                  'FQDN' if item.fqdn is defined else
-                  'IP Range' if item.ip_range is defined else
-                  'IP Wildcard' if item.ip_wildcard is defined else 'Unknown' }}
-      loop: "{{ server_addresses.addresses }}"
-      when: server_addresses.addresses | length > 0
+        var: server_addresses.addresses
 
     # Get addresses by ID (no container parameter needed)
     - name: Get address by ID
@@ -196,20 +148,7 @@
 
     - name: Show address by ID
       debug:
-        msg: >
-          Found address by ID:
-          Name: {{ id_address.addresses[0].name }}
-          ID: {{ id_address.addresses[0].id }}
-          Description: {{ id_address.addresses[0].description | default('No description') }}
-          Type: {{ 'IP Netmask' if id_address.addresses[0].ip_netmask is defined else
-                  'FQDN' if id_address.addresses[0].fqdn is defined else
-                  'IP Range' if id_address.addresses[0].ip_range is defined else
-                  'IP Wildcard' if id_address.addresses[0].ip_wildcard is defined else 'Unknown' }}
-          Value: {{ id_address.addresses[0].ip_netmask | default(
-                   id_address.addresses[0].fqdn | default(
-                   id_address.addresses[0].ip_range | default(
-                   id_address.addresses[0].ip_wildcard | default('N/A')))) }}
-          Tags: {{ id_address.addresses[0].tag | default([]) }}
+        var: id_address.addresses
       when: id_address is defined and id_address.addresses | length > 0
 
     # Cleanup

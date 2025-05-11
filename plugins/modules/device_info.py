@@ -183,6 +183,7 @@ def main():
     # Define the module argument specification
     module_args = dict(
         id=dict(type="str", required=False),
+        name=dict(type="str", required=False),
         serial_number=dict(type="str", required=False),
         model=dict(type="str", required=False),
         type=dict(type="str", required=False),
@@ -217,9 +218,19 @@ def main():
             except ObjectNotPresentError as e:
                 module.fail_json(msg=f"Failed to retrieve device info: {e}")
 
+        # Fetch a device by name
+        elif params.get("name"):
+            try:
+                device = client.device.fetch(name=params.get("name"))
+                if device:
+                    result["devices"] = [json.loads(device.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve device info: {e}")
+
         # Fetch a device by serial number
         elif params.get("serial_number"):
             try:
+                # The API treats serial_number as a unique identifier similar to name
                 device = client.device.fetch(name=params.get("serial_number"))
                 if device:
                     result["devices"] = [json.loads(device.model_dump_json(exclude_unset=True))]
