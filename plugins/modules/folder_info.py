@@ -7,6 +7,7 @@ import json
 
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
+from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
 ---
@@ -137,29 +138,59 @@ def main():
     # Get parameters
     params = module.params
 
+    # Initialize results
     result = {"folders": []}
 
     try:
         # Initialize SCM client
-        client = ScmClient(access_token=params["scm_access_token"])
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
-        # Get folder by ID if specified
+        # Get folder by id
         if params.get("id"):
-            folder = client.folder.get(params.get("id"))
-            if folder:
-                result["folders"] = [json.loads(folder.model_dump_json(exclude_unset=True))]
+            try:
+                folder_obj = client.folder.get(params.get("id"))
+                if folder_obj:
+                    result["folders"] = [json.loads(folder_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve folder info: {e}")
+
+        # Fetch a folder by name
+        elif params.get("name"):
+            try:
+                folder_obj = client.folder.fetch(name=params.get("name"))
+                if folder_obj:
+                    result["folders"] = [json.loads(folder_obj.model_dump_json(exclude_unset=True))]
+            except ObjectNotPresentError as e:
+                module.fail_json(msg=f"Failed to retrieve folder info: {e}")
+
         else:
-            # List all folders
-            folders = client.folder.list()
-            folder_dicts = [json.loads(f.model_dump_json(exclude_unset=True)) for f in folders]
-            # Filter by name if specified
-            if params.get("name"):
-                folder_dicts = [f for f in folder_dicts if f.get("name") == params.get("name")]
-            # Filter by parent if specified
+            # Prepare filter parameters for the SDK
+            filter_params = {}
             if params.get("parent"):
-                folder_dicts = [f for f in folder_dicts if f.get("parent") == params.get("parent")]
+                filter_params["parent"] = params.get("parent")
+
+            # List folders with filters
+            if filter_params:
+                folders = client.folder.list(**filter_params)
+            else:
+                folders = client.folder.list()
+
+            # Convert to a list of dicts
+            folder_dicts = [json.loads(f.model_dump_json(exclude_unset=True)) for f in folders]
+
+            # Add to results
             result["folders"] = folder_dicts
+
+        # Return results
         module.exit_json(**result)
+
+    # Handle errors
+    except (InvalidObjectError, APIError) as e:
+        module.fail_json(
+            msg=f"API error: {e}",
+            error_code=getattr(e, "error_code", None),
+            details=getattr(e, "details", None),
+        )
     except Exception as e:
         module.fail_json(msg=f"Failed to retrieve folder info: {e}")
 
