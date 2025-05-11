@@ -54,9 +54,10 @@ options:
             - Filter dynamic address groups by filter pattern.
             - Only applies to dynamic address groups.
             - This is a substring search on the dynamic_filter field.
+            - For example, to find filters containing aws.ec2.tag.Server, use filter_pattern="aws.ec2.tag.Server"
         type: str
         required: false
-    tags:
+    tag:
         description:
             - Filter address groups by tags.
         type: list
@@ -144,13 +145,13 @@ EXAMPLES = r"""
 
 - name: Get dynamic address groups with filter matching a pattern
   cdot65.scm.address_group_info:
-    filter_pattern: "tag.Server = 'web'"
+    filter_pattern: "'aws.ec2.tag.Server"
     scm_access_token: "{{ scm_access_token }}"
   register: filtered_address_groups
 
 - name: Get address groups with specific tags
   cdot65.scm.address_group_info:
-    tags: ["web", "dynamic"]
+    tag: ["web", "dynamic"]
     scm_access_token: "{{ scm_access_token }}"
   register: tagged_address_groups
 
@@ -204,7 +205,7 @@ address_groups:
             description: Filter expression for the dynamic group
             type: str
             returned: for dynamic address groups
-            sample: "tag.Server = 'web'"
+            sample: "'aws.ec2.tag.Server.web'"
         tag:
             description: Tags associated with the address group
             type: list
@@ -241,7 +242,7 @@ def main():
         type=dict(type="str", required=False, choices=["static", "dynamic"]),
         member=dict(type="str", required=False),
         filter_pattern=dict(type="str", required=False),
-        tags=dict(type="list", elements="str", required=False),
+        tag=dict(type="list", elements="str", required=False),
         folder=dict(type="str", required=False),
         snippet=dict(type="str", required=False),
         device=dict(type="str", required=False),
@@ -298,7 +299,7 @@ def main():
                 # We need a container for the fetch operation
                 if not container_type or not container_name:
                     module.fail_json(
-                        msg="When retrieving an address group by name, one of 'folder', 'snippet', or 'device' parameter is required"
+                        msg="When retrieving an address group by name, exactly one of 'folder', 'snippet', or 'device' parameter is required"
                     )
 
                 # For any container type, fetch the address group object
@@ -321,7 +322,7 @@ def main():
                 filter_params["device"] = params.get("device")
             else:
                 module.fail_json(
-                    msg="At least one container parameter (folder, snippet, or device) is required for listing address groups"
+                    msg="Exactly one container parameter (folder, snippet, or device) is required for listing address groups"
                 )
 
             # Add exact_match parameter if specified
@@ -353,9 +354,9 @@ def main():
                         continue
 
                 # Filter by tags
-                if params.get("tags") and hasattr(group, "tag"):
+                if params.get("tag") and hasattr(group, "tag"):
                     group_tags = getattr(group, "tag", [])
-                    if not all(tag in group_tags for tag in params.get("tags")):
+                    if not all(tag in group_tags for tag in params.get("tag")):
                         continue
 
                 # Add to filtered results

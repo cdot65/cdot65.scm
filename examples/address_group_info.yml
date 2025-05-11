@@ -2,22 +2,21 @@
 # Example playbook for retrieving address group information in Strata Cloud Manager
 # This playbook demonstrates various ways to query address groups
 
-- name: Get address group information from SCM
+- name: Authenticate with SCM using the auth role
   hosts: localhost
-  connection: local
-  gather_facts: false
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
   vars_files:
-    - ../vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+    - ../vault.yml
 
+- name: Query SCM address group information using the established session
+  hosts: localhost
+  gather_facts: no
   tasks:
-    # Authenticate with SCM
-    - name: Authenticate with SCM
-      ansible.builtin.include_role:
-        name: cdot65.scm.auth
-      vars:
-        scm_client_id: "{{ scm_client_id }}"
-        scm_client_secret: "{{ scm_client_secret }}"
-        scm_tsg_id: "{{ scm_tsg_id }}"
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
 
     # Create test resources for demonstration
     - name: Create a test folder
@@ -54,13 +53,38 @@
       cdot65.scm.address_group:
         name: "static-servers-folder"
         description: "Static server group in folder"
+        group_type: "static"
         static_addresses:
           - "test-server-1"
           - "test-server-2"
         folder: "AG-Test-Folder"
-        tag:
-          - "servers"
-          - "static"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create address objects in snippet
+    - name: Create address objects for snippet static group
+      cdot65.scm.address:
+        name: "{{ item }}"
+        ip_netmask: "10.0.1.{{ idx }}/32"
+        snippet: "AG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - "internal-server-1"
+        - "internal-server-2"
+      loop_control:
+        index_var: idx
+
+# Create a static address group in a snippet
+    - name: Create a static address group in snippet
+      cdot65.scm.address_group:
+        name: "static-servers-snippet"  # Fixed the name to match cleanup
+        description: "Static server group in snippet"
+        group_type: "static"
+        static_addresses:
+          - "internal-server-1"
+          - "internal-server-2"
+        snippet: "AG-Test-Snippet"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -69,27 +93,12 @@
       cdot65.scm.address_group:
         name: "dynamic-servers-folder"
         description: "Dynamic server group in folder"
-        dynamic_filter: "tag.Server = 'web'"
+        group_type: "dynamic"
+        dynamic_filter: "'aws.ec2.tag.Server.web'"
         folder: "AG-Test-Folder"
-        tag:
-          - "servers"
-          - "dynamic"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
-    # Create a static address group in snippet
-    - name: Create a static address group in snippet
-      cdot65.scm.address_group:
-        name: "static-servers-snippet"
-        description: "Static server group in snippet"
-        static_addresses:
-          - "internal-server-1"
-          - "internal-server-2"
-        snippet: "AG-Test-Snippet"
-        tag:
-          - "internal"
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
 
     # All address group queries require a container parameter (folder, snippet, or device)
       
@@ -102,17 +111,7 @@
 
     - name: Display folder groups
       ansible.builtin.debug:
-        msg: "Found {{ folder_groups.address_groups | length }} address groups in the AG-Test-Folder"
-
-    - name: Display folder address group details
-      ansible.builtin.debug:
-        msg: >
-          Group: {{ item.name }}
-          Type: {{ 'Static' if item.static_addresses is defined else 'Dynamic' if item.dynamic_filter is defined else 'Unknown' }}
-          {{ 'Members: ' + (item.static_addresses | join(', ')) if item.static_addresses is defined else
-             'Filter: ' + item.dynamic_filter if item.dynamic_filter is defined else '' }}
-      loop: "{{ folder_groups.address_groups }}"
-      when: folder_groups.address_groups | length > 0
+        var: folder_groups.address_groups
 
     # Filter by container - snippet
     - name: Get address groups in a specific snippet
@@ -123,77 +122,43 @@
       
     - name: Display snippet groups
       ansible.builtin.debug:
-        msg: "Found {{ snippet_groups.address_groups | length }} address groups in the AG-Test-Snippet"
-
-    - name: Display snippet address group details
-      ansible.builtin.debug:
-        msg: >
-          Group: {{ item.name }}
-          Type: {{ 'Static' if item.static_addresses is defined else 'Dynamic' if item.dynamic_filter is defined else 'Unknown' }}
-          {{ 'Members: ' + (item.static_addresses | join(', ')) if item.static_addresses is defined else
-             'Filter: ' + item.dynamic_filter if item.dynamic_filter is defined else '' }}
-      loop: "{{ snippet_groups.address_groups }}"
-      when: snippet_groups.address_groups | length > 0
+        var: snippet_groups.address_groups
 
     # Filter by type - static groups
     - name: Get static address groups
       cdot65.scm.address_group_info:
         type: "static"
+        folder: "AG-Test-Folder"
         scm_access_token: "{{ scm_access_token }}"
       register: static_groups
       
     - name: Display static groups
       ansible.builtin.debug:
-        msg: "Found {{ static_groups.address_groups | length }} static address groups"
-
-    - name: Display static group details
-      ansible.builtin.debug:
-        msg: >
-          Static group: {{ item.name }}
-          Members: {{ item.static_addresses | join(', ') }}
-          Container: {{ item.folder | default(item.snippet | default(item.device | default('Unknown'))) }}
-      loop: "{{ static_groups.address_groups }}"
-      when: static_groups.address_groups | length > 0
+        var: static_groups.address_groups
 
     # Filter by type - dynamic groups
     - name: Get dynamic address groups
       cdot65.scm.address_group_info:
         type: "dynamic"
+        folder: "AG-Test-Folder"
         scm_access_token: "{{ scm_access_token }}"
       register: dynamic_groups
       
     - name: Display dynamic groups
       ansible.builtin.debug:
-        msg: "Found {{ dynamic_groups.address_groups | length }} dynamic address groups"
-
-    - name: Display dynamic group details
-      ansible.builtin.debug:
-        msg: >
-          Dynamic group: {{ item.name }}
-          Filter: {{ item.dynamic_filter }}
-          Container: {{ item.folder | default(item.snippet | default(item.device | default('Unknown'))) }}
-      loop: "{{ dynamic_groups.address_groups }}"
-      when: dynamic_groups.address_groups | length > 0
+        var: dynamic_groups.address_groups
 
     # Filter by tags
-    - name: Get address groups with specific tag
-      cdot65.scm.address_group_info:
-        tags: ["servers"]
-        scm_access_token: "{{ scm_access_token }}"
-      register: tagged_groups
-      
-    - name: Display tagged groups
-      ansible.builtin.debug:
-        msg: "Found {{ tagged_groups.address_groups | length }} address groups with 'servers' tag"
-
-    - name: Display tagged group details
-      ansible.builtin.debug:
-        msg: >
-          Tagged group: {{ item.name }}
-          Tags: {{ item.tag | default([]) }}
-          Type: {{ 'Static' if item.static_addresses is defined else 'Dynamic' if item.dynamic_filter is defined else 'Unknown' }}
-      loop: "{{ tagged_groups.address_groups }}"
-      when: tagged_groups.address_groups | length > 0
+#    - name: Get address groups with specific tag
+#      cdot65.scm.address_group_info:
+#        tag: ["Ansible"]
+#        folder: "AG-Test-Folder"
+#        scm_access_token: "{{ scm_access_token }}"
+#      register: tagged_groups
+#
+#    - name: Display tagged groups
+#      ansible.builtin.debug:
+#        var: tagged_groups.address_groups
 
     # Get a specific group by name (requires container parameter)
     - name: Get specific address group by name in folder
@@ -205,18 +170,7 @@
       
     - name: Display specific folder group details
       ansible.builtin.debug:
-        msg: >
-          Group details:
-          Name: {{ specific_folder_group.address_groups[0].name }}
-          ID: {{ specific_folder_group.address_groups[0].id }}
-          Description: {{ specific_folder_group.address_groups[0].description | default('No description') }}
-          Type: {{ 'Static' if specific_folder_group.address_groups[0].static_addresses is defined else
-                  'Dynamic' if specific_folder_group.address_groups[0].dynamic_filter is defined else 'Unknown' }}
-          {{ 'Members: ' + (specific_folder_group.address_groups[0].static_addresses | join(', '))
-             if specific_folder_group.address_groups[0].static_addresses is defined else
-             'Filter: ' + specific_folder_group.address_groups[0].dynamic_filter
-             if specific_folder_group.address_groups[0].dynamic_filter is defined else '' }}
-          Tags: {{ specific_folder_group.address_groups[0].tag | default([]) }}
+        var: specific_folder_group.address_groups
       when: specific_folder_group.address_groups | length > 0
 
     # Get a specific group by name in snippet
@@ -229,74 +183,32 @@
       
     - name: Display specific snippet group details
       ansible.builtin.debug:
-        msg: >
-          Group details:
-          Name: {{ specific_snippet_group.address_groups[0].name }}
-          ID: {{ specific_snippet_group.address_groups[0].id }}
-          Description: {{ specific_snippet_group.address_groups[0].description | default('No description') }}
-          Type: {{ 'Static' if specific_snippet_group.address_groups[0].static_addresses is defined else
-                  'Dynamic' if specific_snippet_group.address_groups[0].dynamic_filter is defined else 'Unknown' }}
-          {{ 'Members: ' + (specific_snippet_group.address_groups[0].static_addresses | join(', '))
-             if specific_snippet_group.address_groups[0].static_addresses is defined else
-             'Filter: ' + specific_snippet_group.address_groups[0].dynamic_filter
-             if specific_snippet_group.address_groups[0].dynamic_filter is defined else '' }}
-          Tags: {{ specific_snippet_group.address_groups[0].tag | default([]) }}
+        var: specific_snippet_group.address_groups
       when: specific_snippet_group.address_groups | length > 0
 
     # Filter by static group member
     - name: Get groups containing a specific address
       cdot65.scm.address_group_info:
         member: "test-server-1"
+        folder: "AG-Test-Folder"
         scm_access_token: "{{ scm_access_token }}"
       register: member_groups
       
     - name: Display groups with specific member
       ansible.builtin.debug:
-        msg: "Found {{ member_groups.address_groups | length }} groups containing test-server-1"
-
-    - name: Display member group details
-      ansible.builtin.debug:
-        msg: >
-          Group with member: {{ item.name }}
-          Members: {{ item.static_addresses | join(', ') }}
-          Container: {{ item.folder | default(item.snippet | default(item.device | default('Unknown'))) }}
-      loop: "{{ member_groups.address_groups }}"
-      when: member_groups.address_groups | length > 0
+        var: member_groups.address_groups
 
     # Filter by dynamic filter pattern
     - name: Get groups with specific filter pattern
       cdot65.scm.address_group_info:
-        filter_pattern: "tag.Server"
+        filter_pattern: "aws.ec2.tag.Server"
+        folder: "AG-Test-Folder"
         scm_access_token: "{{ scm_access_token }}"
       register: filter_groups
       
     - name: Display filter pattern groups
       ansible.builtin.debug:
-        msg: "Found {{ filter_groups.address_groups | length }} groups with filter containing 'tag.Server'"
-
-    - name: Display filter group details
-      ansible.builtin.debug:
-        msg: >
-          Dynamic group with filter: {{ item.name }}
-          Filter: {{ item.dynamic_filter }}
-          Container: {{ item.folder | default(item.snippet | default(item.device | default('Unknown'))) }}
-      loop: "{{ filter_groups.address_groups }}"
-      when: filter_groups.address_groups | length > 0
-
-    # Test error case (name without container) - will be skipped in the playbook
-    - name: Try to get group by name without container (this should fail)
-      cdot65.scm.address_group_info:
-        name: "static-servers-folder"
-        # Missing folder/snippet/device parameter
-        scm_access_token: "{{ scm_access_token }}"
-      register: should_fail
-      ignore_errors: yes
-      when: false  # Skip this in playbook run
-      
-    - name: Display error for missing container
-      ansible.builtin.debug:
-        var: should_fail
-      when: should_fail is defined and should_fail.failed
+        var: filter_groups.address_groups
 
     # Cleanup
     - name: Delete address groups from folder
@@ -327,12 +239,14 @@
         - "test-server-2"
         - "test-server-3"
 
-    - name: Delete test folder and snippet
+    - name: Delete test folder
       cdot65.scm.folder:
         name: "AG-Test-Folder"
         parent: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: absent
+
+    - name: Delete test snippet
       cdot65.scm.snippet:
         name: "AG-Test-Snippet"
         scm_access_token: "{{ scm_access_token }}"
