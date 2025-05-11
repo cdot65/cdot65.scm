@@ -389,7 +389,7 @@ def main():
 
                     # Check if it needs updating
                     if current_filter != params.get("dynamic_filter"):
-                        # Create a dynamic filter using correct format
+                        # Create a dynamic filter using the correct format
                         update_fields["dynamic"] = {
                             "filter": params.get("dynamic_filter")
                         }
@@ -425,7 +425,7 @@ def main():
                     if params.get(k) is not None
                 }
 
-                # Explicitly add the group type field based on group_type parameter
+                # Explicitly add the group type field based on the group_type parameter
                 if params.get("group_type") == "static":
                     create_payload["static"] = params.get("static_addresses")
                 elif params.get("group_type") == "dynamic":
