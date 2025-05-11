@@ -1000,14 +1000,14 @@ files = [
 
 [[package]]
 name = "pan-scm-sdk"
-version = "0.3.32"
+version = "0.3.33"
 description = "Python SDK for Palo Alto Networks Strata Cloud Manager."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pan_scm_sdk-0.3.32-py3-none-any.whl", hash = "sha256:4ef967bd7d08c6a4b5caa22f8f44d912cec43e861d94d1fe3ea62cafd4103d20"},
-    {file = "pan_scm_sdk-0.3.32.tar.gz", hash = "sha256:3ceeb5bbb1c341d128ab670fa704d8cad42110cc265a308cb708061df39aebb5"},
+    {file = "pan_scm_sdk-0.3.33-py3-none-any.whl", hash = "sha256:78d062d263ebaee3b63a96dee1591f1bcc8e8eb49adf5f5cecc2191f1372d371"},
+    {file = "pan_scm_sdk-0.3.33.tar.gz", hash = "sha256:2dda3372498ab8fd33926c7e1e9a7293389ae25c9d59059d7f6a3b04169878a0"},
 ]
 
 [package.dependencies]
@@ -2027,4 +2027,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "9752ae8a96e6fcbf9c89e64f2de7e21b9a90a3e24f452c6db400d8d84dce2359"
+content-hash = "98426d058f0cb3541a96aa916a302fbfe513973293ca0251c51a0d2c886aaa2a"

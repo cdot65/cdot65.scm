@@ -65,7 +65,7 @@
 
     - name: Create a snippet-based variable
       cdot65.scm.variable:
-        name: "web-port"
+        name: "$web-port"
         type: "port"
         value: "8080"
         description: "Web server port"
@@ -88,7 +88,7 @@
 
     - name: Delete the web-port variable
       cdot65.scm.variable:
-        name: "web-port"
+        name: "$web-port"
         snippet: "Variables-Test-Snippet" 
         scm_access_token: "{{ scm_access_token }}"
         state: absent
