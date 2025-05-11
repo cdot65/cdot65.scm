@@ -1,72 +1,109 @@
 # Ansible Collection for Strata Cloud Manager (SCM)
 
-This Ansible collection (`cdot65.scm`) provides modules to automate Palo Alto Networks' Strata Cloud Manager (SCM) platform operations. It enables infrastructure-as-code practices for managing SCM resources like folders, snippets, and security objects.
+This Ansible collection (`cdot65.scm`) provides modules to automate Palo Alto Networks' Strata Cloud Manager (SCM) platform operations. It enables infrastructure-as-code practices for managing SCM resources like folders, snippets, labels, variables, and security objects.
 
 ## Installation
 
 ```bash
 # Install collection from Ansible Galaxy
-poetry run ansible-galaxy collection install cdot65.scm
+ansible-galaxy collection install cdot65.scm
 
 # Install directly from GitHub
-poetry run ansible-galaxy collection install git+https://github.com/cdot65/cdot65.scm.git
+ansible-galaxy collection install git+https://github.com/cdot65/cdot65.scm.git
+```
+
+If you're using Poetry for dependency management:
+
+```bash
+# Install using Poetry
+poetry run ansible-galaxy collection install cdot65.scm
 ```
 
 ## Requirements
 
 - Ansible Core 2.17 or higher
 - Python 3.11 or higher
-- `pan-scm-sdk` version 0.3.32 (installed automatically as a dependency)
+- `pan-scm-sdk` version 0.3.33 (installed automatically as a dependency)
 
 ## Authentication
 
-The collection supports OAuth2 authentication. **All secrets (client ID, secret, TSG ID, etc.) must be provided via Ansible Vault-encrypted variable files. Do NOT use .env files or commit secrets to source control.**
+The collection uses OAuth2 authentication with the SCM API. **All secrets (client ID, client secret, TSG ID) must be provided via Ansible Vault-encrypted variable files.**
 
-Example:
+### Authentication Example
 
 ```yaml
 - name: Authenticate with SCM
   hosts: localhost
   vars_files:
-    - ../vault.yml  # Store secrets here (encrypted with Ansible Vault)
+    - vault.yml  # Store secrets here (encrypted with Ansible Vault)
   roles:
     - cdot65.scm.auth
 ```
 
-See `examples/auth.yml` for a full example.
+A typical `vault.yml` file should contain:
 
-> **Note:** Environment variables may be used for development only, but are NOT recommended or supported for production or in documentation. All examples and defaults require Ansible Vault.
+```yaml
+scm_client_id: "your-client-id"
+scm_client_secret: "your-client-secret"
+scm_tsg_id: "your-tsg-id"
+```
 
-## Best Practices for Secrets
-- Use `vault.yml` for secrets and encrypt it with Ansible Vault.
-- Never commit unencrypted secrets to version control.
-- Use `no_log: true` for tasks handling credentials.
+See `examples/auth.yml` for a full authentication example.
+
+> **Security Note:** Environment variables may be used for development only, but are NOT recommended for production. Always use Ansible Vault for secrets.
 
 ## Available Modules
 
-This collection includes the following modules:
+| Module | Type | Description | Status |
+|--------|------|-------------|--------|
+| `folder` | Resource | Create, update, or delete folders | ✅ Complete |
+| `folder_info` | Info | Retrieve folder information with filtering | ✅ Complete |
+| `label` | Resource | Create, update, or delete labels | ✅ Complete |
+| `label_info` | Info | Retrieve label information with filtering | ✅ Complete |
+| `snippet` | Resource | Create, update, or delete configuration snippets | ✅ Complete |
+| `snippet_info` | Info | Retrieve snippet information with filtering | ✅ Complete |
+| `variable` | Resource | Create, update, or delete variables | ✅ Complete |
+| `variable_info` | Info | Retrieve variable information with filtering | ✅ Complete |
+| `device_info` | Info | Retrieve device information with filtering by model, type, etc. | ✅ Complete |
+| `config_scope` | Resource | Manage configuration scopes | 🔄 Planned |
+| `config_scope_info` | Info | Retrieve configuration scope information | 🔄 Planned |
+| `address_object` | Resource | Manage address objects | 🔄 Planned |
+| `address_object_info` | Info | Retrieve address object information | 🔄 Planned |
+| `address_group` | Resource | Manage address groups | 🔄 Planned |
+| `address_group_info` | Info | Retrieve address group information | 🔄 Planned |
+| `service_object` | Resource | Manage service objects | 🔄 Planned |
+| `service_object_info` | Info | Retrieve service object information | 🔄 Planned |
+| `service_group` | Resource | Manage service groups | 🔄 Planned |
+| `service_group_info` | Info | Retrieve service group information | 🔄 Planned |
+| `deployment` | Action | Trigger configuration push/deployment | 🔄 Planned |
+| `job_info` | Info | Check job status | 🔄 Planned |
 
-### Resource Modules
+## Module Usage
 
-- `folder`, `folder_info`: Manage and retrieve folders
-- `label`, `label_info`: Manage and retrieve labels
-- `snippet`, `snippet_info`: Manage and retrieve snippets
-- `device_info`: Retrieve device information
-- `variable`, `variable_info`: Manage and retrieve variables
-- `config_scope`, `config_scope_info`: Manage and retrieve configuration scopes (planned)
-- `address_object`, `address_object_info`: Manage and retrieve address objects (planned)
-- `address_group`, `address_group_info`: Manage and retrieve address groups (planned)
-- `service_object`, `service_object_info`: Manage and retrieve service objects (planned)
-- `service_group`, `service_group_info`: Manage and retrieve service groups (planned)
+### Resource and Info Module Pattern
 
-### Action Modules
+The collection follows a consistent pattern:
+- **Resource modules**: Perform CRUD operations (e.g., `folder`, `label`, `snippet`, `variable`)
+- **Info modules**: Retrieve information about resources (e.g., `folder_info`, `label_info`, `snippet_info`, `variable_info`)
 
-- `deployment`: Trigger configuration push/deployment (planned)
-- `job_info`: Check job status (planned)
+All modules support:
+- Idempotent operations
+- Check mode
+- Detailed error handling
+- Authentication via SCM access token
+
+### Common Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `name` | Resource name | Yes (for most operations) |
+| `state` | Desired state (`present` or `absent`) | No (default: `present`) |
+| `scm_access_token` | Authentication token | Yes |
+| `description` | Resource description | No |
 
 ## Examples
 
-### Creating a new folder
+### Creating a Folder
 
 ```yaml
 - name: Create a folder
@@ -74,28 +111,46 @@ This collection includes the following modules:
     name: "Network Objects"
     description: "Folder for network objects"
     state: present
-```
-
-### Retrieving all folders
-
-```yaml
-- name: Get all folders
-  cdot65.scm.folder_info:
-  register: folders_result
-
-- name: Display folders
-  debug:
-    var: folders_result.resources
-```
-
-### Retrieving device information
-
-```yaml
-- name: Get all devices
-  cdot65.scm.device_info:
     scm_access_token: "{{ scm_access_token }}"
-  register: all_devices
+```
 
+### Creating a Variable in a Folder
+
+```yaml
+- name: Create a variable
+  cdot65.scm.variable:
+    name: "subnet-variable"
+    folder: "Network Objects"
+    value: "10.1.1.0/24"
+    type: "ip-netmask"
+    description: "Network subnet for department A"
+    scm_access_token: "{{ scm_access_token }}"
+```
+
+### Getting Variables in a Folder
+
+```yaml
+- name: Get all variables in a folder
+  cdot65.scm.variable_info:
+    folder: "Network Objects"
+    scm_access_token: "{{ scm_access_token }}"
+  register: folder_variables
+```
+
+### Getting a Specific Variable
+
+```yaml
+- name: Get a specific variable
+  cdot65.scm.variable_info:
+    name: "subnet-variable"
+    folder: "Network Objects"  # folder is required when getting a variable by name
+    scm_access_token: "{{ scm_access_token }}"
+  register: specific_variable
+```
+
+### Filtering Devices by Model
+
+```yaml
 - name: Get VM-series firewalls
   cdot65.scm.device_info:
     model: "PA-VM"
@@ -103,9 +158,24 @@ This collection includes the following modules:
   register: vm_devices
 ```
 
+## Example Playbooks
+
+The collection includes several example playbooks in the `examples/` directory:
+
+- `auth.yml` - Authentication example
+- `folder.yml` - Create and manage folders
+- `folder_info.yml` - Retrieve folder information
+- `label.yml` - Create and manage labels
+- `label_info.yml` - Retrieve label information
+- `snippet.yml` - Create and manage snippets
+- `snippet_info.yml` - Retrieve snippet information
+- `variable.yml` - Create and manage variables
+- `variable_info.yml` - Retrieve variable information
+- `device_info.yml` - Retrieve device information
+
 ## Development
 
-This collection is built using [poetry](https://python-poetry.org/) version 2.1.1.
+This collection is built using [poetry](https://python-poetry.org/) for dependency management.
 
 ```bash
 # Setup development environment
@@ -132,6 +202,10 @@ make lint-fix
 # Run all tests
 make test
 ```
+
+## Contributing
+
+Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines.
 
 ## License
 
