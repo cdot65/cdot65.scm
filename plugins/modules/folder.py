@@ -249,7 +249,6 @@ def main():
                     result["changed"] = False
                     module.exit_json(**result)
             else:
-
                 # Create payload
                 create_payload = {
                     k: params[k]
@@ -270,7 +269,11 @@ def main():
 
                 # Create a new folder
                 if not module.check_mode:
+
+                    # Create folder
                     created = client.folder.create(create_payload)
+
+                    # Return the created folder
                     result["folder"] = json.loads(created.model_dump_json(exclude_unset=True))
                 else:
                     # Simulate created folder (minimal info)
