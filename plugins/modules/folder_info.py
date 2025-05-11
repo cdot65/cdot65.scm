@@ -166,8 +166,21 @@ def main():
         else:
             # Prepare filter parameters for the SDK
             filter_params = {}
+
+            # Add parent filter if specified (either ID or name)
             if params.get("parent"):
-                filter_params["parent"] = params.get("parent")
+                # Check if the parent parameter is an ID (UUID format) or a name
+                if "-" in params.get("parent") and len(params.get("parent").replace("-", "")) == 32:
+                    # Looks like a UUID, use directly as parent ID
+                    filter_params["parent"] = params.get("parent")
+                else:
+                    # Try to resolve parent name to ID
+                    try:
+                        parent_folder = client.folder.fetch(name=params.get("parent"))
+                        if parent_folder:
+                            filter_params["parent"] = parent_folder.id
+                    except ObjectNotPresentError:
+                        module.fail_json(msg=f"Parent folder '{params.get('parent')}' not found")
 
             # List folders with filters
             if filter_params:
