@@ -16,6 +16,10 @@ This document provides a high-level summary of the structure and workflow patter
 - `snippet_info.py`
 - `variable.py`
 - `variable_info.py`
+- `address.py`
+- `address_info.py`
+- `address_group.py`
+- `address_group_info.py`
 
 ---
 
@@ -52,18 +56,22 @@ All modules generally follow this structure:
 
 ## Workflow Patterns
 
-- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`):
+- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`):
   - Support `state: present/absent` for idempotent create/update/delete
   - Require resource identifiers (name/id) and container context
   - Validate mutually exclusive container args (e.g., folder/snippet/device)
   - Use `.model_dump(exclude_unset=True)` for serialization
   - Return managed resource dict and `changed` flag
+  - Address module supports different address types (ip_netmask, ip_range, etc.)
+  - Address Group module supports both static and dynamic group types
 
 - **Info/Query Modules** (`*_info.py`):
   - Read-only: no `state` param, always `changed: False`
   - Support filters by id, name, label, etc.
   - Return list(s) of resource dicts
   - Support `mutually_exclusive` for id/name
+  - Address_info supports filtering by address type
+  - Address_group_info supports filtering by group type (static or dynamic) and member contents
 
 - **Auth Module** (`auth.py`):
   - Validates credentials, returns token info
