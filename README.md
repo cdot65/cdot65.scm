@@ -91,6 +91,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [address_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group_info.py) | Retrieve address group information | ✅ |
 | [application](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application.py) | Manage application objects | ✅ |
 | [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | ✅ |
+| [application_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group.py) | Manage application groups | ✅ |
+| [application_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group_info.py) | Retrieve application group information | ✅ |
 
 ### Configuration and Deployment Modules (Planned)
 
@@ -207,6 +209,8 @@ The collection includes several example playbooks in the `examples/` directory:
 - `address_group_info.yml` - Retrieve address group information
 - `application.yml` - Create and manage application objects
 - `application_info.yml` - Retrieve application information
+- `application_group.yml` - Create and manage application groups
+- `application_group_info.yml` - Retrieve application group information
 
 ## Development
 

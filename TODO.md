@@ -32,9 +32,9 @@ _Last updated: 2025-05-11_
 - [x] Implement application management modules:
     - [x] `plugins/modules/application.py`
     - [x] `plugins/modules/application_info.py`
-- [ ] Implement application group management modules:
-    - [ ] `plugins/modules/application_group.py`
-    - [ ] `plugins/modules/application_group_info.py`
+- [x] Implement application group management modules:
+    - [x] `plugins/modules/application_group.py`
+    - [x] `plugins/modules/application_group_info.py`
 - [ ] Enhance error handling for all modules with consistent patterns
 - [ ] Create integration tests for all resource modules
 
@@ -63,6 +63,16 @@ _Last updated: 2025-05-11_
 - Monitor for SCM API/SDK changes and update dependencies as needed
 - Assess SCM API rate limits and async job handling strategies
 - Plan for future: Vault integration, inventory/lookup plugins, CI/CD automation
+
+## [2025-05-11] Application Group Modules Completed
+
+- Implemented application_group.py module with support for static application groups
+- Implemented application_group_info.py module with comprehensive filtering capabilities
+- Discovered that dynamic application groups in SCM must reference existing application groups
+- Updated documentation to clarify proper usage patterns for application groups
+- Created example playbooks demonstrating static application groups and group references
+- Added application group filtering by type, member, and tags
+- Standardized serialization, error handling, and parameter validation
 
 ## [2025-05-11] Address Group Modules Completed
 

@@ -39,13 +39,9 @@
         name: "web-protocols"
         description: "Common web protocols"
         static_applications:
-          - "http"
-          - "https"
-          - "http2"
+          - "web-browsing"
+          - "ssl"
         folder: "AppGroups-Info-Test"
-        tag:
-          - "web"
-          - "protocols"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -58,36 +54,27 @@
           - "pop3"
           - "imap"
         folder: "AppGroups-Info-Test"
-        tag:
-          - "email"
-          - "protocols"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
     # Create sample dynamic application groups
-    - name: Create a dynamic application group for business applications
-      cdot65.scm.application_group:
-        name: "business-applications"
-        description: "All business system applications"
-        dynamic_filter: "'app.category.business-systems'"
-        snippet: "AppGroups-Info-Test-Snippet"
-        tag:
-          - "business"
-          - "dynamic"
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
+#    - name: Create a dynamic application group for business applications
+#      cdot65.scm.application_group:
+#        name: "business-applications"
+#        description: "All business system applications"
+#        dynamic_filter: "business-systems"
+#        snippet: "AppGroups-Info-Test-Snippet"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
 
-    - name: Create a dynamic application group for high-risk applications
-      cdot65.scm.application_group:
-        name: "high-risk-applications"
-        description: "Applications with a high risk profile"
-        dynamic_filter: "'app.risk=4' or 'app.risk=5'"
-        snippet: "AppGroups-Info-Test-Snippet"
-        tag:
-          - "risk"
-          - "dynamic"
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
+#    - name: Create a dynamic application group for high-risk applications
+#      cdot65.scm.application_group:
+#        name: "high-risk-applications"
+#        description: "Applications with a high risk profile"
+#        dynamic_filter: "'app.risk=4' or 'app.risk=5'"
+#        snippet: "AppGroups-Info-Test-Snippet"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
 
     # Now start querying for information
 
@@ -164,7 +151,7 @@
     # Query 6: Get application groups with a specific member
     - name: Get application groups containing HTTPS
       cdot65.scm.application_group_info:
-        member: "https"
+        member: "web-browsing"
         folder: "AppGroups-Info-Test"
         scm_access_token: "{{ scm_access_token }}"
       register: https_groups

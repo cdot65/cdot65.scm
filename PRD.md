@@ -88,7 +88,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Configuration Scopes (`config_scope`, `config_scope_info`)
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
-    *   Application Groups (`application_group`, `application_group_info`)
+    *   Application Groups (`application_group`, `application_group_info`) — Complete ✅
 *   **Action Modules:**
     *   Trigger Configuration Push/Deployment (`deployment`)
     *   Check Job Status (`job_info`)
@@ -327,6 +327,10 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Implemented `application_group` and `application_group_info` modules with support for static application groups.
+- Determined that dynamic application groups in SCM must reference existing static groups as filters.
+- Updated documentation to clarify proper usage patterns for application groups.
+- Created example playbooks demonstrating both static and reference-based application groups.
 - Implemented `application` and `application_info` modules with support for application categorization and risk attributes.
 - Enhanced `device_info` module to use display_name for name searches, improving usability.
 - Fixed response format handling in device_info module to properly process the nested data structure from SCM API.

@@ -22,6 +22,8 @@ This document provides a high-level summary of the structure and workflow patter
 - `address_group_info.py`
 - `application.py`
 - `application_info.py`
+- `application_group.py`
+- `application_group_info.py`
 
 ---
 
@@ -58,7 +60,7 @@ All modules generally follow this structure:
 
 ## Workflow Patterns
 
-- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`):
+- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`, `application_group.py`):
   - Support `state: present/absent` for idempotent create/update/delete
   - Require resource identifiers (name/id) and container context
   - Validate mutually exclusive container args (e.g., folder/snippet/device)
@@ -67,6 +69,7 @@ All modules generally follow this structure:
   - Address module supports different address types (ip_netmask, ip_range, etc.)
   - Address Group module supports both static and dynamic group types
   - Application module supports application categorization and risk attributes
+  - Application Group module supports static groups and dynamic groups that reference other groups
 
 - **Info/Query Modules** (`*_info.py`):
   - Read-only: no `state` param, always `changed: False`
@@ -78,6 +81,7 @@ All modules generally follow this structure:
   - Address_info supports filtering by address type
   - Address_group_info supports filtering by group type (static or dynamic) and member contents
   - Application_info supports filtering by category, subcategory, technology, and risk level
+  - Application_group_info supports filtering by group type, members, and filter patterns
 
 - **Auth Module** (`auth.py`):
   - Validates credentials, returns token info

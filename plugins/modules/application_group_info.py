@@ -298,7 +298,9 @@ def main():
                     )
 
                 # For any container type, fetch the application group object
-                application_group_obj = client.application_group.fetch(name=params.get("name"), **{container_type: container_name})
+                application_group_obj = client.application_group.fetch(
+                    name=params.get("name"), **{container_type: container_name}
+                )
                 if application_group_obj:
                     result["application_groups"] = [json.loads(application_group_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:

@@ -338,7 +338,9 @@ def main():
 
                 # For any container type, fetch the application group
                 if container_type and container_name:
-                    application_group_obj = client.application_group.fetch(name=params.get("name"), **{container_type: container_name})
+                    application_group_obj = client.application_group.fetch(
+                        name=params.get("name"), **{container_type: container_name}
+                    )
                     if application_group_obj:
                         application_group_exists = True
             except ObjectNotPresentError:
