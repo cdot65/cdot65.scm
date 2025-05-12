@@ -30,8 +30,9 @@ options:
         required: false
     name:
         description:
-            - The name of the device to retrieve.
-            - If specified, the module will search for devices with this name.
+            - The display name of the device to retrieve.
+            - If specified, the module will search for devices with this display_name.
+            - This matches the name shown in the SCM UI, not the device's internal name/ID.
             - Mutually exclusive with I(id).
         type: str
         required: false
@@ -90,9 +91,9 @@ EXAMPLES = r"""
     scm_access_token: "{{ scm_access_token }}"
   register: device_details
 
-- name: Get a specific device by name
+- name: Get a specific device by display name
   cdot65.scm.device_info:
-    name: "DC-FW01"
+    name: "Datacenter-Firewall-01"  # This should match the display_name in SCM UI
     scm_access_token: "{{ scm_access_token }}"
   register: named_device
 
@@ -233,13 +234,25 @@ def main():
             except ObjectNotPresentError as e:
                 module.fail_json(msg=f"Failed to retrieve device info: {e}")
 
-        # Fetch a device by name
+        # Fetch a device by name (using display_name to match)
         elif params.get("name"):
             try:
-                device = client.device.fetch(name=params.get("name"))
-                if device:
-                    result["devices"] = [json.loads(device.model_dump_json(exclude_unset=True))]
-            except ObjectNotPresentError as e:
+                # First get all devices
+                response = client.device.list()
+                if hasattr(response, "data"):
+                    devices = response.data
+                else:
+                    devices = response
+
+                # Filter devices where display_name matches the provided name
+                matching_devices = [d for d in devices if getattr(d, "display_name", "") == params.get("name")]
+
+                if matching_devices:
+                    # Convert to JSON-serializable dict
+                    result["devices"] = [json.loads(d.model_dump_json(exclude_unset=True)) for d in matching_devices]
+                else:
+                    module.fail_json(msg=f"No devices found with display_name: {params.get('name')}")
+            except Exception as e:
                 module.fail_json(msg=f"Failed to retrieve device info: {e}")
 
         # Fetch a device by serial number
@@ -269,17 +282,17 @@ def main():
                 response = client.device.list()
 
             # Check if response has expected structure (with data field)
-            if hasattr(response, 'data'):
+            if hasattr(response, "data"):
                 # Access the data field that contains the list of devices
                 devices = response.data
                 # Convert to a list of dicts
                 device_dicts = [json.loads(d.model_dump_json(exclude_unset=True)) for d in devices]
                 # Add pagination metadata if available
-                if hasattr(response, 'limit'):
+                if hasattr(response, "limit"):
                     result["limit"] = response.limit
-                if hasattr(response, 'offset'):
+                if hasattr(response, "offset"):
                     result["offset"] = response.offset
-                if hasattr(response, 'total'):
+                if hasattr(response, "total"):
                     result["total"] = response.total
             else:
                 # Fallback for direct device list (older API versions or different endpoints)
