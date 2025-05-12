@@ -73,6 +73,8 @@ All modules generally follow this structure:
   - Support filters by id, name, label, etc.
   - Return list(s) of resource dicts
   - Support `mutually_exclusive` for id/name
+  - Device_info uses display_name for name searches (matching the UI name)
+  - Device_info supports proper pagination with SCM API structure (data, limit, offset, total)
   - Address_info supports filtering by address type
   - Address_group_info supports filtering by group type (static or dynamic) and member contents
   - Application_info supports filtering by category, subcategory, technology, and risk level

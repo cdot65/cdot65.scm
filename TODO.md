@@ -29,9 +29,12 @@ _Last updated: 2025-05-11_
 - [x] Implement address group management modules:
     - [x] `plugins/modules/address_group.py`
     - [x] `plugins/modules/address_group_info.py`
-- [ ] Implement application management modules:
-    - [ ] `plugins/modules/application.py`
-    - [ ] `plugins/modules/application_info.py`
+- [x] Implement application management modules:
+    - [x] `plugins/modules/application.py`
+    - [x] `plugins/modules/application_info.py`
+- [ ] Implement application group management modules:
+    - [ ] `plugins/modules/application_group.py`
+    - [ ] `plugins/modules/application_group_info.py`
 - [ ] Enhance error handling for all modules with consistent patterns
 - [ ] Create integration tests for all resource modules
 
@@ -70,6 +73,15 @@ _Last updated: 2025-05-11_
 - Consistent error handling and parameter validation across modules
 - Both static (list of addresses) and dynamic (filter expression) address groups are supported
 - All modules maintain the established pattern for SCM resource management
+
+## [2025-05-11] Application Modules and Device Info Enhancement
+
+- Implemented application.py and application_info.py modules
+- Enhanced device_info.py to search by display_name instead of internal name
+- Fixed device_info.py to properly handle the SCM API response structure with pagination
+- Added pagination metadata (limit, offset, total) to device_info response
+- Improved error handling for API response formats across info modules
+- Created example playbooks demonstrating application and display_name lookup usage
 
 ## [2025-05-15] Info Modules - Standardized Error Handling and Client Usage
 

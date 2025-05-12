@@ -84,10 +84,11 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Variables (`variable`, `variable_info`) — Complete ✅
     *   Address Objects (`address`, `address_info`) — Complete ✅
     *   Address Groups (`address_group`, `address_group_info`) — Complete ✅
+    *   Application Objects (`application`, `application_info`) — Complete ✅
     *   Configuration Scopes (`config_scope`, `config_scope_info`)
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
-    *   Application Objects (`application`, `application_info`)
+    *   Application Groups (`application_group`, `application_group_info`)
 *   **Action Modules:**
     *   Trigger Configuration Push/Deployment (`deployment`)
     *   Check Job Status (`job_info`)
@@ -281,16 +282,17 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Folder management modules (`folder`, `folder_info`) fully implemented with modern authentication (bearer token), robust serialization (Pydantic `.model_dump_json()`), and idempotent CRUD/query workflows. These serve as the reference for all future resource modules.
 - Label management modules (`label`, `label_info`) fully implemented.
 - Snippet management modules (`snippet`, `snippet_info`) fully implemented.
-- Device information module (`device_info`) implemented for read-only operations.
+- Device information module (`device_info`) implemented for read-only operations with display_name search support.
 - Variable management modules (`variable`, `variable_info`) fully implemented.
 - Address object modules (`address`, `address_info`) fully implemented.
 - Address group modules (`address_group`, `address_group_info`) fully implemented with support for both static and dynamic address groups.
+- Application modules (`application`, `application_info`) fully implemented with support for application categorization and risk attributes.
 - Authentication role and workflow complete; token can be passed to all modules.
 - Example playbooks for all implemented modules.
 - Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
-- Begin implementation of Application and Service objects.
+- Begin implementation of Application Group and Service objects.
 - Standardize all other info modules to follow the same pattern as folder_info/device_info.
 - Expand test coverage and integration tests for all modules.
 
@@ -325,11 +327,14 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Implemented `application` and `application_info` modules with support for application categorization and risk attributes.
+- Enhanced `device_info` module to use display_name for name searches, improving usability.
+- Fixed response format handling in device_info module to properly process the nested data structure from SCM API.
+- Improved error handling for API response formats across all modules.
 - Implemented `address_group` and `address_group_info` modules (create/retrieve both static and dynamic address groups).
 - Added support for static address groups with member management and dynamic address groups with filter expressions.
-- Created comprehensive example playbooks for address group modules with various usage patterns.
-- Added support for multiple filter types in address_group_info module (type, member, filter_pattern, tags).
+- Created comprehensive example playbooks for all modules with various usage patterns.
+- Added support for multiple filter types in address_group_info and application_info modules.
 - Standardized container-based resource handling (folder, snippet, device) across all network object modules.
-- Added consistent error handling and parameter validation across address group modules.
+- Added consistent error handling and parameter validation across modules.
 - Updated TODO.md and PRD.md to reflect completed work and future planning.
-- Completed implementation of variable modules and enhanced error handling across all info modules.
