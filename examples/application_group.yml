@@ -1,0 +1,248 @@
+---
+# Example playbook for managing application groups in Strata Cloud Manager
+# This playbook demonstrates creating, updating, and deleting application groups
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM application group operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our application group examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "App-Groups-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing snippet-based application groups
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "App-Groups-Test-Snippet"
+        description: "Snippet for testing application groups"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a static application group in a folder
+    - name: Create a static application group for web applications
+      cdot65.scm.application_group:
+        name: "web-apps"
+        description: "Group containing web-related applications"
+        group_type: "static"
+        static_applications:
+          - "web-browsing"
+          - "ssl"
+        folder: "App-Groups-Test"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: static_app_group
+
+    - name: Display created static application group information
+      debug:
+        var: static_app_group.application_group
+        verbosity: 1
+
+    - name: Display static application group members
+      debug:
+        msg: "Application group members: {{ static_app_group.application_group.members | default([]) }}"
+
+    # Create a dynamic application group in a snippet
+    - name: Create a dynamic application group for business applications
+      cdot65.scm.application_group:
+        name: "business-apps"
+        description: "Dynamically selects all business system applications"
+        group_type: "dynamic"
+        dynamic_filter: "'app.category.business-systems'"
+        snippet: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: dynamic_app_group
+
+    - name: Display created dynamic application group information
+      debug:
+        var: dynamic_app_group.application_group
+        verbosity: 1
+
+    - name: Display dynamic application group filter
+      debug:
+        msg: "Dynamic filter: {{ dynamic_app_group.application_group.members[0] | default('No filter') }}"
+
+    # Create a static application group with inferred type (no explicit group_type)
+    - name: Create a mail application group with inferred static type
+      cdot65.scm.application_group:
+        name: "mail-apps"
+        description: "Group containing mail applications with inferred type"
+        static_applications:
+          - "smtp"
+          - "pop3"
+          - "imap"
+        folder: "App-Groups-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: inferred_static_group
+
+    - name: Display inferred static application group information
+      debug:
+        var: inferred_static_group.application_group
+
+    # Create a dynamic application group with inferred type
+    - name: Create a high-risk applications group with inferred dynamic type
+      cdot65.scm.application_group:
+        name: "high-risk-apps"
+        description: "Dynamically selects applications with high risk scores"
+        dynamic_filter: "'app.risk=4' or 'app.risk=5'"
+        snippet: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: inferred_dynamic_group
+
+    - name: Display inferred dynamic application group information
+      debug:
+        var: inferred_dynamic_group.application_group
+
+    # Update a static application group
+    - name: Update the web applications group by adding an application
+      cdot65.scm.application_group:
+        name: "web-apps"
+        description: "Updated group for web applications"
+        static_applications:
+          - "http"
+          - "https"
+          - "http2"
+          - "web-browsing"
+        folder: "App-Groups-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_static_group
+
+    - name: Display updated static application group
+      debug:
+        var: updated_static_group.application_group
+
+    # Update a dynamic application group
+    - name: Update the business applications group filter
+      cdot65.scm.application_group:
+        name: "business-apps"
+        description: "Updated dynamic group for business applications"
+        dynamic_filter: "'app.category.business-systems' or 'app.category.collaboration'"
+        snippet: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_dynamic_group
+
+    - name: Display updated dynamic application group
+      debug:
+        var: updated_dynamic_group.application_group
+
+    # List all application groups in the test folder
+    - name: Get all application groups in the test folder
+      cdot65.scm.application_group_info:
+        folder: "App-Groups-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_app_groups
+
+    - name: Display all application groups in the folder
+      debug:
+        var: folder_app_groups.application_groups
+
+    # List all application groups in the test snippet
+    - name: Get all application groups in the test snippet
+      cdot65.scm.application_group_info:
+        snippet: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_app_groups
+
+    - name: Display all application groups in the snippet
+      debug:
+        var: snippet_app_groups.application_groups
+
+    # Filter by dynamic application groups
+    - name: Get only dynamic application groups
+      cdot65.scm.application_group_info:
+        type: "dynamic"
+        snippet: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: dynamic_groups_only
+
+    - name: Display dynamic application groups only
+      debug:
+        var: dynamic_groups_only.application_groups
+
+    # Filter by static application groups with specific member
+    - name: Get static application groups containing HTTP
+      cdot65.scm.application_group_info:
+        member: "http"
+        folder: "App-Groups-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: http_groups
+
+    - name: Display application groups containing HTTP application
+      debug:
+        var: http_groups.application_groups
+
+    # Get a specific application group by name
+    - name: Get mail apps group by name
+      cdot65.scm.application_group_info:
+        name: "mail-apps"
+        folder: "App-Groups-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: mail_app_group_info
+
+    - name: Display mail apps group information
+      debug:
+        var: mail_app_group_info.application_groups
+
+    # Cleanup
+    - name: Delete the web applications group
+      cdot65.scm.application_group:
+        name: "web-apps"
+        folder: "App-Groups-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the mail applications group
+      cdot65.scm.application_group:
+        name: "mail-apps"
+        folder: "App-Groups-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the business applications group
+      cdot65.scm.application_group:
+        name: "business-apps"
+        snippet: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the high-risk applications group
+      cdot65.scm.application_group:
+        name: "high-risk-apps"
+        snippet: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "App-Groups-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "App-Groups-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
