@@ -1,0 +1,124 @@
+---
+# Example playbook for managing application objects in Strata Cloud Manager
+# This playbook demonstrates creating, updating, and deleting custom applications
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM application operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our application examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Applications-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing snippet-based applications
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Applications-Test-Snippet"
+        description: "Snippet for testing applications"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a folder-based application
+    - name: Create a custom business application
+      cdot65.scm.application:
+        name: "custom-business-app"
+        description: "Custom business application for internal use"
+        category: "business-systems"
+        subcategory: "management"
+        technology: "client-server"
+        risk: 3
+        ports:
+          - "tcp/8080"
+          - "tcp/8443"
+        folder: "Applications-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: business_app
+
+    - name: Display created application information
+      debug:
+        var: business_app.application
+
+    # Create a snippet-based application with risk flags
+    - name: Create a file sharing application
+      cdot65.scm.application:
+        name: "internal-file-sharing"
+        description: "Internal file sharing application"
+        category: "general-internet"
+        subcategory: "file-sharing"
+        technology: "peer-to-peer"
+        risk: 4
+        ports:
+          - "tcp/8000"
+          - "udp/9000"
+        snippet: "Applications-Test-Snippet"
+        transfers_files: true
+        has_known_vulnerabilities: true
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: file_sharing_app
+
+    - name: Display file sharing application information
+      debug:
+        var: file_sharing_app.application
+
+    # Update an application's description and risk level
+    # Note: For updates, we only need to specify the fields we want to change
+    # plus the required container parameter (folder or snippet)
+    - name: Update the business application
+      cdot65.scm.application:
+        name: "custom-business-app"
+        description: "Updated custom business application"
+        risk: 2
+        folder: "Applications-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_app
+
+    - name: Display updated application information
+      debug:
+        var: updated_app.application
+
+    # Cleanup
+    - name: Delete the business application
+      cdot65.scm.application:
+        name: "custom-business-app"
+        folder: "Applications-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the file sharing application
+      cdot65.scm.application:
+        name: "internal-file-sharing"
+        snippet: "Applications-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Applications-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Applications-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
