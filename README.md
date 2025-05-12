@@ -89,8 +89,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [address_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_info.py) | Retrieve address object information | ✅ |
 | [address_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group.py) | Manage address groups | ✅ |
 | [address_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group_info.py) | Retrieve address group information | ✅ |
-| [application](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application.py) | Manage application objects | 📝 |
-| [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | 📝 |
+| [application](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application.py) | Manage application objects | ✅ |
+| [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | ✅ |
 
 ### Configuration and Deployment Modules (Planned)
 
@@ -205,6 +205,8 @@ The collection includes several example playbooks in the `examples/` directory:
 - `address_info.yml` - Retrieve address information
 - `address_group.yml` - Create and manage address groups
 - `address_group_info.yml` - Retrieve address group information
+- `application.yml` - Create and manage application objects
+- `application_info.yml` - Retrieve application information
 
 ## Development
 
