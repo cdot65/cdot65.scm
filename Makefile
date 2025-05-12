@@ -1,4 +1,4 @@
-.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format lint-all lint-fix
+.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format lint-all lint-fix run-examples run-example
 
 COLLECTION_NAMESPACE := cdot65
 COLLECTION_NAME := scm
@@ -72,9 +72,32 @@ dev-setup:
 	poetry install
 	poetry run python -m pip install -r test-requirements.txt
 
-# Example run
+# Example runs
 example:
 	poetry run ansible-playbook docs/examples/folder_management.yml
+
+# Run all example playbooks
+run-examples:
+	@echo "Running all example playbooks..."
+	@for playbook in examples/*.yml; do \
+		echo "\n=== Running $$playbook ==="; \
+		poetry run ansible-playbook --vault-pass-file .vault_pass $$playbook || exit 1; \
+	done
+	@echo "\nAll example playbooks executed successfully!"
+
+# Run a specific example playbook
+# Usage: make run-example EXAMPLE=application_info
+run-example:
+	@if [ -z "$(EXAMPLE)" ]; then \
+		echo "Error: EXAMPLE parameter is required. Usage: make run-example EXAMPLE=application_info"; \
+		exit 1; \
+	fi
+	@if [ ! -f "examples/$(EXAMPLE).yml" ]; then \
+		echo "Error: examples/$(EXAMPLE).yml not found"; \
+		exit 1; \
+	fi
+	@echo "Running examples/$(EXAMPLE).yml"
+	poetry run ansible-playbook --vault-pass-file .vault_pass examples/$(EXAMPLE).yml
 
 test-integration:
 	poetry run ansible-test integration --color --docker

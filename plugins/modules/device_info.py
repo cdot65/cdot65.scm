@@ -176,6 +176,21 @@ devices:
             type: str
             returned: when applicable
             sample: "10.2.3"
+limit:
+    description: Maximum number of results returned in this query
+    returned: when pagination is used
+    type: int
+    sample: 200
+offset:
+    description: Offset in the result set
+    returned: when pagination is used
+    type: int
+    sample: 0
+total:
+    description: Total number of devices available
+    returned: when pagination is used
+    type: int
+    sample: 42
 """
 
 
@@ -249,12 +264,26 @@ def main():
 
             # List devices with filters
             if filter_params:
-                devices = client.device.list(**filter_params)
+                response = client.device.list(**filter_params)
             else:
-                devices = client.device.list()
+                response = client.device.list()
 
-            # Convert to a list of dicts
-            device_dicts = [json.loads(d.model_dump_json(exclude_unset=True)) for d in devices]
+            # Check if response has expected structure (with data field)
+            if hasattr(response, 'data'):
+                # Access the data field that contains the list of devices
+                devices = response.data
+                # Convert to a list of dicts
+                device_dicts = [json.loads(d.model_dump_json(exclude_unset=True)) for d in devices]
+                # Add pagination metadata if available
+                if hasattr(response, 'limit'):
+                    result["limit"] = response.limit
+                if hasattr(response, 'offset'):
+                    result["offset"] = response.offset
+                if hasattr(response, 'total'):
+                    result["total"] = response.total
+            else:
+                # Fallback for direct device list (older API versions or different endpoints)
+                device_dicts = [json.loads(d.model_dump_json(exclude_unset=True)) for d in response]
 
             # Add to results
             result["devices"] = device_dicts

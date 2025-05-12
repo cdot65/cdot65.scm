@@ -25,6 +25,11 @@
         var: all_devices.devices
       when: all_devices.devices is defined
 
+    - name: Display pagination info if available
+      debug:
+        msg: "Total devices: {{ all_devices.total | default('N/A') }}, Page size: {{ all_devices.limit | default('N/A') }}"
+      when: all_devices.total is defined
+
     - name: Get a specific device by name
       cdot65.scm.device_info:
         name: "PA-VM-01"  # Updated to use the name parameter
