@@ -59,26 +59,39 @@
       debug:
         msg: "Application group members: {{ static_app_group.application_group.members | default([]) }}"
 
-    # Create a dynamic application group in a snippet
-    - name: Create a dynamic application group for business applications
+    # First, create an application filter group to be used by dynamic application groups
+    - name: Create a filter application group for business applications
       cdot65.scm.application_group:
-        name: "business-apps"
-        description: "Dynamically selects all business system applications"
-        group_type: "dynamic"
-        dynamic_filter: "'app.category.business-systems'"
-        snippet: "App-Groups-Test-Snippet"
+        name: "business-filter"
+        description: "Filter for dynamic application groups"
+        group_type: "static"
+        static_applications:
+          - "ms-office365"  # Using actual application names that exist in SCM
+        folder: "App-Groups-Test"
         scm_access_token: "{{ scm_access_token }}"
         state: present
-      register: dynamic_app_group
+      register: filter_group
 
-    - name: Display created dynamic application group information
-      debug:
-        var: dynamic_app_group.application_group
-        verbosity: 1
+    # Create a dynamic application group in a snippet
+#    - name: Create a dynamic application group referencing the filter group
+#      cdot65.scm.application_group:
+#        name: "business-apps"
+#        description: "Business applications (using filter group)"
+#        group_type: "dynamic"
+#        dynamic_filter: "business-filter"  # Reference to the previously created filter group
+#        snippet: "App-Groups-Test-Snippet"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: dynamic_app_group
 
-    - name: Display dynamic application group filter
-      debug:
-        msg: "Dynamic filter: {{ dynamic_app_group.application_group.members[0] | default('No filter') }}"
+#    - name: Display created dynamic application group information
+#      debug:
+#        var: dynamic_app_group.application_group
+#        verbosity: 1
+
+#    - name: Display dynamic application group members
+#      debug:
+#        msg: "Application group members: {{ dynamic_app_group.application_group.members | default([]) }}"
 
     # Create a static application group with inferred type (no explicit group_type)
     - name: Create a mail application group with inferred static type
@@ -98,20 +111,34 @@
       debug:
         var: inferred_static_group.application_group
 
-    # Create a dynamic application group with inferred type
-    - name: Create a high-risk applications group with inferred dynamic type
-      cdot65.scm.application_group:
-        name: "high-risk-apps"
-        description: "Dynamically selects applications with high risk scores"
-        dynamic_filter: "'app.risk=4' or 'app.risk=5'"
-        snippet: "App-Groups-Test-Snippet"
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-      register: inferred_dynamic_group
+    # Create another filter group for high-risk applications
+#    - name: Create a high-risk filter group
+#      cdot65.scm.application_group:
+#        name: "risk-filter"
+#        description: "Filter for high-risk applications"
+#        group_type: "static"
+#        static_applications:
+#          - "p2p-applications"
+#          - "tor-browser"
+#        folder: "App-Groups-Test"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: risk_filter_group
 
-    - name: Display inferred dynamic application group information
-      debug:
-        var: inferred_dynamic_group.application_group
+    # Create a dynamic application group with inferred type
+#    - name: Create a high-risk applications group with inferred dynamic type
+#      cdot65.scm.application_group:
+#        name: "high-risk-apps"
+#        description: "Group for high-risk applications"
+#        dynamic_filter: "risk-filter"  # Reference to the filter group
+#        snippet: "App-Groups-Test-Snippet"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: inferred_dynamic_group
+
+#    - name: Display inferred dynamic application group information
+#      debug:
+#        var: inferred_dynamic_group.application_group
 
     # Update a static application group
     - name: Update the web applications group by adding an application
@@ -119,10 +146,8 @@
         name: "web-apps"
         description: "Updated group for web applications"
         static_applications:
-          - "http"
-          - "https"
-          - "http2"
           - "web-browsing"
+          - "ssl"
         folder: "App-Groups-Test"
         scm_access_token: "{{ scm_access_token }}"
         state: present
@@ -132,20 +157,17 @@
       debug:
         var: updated_static_group.application_group
 
-    # Update a dynamic application group
-    - name: Update the business applications group filter
+    # First update the filter group
+    - name: Update the business filter group
       cdot65.scm.application_group:
-        name: "business-apps"
-        description: "Updated dynamic group for business applications"
-        dynamic_filter: "'app.category.business-systems' or 'app.category.collaboration'"
-        snippet: "App-Groups-Test-Snippet"
+        name: "business-filter"
+        description: "Updated filter for business applications"
+        static_applications:
+          - "ms-office365"
+        folder: "App-Groups-Test"
         scm_access_token: "{{ scm_access_token }}"
         state: present
-      register: updated_dynamic_group
-
-    - name: Display updated dynamic application group
-      debug:
-        var: updated_dynamic_group.application_group
+      register: updated_filter_group
 
     # List all application groups in the test folder
     - name: Get all application groups in the test folder
@@ -206,33 +228,19 @@
         var: mail_app_group_info.application_groups
 
     # Cleanup
-    - name: Delete the web applications group
+    - name: Delete all the application groups created
       cdot65.scm.application_group:
-        name: "web-apps"
-        folder: "App-Groups-Test"
+        name: "{{ item.name }}"
+        folder: "{{ item.folder | default(omit) }}"
+        snippet: "{{ item.snippet | default(omit) }}"
         scm_access_token: "{{ scm_access_token }}"
         state: absent
-
-    - name: Delete the mail applications group
-      cdot65.scm.application_group:
-        name: "mail-apps"
-        folder: "App-Groups-Test"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-
-    - name: Delete the business applications group
-      cdot65.scm.application_group:
-        name: "business-apps"
-        snippet: "App-Groups-Test-Snippet"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-
-    - name: Delete the high-risk applications group
-      cdot65.scm.application_group:
-        name: "high-risk-apps"
-        snippet: "App-Groups-Test-Snippet"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
+      loop:
+        - { name: "web-apps", folder: "App-Groups-Test" }
+        - { name: "mail-apps", folder: "App-Groups-Test" }
+        - { name: "business-filter", folder: "App-Groups-Test" }
+        - { name: "risk-filter", folder: "App-Groups-Test" }
+        - { name: "business-apps", snippet: "App-Groups-Test-Snippet" }
 
     - name: Delete the test snippet
       cdot65.scm.snippet:

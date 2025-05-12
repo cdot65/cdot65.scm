@@ -58,12 +58,12 @@ options:
         required: false
     dynamic_filter:
         description:
-            - Filter expression for dynamic application groups.
+            - Name of application filter to use for dynamic application groups.
             - Required when group_type is 'dynamic'.
             - Mutually exclusive with I(static_applications).
-            - Format should follow SCM's dynamic application group filter syntax.
-            - Use single-quoted paths for tag matching, e.g., "'app.category.business-systems'".
-            - Example: "'app.category.business-systems'" or "'app.risk=3' or 'app.risk=4'"
+            - Must be the name of an existing application filter in SCM.
+            - Note that filter expressions are not directly supported in application groups.
+            - You need to first create an application filter and then reference it here.
         type: str
         required: false
     folder:
@@ -137,7 +137,7 @@ EXAMPLES = r"""
     name: "dynamic-apps"
     description: "Dynamic application group"
     group_type: "dynamic"
-    dynamic_filter: "'app.category.business-systems'"  # Proper SCM filter syntax
+    dynamic_filter: "business-systems-filter"  # Name of an existing application filter
     snippet: "web-acl"
     tag:
       - "web"
@@ -172,7 +172,7 @@ EXAMPLES = r"""
   cdot65.scm.application_group:
     name: "dynamic-apps"
     description: "Updated dynamic application group"
-    dynamic_filter: "'app.category.business-systems' or 'app.category.collaboration'"
+    dynamic_filter: "updated-business-filter"  # Name of a different existing application filter
     snippet: "web-acl"
     scm_access_token: "{{ scm_access_token }}"
     state: present
@@ -410,12 +410,14 @@ def main():
                     if params.get(k) is not None
                 }
 
-                # The SDK uses a common 'members' field for all applications
-                # For static groups, we just use the list of applications directly
+                # Add members field based on group type
                 if params.get("group_type") == "static":
+                    # For static groups, members are actual application objects
                     create_payload["members"] = params.get("static_applications")
-                # For dynamic groups, we create a list with the filter expression
                 elif params.get("group_type") == "dynamic":
+                    # For dynamic groups, we need to use existing application filters
+                    # SCM doesn't support direct dynamic filters in application groups
+                    # The dynamic_filter should be an existing application filter name
                     create_payload["members"] = [params.get("dynamic_filter")]
 
                 # Create an application group
