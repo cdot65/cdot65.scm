@@ -1,0 +1,138 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM application filter operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our application filter examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Application-Filters"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a folder-based application filter for high-risk applications
+    - name: Create a high-risk application filter
+      cdot65.scm.application_filter:
+        name: "high-risk-apps"
+        category:
+          - "business-systems"
+          - "collaboration"
+        risk:
+          - 4
+          - 5
+        has_known_vulnerabilities: true
+        folder: "Application-Filters"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: high_risk_filter
+
+    - name: Display created application filter information
+      debug:
+        var: high_risk_filter.application_filter
+
+    # Create a snippet for testing snippet-based application filters
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Security-Filters"
+        description: "Snippet for security filters"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet-based application filter for p2p applications
+    - name: Create a peer-to-peer application filter
+      cdot65.scm.application_filter:
+        name: "p2p-apps"
+        technology:
+          - "peer-to-peer"
+        sub_category:
+          - "file-sharing"
+        transfers_files: true
+        snippet: "Security-Filters"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: p2p_filter
+
+    - name: Display created p2p filter information
+      debug:
+        var: p2p_filter.application_filter
+
+    # Update an existing application filter
+    - name: Update the high-risk application filter
+      cdot65.scm.application_filter:
+        name: "high-risk-apps"
+        category:
+          - "business-systems"
+          - "collaboration"
+          - "general-internet"
+        risk:
+          - 3
+          - 4
+          - 5
+        folder: "Application-Filters"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_filter
+
+    - name: Display updated application filter information
+      debug:
+        var: updated_filter.application_filter
+
+    # List application filters
+    - name: List all application filters in the folder
+      cdot65.scm.application_filter_info:
+        folder: "Application-Filters"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_filters
+
+    - name: Display application filters in folder
+      debug:
+        var: folder_filters.application_filters
+
+    # Get a specific application filter by name
+    - name: Get the high-risk application filter
+      cdot65.scm.application_filter_info:
+        name: "high-risk-apps"
+        folder: "Application-Filters"
+        scm_access_token: "{{ scm_access_token }}"
+      register: filter_by_name
+
+    - name: Display application filter by name
+      debug:
+        var: filter_by_name.application_filters
+
+    # Cleanup
+    - name: Delete the application filters
+      cdot65.scm.application_filter:
+        name: "{{ item.name }}"
+        "{{ item.container_type }}": "{{ item.container_name }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - { name: "high-risk-apps", container_type: "folder", container_name: "Application-Filters" }
+        - { name: "p2p-apps", container_type: "snippet", container_name: "Security-Filters" }
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Security-Filters"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Application-Filters"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
