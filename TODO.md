@@ -1,6 +1,6 @@
 # TODO: cdot65.scm Ansible Collection (Strata Cloud Manager)
 
-_Last updated: 2025-05-11_
+_Last updated: 2025-05-13_
 
 ## Immediate Tasks
 
@@ -35,6 +35,12 @@ _Last updated: 2025-05-11_
 - [x] Implement application group management modules:
     - [x] `plugins/modules/application_group.py`
     - [x] `plugins/modules/application_group_info.py`
+- [x] Implement application filter management modules:
+    - [x] `plugins/modules/application_filter.py`
+    - [x] `plugins/modules/application_filter_info.py`
+- [ ] Implement dynamic user group management modules:
+    - [ ] `plugins/modules/dynamic_user_group.py`
+    - [ ] `plugins/modules/dynamic_user_group_info.py`
 - [ ] Enhance error handling for all modules with consistent patterns
 - [ ] Create integration tests for all resource modules
 
@@ -56,6 +62,23 @@ _Last updated: 2025-05-11_
 - Use Pydantic's model_dump_json(exclude_unset=True) for serialization
 - Follow standardized parameter naming and usage across all modules
 - Update examples directory with each new module implementation
+- For modules with boolean fields (like application_filter):
+  - Only include boolean fields that are True in API requests
+  - Do not attempt to set boolean fields to False as this can cause validation errors
+  - When updating existing resources, only include boolean fields that should be True
+  - Document this behavior in the module description and examples
+
+## [2025-05-13] Application Filter Modules Completed
+
+- Implemented application_filter.py and application_filter_info.py modules
+- Added special handling for boolean fields in SCM API (only sending True values)
+- Created comprehensive example playbooks demonstrating various filter criteria combinations
+- Fixed subcategory parameter handling with proper SCM API field mapping (sub_category)
+- Improved module documentation to clarify usage patterns and required parameters
+- Handled cleanup operations in playbooks with separate tasks for different container types
+- Follows the same pattern established for other resource modules (folder, address, etc.)
+- Updated documentation (README.md, modules.md, TODO.md, PRD.md) to reflect module completion
+- Changed focus from config_scope modules to dynamic_user_group modules as the next priority
 
 ## Open Issues / Watch Items
 

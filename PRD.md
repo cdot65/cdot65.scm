@@ -85,7 +85,8 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Address Objects (`address`, `address_info`) — Complete ✅
     *   Address Groups (`address_group`, `address_group_info`) — Complete ✅
     *   Application Objects (`application`, `application_info`) — Complete ✅
-    *   Configuration Scopes (`config_scope`, `config_scope_info`)
+    *   Application Filters (`application_filter`, `application_filter_info`) — Complete ✅
+    *   Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`)
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
     *   Application Groups (`application_group`, `application_group_info`) — Complete ✅
@@ -247,6 +248,10 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 *   The collection MUST use the latest version of the SCM Python SDK built on Pydantic for all interactions with the SCM API.
 *   The SDK provides data models and service functions for API interactions, which should be leveraged in the collection.
 *   Abstract SDK usage within `module_utils` to simplify module code and facilitate future SDK updates.
+*   Some SCM API endpoints require special handling for boolean fields:
+    * For many resources (e.g., application_filter), boolean fields should only be included in API requests when set to `True`.
+    * Setting boolean fields to `False` can cause API validation errors in some endpoints.
+    * Modules should implement special handling for boolean fields: only adding `True` values to payloads and omitting `False` values.
 
 ### 7.2 Module Design Pattern
 
@@ -302,9 +307,9 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `application` and `application_info` modules for application object management.
 - Implement `service_object` and `service_object_info` modules for service object management.
 - Implement `service_group` and `service_group_info` modules for service group management.
+- Implement `config_scope` and `config_scope_info` modules for configuration scope management.
 - Complete standardization of all info modules to follow consistent error handling.
 - Build integration tests to verify modules against real SCM instances.
 - Continue to enhance documentation and examples with real-world use cases.
@@ -327,6 +332,8 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Completed implementation of `application_filter` and `application_filter_info` modules for filtering applications based on criteria.
+- Added special handling for boolean fields in application_filter module to handle API requirements (only True values are sent to the API).
 - Implemented `application_group` and `application_group_info` modules with support for static application groups.
 - Determined that dynamic application groups in SCM must reference existing static groups as filters.
 - Updated documentation to clarify proper usage patterns for application groups.
@@ -341,4 +348,4 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Added support for multiple filter types in address_group_info and application_info modules.
 - Standardized container-based resource handling (folder, snippet, device) across all network object modules.
 - Added consistent error handling and parameter validation across modules.
-- Updated TODO.md and PRD.md to reflect completed work and future planning.
+- Updated TODO.md and PRD.md to reflect completed work and future planning, including the new application filter modules.

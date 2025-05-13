@@ -93,13 +93,15 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | ✅ |
 | [application_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group.py) | Manage application groups | ✅ |
 | [application_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group_info.py) | Retrieve application group information | ✅ |
+| [application_filter](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter.py) | Manage application filters | ✅ |
+| [application_filter_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter_info.py) | Retrieve application filter information | ✅ |
 
 ### Configuration and Deployment Modules (Planned)
 
 | Module | Description | Status |
 |--------|-------------|--------|
-| [config_scope](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/config_scope.py) | Manage configuration scopes | 📝 |
-| [config_scope_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/config_scope_info.py) | Retrieve configuration scope information | 📝 |
+| [dynamic_user_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group.py) | Manage dynamic user groups | 📝 |
+| [dynamic_user_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group_info.py) | Retrieve dynamic user group information | 📝 |
 | [deployment](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/deployment.py) | Trigger configuration push/deployment | 📝 |
 | [job_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/job_info.py) | Check job status | 📝 |
 
@@ -211,6 +213,8 @@ The collection includes several example playbooks in the `examples/` directory:
 - `application_info.yml` - Retrieve application information
 - `application_group.yml` - Create and manage application groups
 - `application_group_info.yml` - Retrieve application group information
+- `application_filter.yml` - Create and manage application filters
+- `application_filter_info.yml` - Retrieve application filter information
 
 ## Development
 

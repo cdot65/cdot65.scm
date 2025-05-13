@@ -1,0 +1,192 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM application filter info operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder and app filters to use for our examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "AppFilter-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "AppFilter-Snippet"
+        description: "Snippet for application filter demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create different application filters for demonstration
+    - name: Create a high-risk application filter
+      cdot65.scm.application_filter:
+        name: "high-risk-apps"
+        category:
+          - "business-systems"
+          - "collaboration"
+        risk:
+          - 4
+          - 5
+        # Only include boolean fields that are true
+        has_known_vulnerabilities: true
+        folder: "AppFilter-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a medium-risk application filter
+      cdot65.scm.application_filter:
+        name: "medium-risk-apps"
+        category:
+          - "business-systems"
+        risk:
+          - 3
+        # No boolean fields included
+        folder: "AppFilter-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a file-sharing application filter
+      cdot65.scm.application_filter:
+        name: "file-sharing-apps"
+        technology:
+          - "peer-to-peer"
+          - "client-server"
+        sub_category:
+          - "file-sharing"
+        # Only include boolean fields that are true
+        transfers_files: true
+        snippet: "AppFilter-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+        
+    - name: Create a social media application filter
+      cdot65.scm.application_filter:
+        name: "social-media-apps"
+        category:
+          - "saas"
+        sub_category:
+          - "social-networking"
+        # Only include boolean fields that are true
+        is_saas: true
+        snippet: "AppFilter-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Now let's demonstrate various ways to query application filters
+    
+    # Get all application filters in a folder
+    - name: List all application filters in the folder
+      cdot65.scm.application_filter_info:
+        folder: "AppFilter-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_filters
+
+    - name: Display application filters in folder
+      debug:
+        var: folder_filters.application_filters
+        
+    # Get all application filters in a snippet
+    - name: List all application filters in the snippet
+      cdot65.scm.application_filter_info:
+        snippet: "AppFilter-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_filters
+
+    - name: Display application filters in snippet
+      debug:
+        var: snippet_filters.application_filters
+
+    # Get a specific application filter by name
+    - name: Get the high-risk application filter
+      cdot65.scm.application_filter_info:
+        name: "high-risk-apps"
+        folder: "AppFilter-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: filter_by_name
+
+    - name: Display application filter by name
+      debug:
+        var: filter_by_name.application_filters
+
+    # Get application filters by category
+    - name: Get business systems application filters
+      cdot65.scm.application_filter_info:
+        category: ["business-systems"]
+        folder: "AppFilter-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: business_filters
+
+    - name: Display business application filters
+      debug:
+        var: business_filters.application_filters
+
+    # Get application filters by subcategory
+    - name: Get file-sharing application filters
+      cdot65.scm.application_filter_info:
+        subcategory: ["file-sharing"]
+        snippet: "AppFilter-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: filesharing_filters
+
+    - name: Display file-sharing filters
+      debug:
+        var: filesharing_filters.application_filters
+
+    # Get application filters by risk level
+    - name: Get high-risk only application filters
+      cdot65.scm.application_filter_info:
+        risk: [4, 5]
+        folder: "AppFilter-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: highrisk_filters
+
+    - name: Display high-risk only filters
+      debug:
+        var: highrisk_filters.application_filters
+
+    # Cleanup
+    - name: Delete the application filters in folder
+      cdot65.scm.application_filter:
+        name: "{{ item }}"
+        folder: "AppFilter-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "high-risk-apps"
+        - "medium-risk-apps"
+
+    - name: Delete the application filters in snippet
+      cdot65.scm.application_filter:
+        name: "{{ item }}"
+        snippet: "AppFilter-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "file-sharing-apps"
+        - "social-media-apps"
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "AppFilter-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "AppFilter-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
