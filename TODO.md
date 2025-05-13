@@ -1,6 +1,6 @@
 # TODO: cdot65.scm Ansible Collection (Strata Cloud Manager)
 
-_Last updated: 2025-05-13_
+_Last updated: 2025-05-15_
 
 ## Immediate Tasks
 
@@ -41,15 +41,17 @@ _Last updated: 2025-05-13_
 - [x] Implement dynamic user group management modules:
     - [x] `plugins/modules/dynamic_user_group.py`
     - [x] `plugins/modules/dynamic_user_group_info.py`
-- [ ] Implement external dynamic list management modules:
-    - [ ] `plugins/modules/external_dynamic_list.py`
-    - [ ] `plugins/modules/external_dynamic_list_info.py`
+- [x] Implement external dynamic list management modules:
+    - [x] `plugins/modules/external_dynamic_list.py`
+    - [x] `plugins/modules/external_dynamic_list_info.py`
 - [ ] Enhance error handling for all modules with consistent patterns
 - [ ] Create integration tests for all resource modules
 
 ## Short-term Goals (MVP)
 
-- [ ] Complete all MVP modules listed in PRD scope (using folder/folder_info as template)
+- [ ] Implement host information profile modules (`hip_object`, `hip_object_info`)
+- [ ] Implement service object modules (`service_object`, `service_object_info`) 
+- [ ] Implement service group modules (`service_group`, `service_group_info`)
 - [ ] Develop comprehensive test coverage (unit + integration)
 - [ ] Create example playbooks for all resource types
 - [ ] Enhance documentation with real-world usage patterns
@@ -70,6 +72,22 @@ _Last updated: 2025-05-13_
   - Do not attempt to set boolean fields to False as this can cause validation errors
   - When updating existing resources, only include boolean fields that should be True
   - Document this behavior in the module description and examples
+
+## [2025-05-15] External Dynamic List Modules Completed
+
+- Fixed critical issue in external_dynamic_list_info.py related to filtering by list types
+- Implemented safer type checking with model_dump_json to handle None values properly
+- Completely implemented external_dynamic_list.py and external_dynamic_list_info.py modules
+- Created comprehensive example playbooks demonstrating external dynamic list creation and management
+- Implemented support for all EDL types (predefined_ip, predefined_url, ip, domain, url, imsi, imei)
+- Added support for complex recurring schedule configurations (five_minute, hourly, daily, weekly, monthly)
+- Followed the established pattern for other resource modules with robust error handling and validation
+- Added support for multiple container types (folder, snippet, device)
+- Created example playbooks that demonstrate idempotency, filtering capabilities, and proper cleanup
+- Added comprehensive filtering by list type, URL, and container context in the info module
+- Added consistent documentation in the modules and example playbooks
+- Updated module inventory and workflow pattern documentation
+- Next focus will be on implementing hip_object and hip_object_info modules
 
 ## [2025-05-13] Dynamic User Group Modules Completed
 

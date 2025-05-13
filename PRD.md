@@ -1,7 +1,7 @@
 # PRD: Ansible Collection - cdot65.scm (Strata Cloud Manager Integration)
 
 **Version:** 1.2
-**Date:** 2025.05.11
+**Date:** 2025.05.15
 **Author:** Calvin Remsburg
 **Status:** In Development
 
@@ -88,6 +88,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Application Groups (`application_group`, `application_group_info`) — Complete ✅
     *   Application Filters (`application_filter`, `application_filter_info`) — Complete ✅
     *   Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) — Complete ✅
+    *   External Dynamic Lists (`external_dynamic_list`, `external_dynamic_list_info`) — Complete ✅
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
 *   **Action Modules:**
@@ -295,15 +296,18 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Application group modules (`application_group`, `application_group_info`) fully implemented with support for static application groups and references.
 - Application filter modules (`application_filter`, `application_filter_info`) fully implemented with proper handling of boolean fields.
 - Dynamic user group modules (`dynamic_user_group`, `dynamic_user_group_info`) fully implemented with tag-based filter expressions.
+- External dynamic list modules (`external_dynamic_list`, `external_dynamic_list_info`) fully implemented with support for URL-based external lists.
 - Authentication role and workflow complete; token can be passed to all modules.
 - Example playbooks for all implemented modules.
 - Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
-- Begin implementation of External Dynamic List modules (external_dynamic_list, external_dynamic_list_info).
+- Implement Host Information Profile modules (hip_object, hip_object_info).
 - Implement Service objects modules (service_object, service_object_info).
+- Implement Service Group modules (service_group, service_group_info).
 - Standardize all other info modules to follow the same pattern as folder_info/device_info.
 - Expand test coverage and integration tests for all modules.
+- Add integration tests for the dynamic_user_group and external_dynamic_list modules.
 
 **Blocked/Issues:**
 - None major; dependency and serialization issues resolved.
@@ -311,13 +315,14 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `external_dynamic_list` and `external_dynamic_list_info` modules for external dynamic list management.
+- Implement `hip_object` and `hip_object_info` modules for host information profile management.
 - Implement `service_object` and `service_object_info` modules for service object management.
 - Implement `service_group` and `service_group_info` modules for service group management.
 - Complete standardization of all info modules to follow consistent error handling.
 - Build integration tests to verify modules against real SCM instances.
+- Add integration tests for the dynamic_user_group and external_dynamic_list modules.
 - Continue to enhance documentation and examples with real-world use cases.
-- Add integration tests for the dynamic_user_group modules.
+- Explore options for rule management modules (security rules, NAT rules) for future releases.
 
 ## 11. Future Considerations
 
@@ -337,12 +342,19 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Fixed error in `external_dynamic_list_info` module related to filtering by list types, specifically addressing the "'NoneType' object has no attribute '__dict__'" error.
+- Improved type checking in the EDL info module by using model_dump_json for safer serialization and comparison.
+- Fully completed `external_dynamic_list` and `external_dynamic_list_info` modules for managing external dynamic lists.
+- Verified comprehensive support for all EDL types (predefined_ip, predefined_url, ip, domain, url, imsi, imei) with proper type-specific validation.
+- Ensured proper handling of recurring schedule configurations (five_minute, hourly, daily, weekly, monthly) for EDL updates.
+- Thoroughly tested filtering by list type, URL, and container context in the info module.
+- Updated documentation (README.md, modules.md, TODO.md, PRD.md) to reflect completion of the external_dynamic_list modules.
+- Updated development roadmap to focus on hip_object modules as our next implementation target.
 - Implemented `dynamic_user_group` and `dynamic_user_group_info` modules for managing tag-based dynamic user groups.
 - Created comprehensive example playbooks demonstrating dynamic user group creation, filtering, and management.
 - Followed the established pattern for other resource modules with robust error handling and validation.
-- Updated documentation (README.md, modules.md, TODO.md, PRD.md) to reflect completion of the dynamic_user_group modules.
+- Updated documentation to reflect completion of the dynamic_user_group modules.
 - Changed focus from config_scope modules to dynamic_user_group modules based on priority needs.
-- Updated development roadmap to focus on external_dynamic_list modules as our next implementation target.
 - Completed implementation of `application_filter` and `application_filter_info` modules for filtering applications based on criteria.
 - Added special handling for boolean fields in application_filter module to handle API requirements (only True values are sent to the API).
 - Implemented `application_group` and `application_group_info` modules with support for static application groups.
