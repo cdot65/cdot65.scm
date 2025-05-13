@@ -140,6 +140,7 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Application Groups (`application_group`, `application_group_info`) - Complete ✅
 - Application Filters (`application_filter`, `application_filter_info`) - Complete ✅
 - Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) - Complete ✅
+- External Dynamic Lists (`external_dynamic_list`, `external_dynamic_list_info`) - Complete ✅
 - Service Objects (`service_object`, `service_object_info`) - Planned
 - Service Groups (`service_group`, `service_group_info`) - Planned
 
