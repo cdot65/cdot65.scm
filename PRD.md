@@ -85,11 +85,11 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Address Objects (`address`, `address_info`) — Complete ✅
     *   Address Groups (`address_group`, `address_group_info`) — Complete ✅
     *   Application Objects (`application`, `application_info`) — Complete ✅
+    *   Application Groups (`application_group`, `application_group_info`) — Complete ✅
     *   Application Filters (`application_filter`, `application_filter_info`) — Complete ✅
-    *   Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`)
+    *   Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) — Complete ✅
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
-    *   Application Groups (`application_group`, `application_group_info`) — Complete ✅
 *   **Action Modules:**
     *   Trigger Configuration Push/Deployment (`deployment`)
     *   Check Job Status (`job_info`)
@@ -292,12 +292,16 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Address object modules (`address`, `address_info`) fully implemented.
 - Address group modules (`address_group`, `address_group_info`) fully implemented with support for both static and dynamic address groups.
 - Application modules (`application`, `application_info`) fully implemented with support for application categorization and risk attributes.
+- Application group modules (`application_group`, `application_group_info`) fully implemented with support for static application groups and references.
+- Application filter modules (`application_filter`, `application_filter_info`) fully implemented with proper handling of boolean fields.
+- Dynamic user group modules (`dynamic_user_group`, `dynamic_user_group_info`) fully implemented with tag-based filter expressions.
 - Authentication role and workflow complete; token can be passed to all modules.
 - Example playbooks for all implemented modules.
 - Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
-- Begin implementation of Application Group and Service objects.
+- Begin implementation of External Dynamic List modules (external_dynamic_list, external_dynamic_list_info).
+- Implement Service objects modules (service_object, service_object_info).
 - Standardize all other info modules to follow the same pattern as folder_info/device_info.
 - Expand test coverage and integration tests for all modules.
 
@@ -307,12 +311,13 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
+- Implement `external_dynamic_list` and `external_dynamic_list_info` modules for external dynamic list management.
 - Implement `service_object` and `service_object_info` modules for service object management.
 - Implement `service_group` and `service_group_info` modules for service group management.
-- Implement `config_scope` and `config_scope_info` modules for configuration scope management.
 - Complete standardization of all info modules to follow consistent error handling.
 - Build integration tests to verify modules against real SCM instances.
 - Continue to enhance documentation and examples with real-world use cases.
+- Add integration tests for the dynamic_user_group modules.
 
 ## 11. Future Considerations
 
@@ -332,6 +337,12 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Implemented `dynamic_user_group` and `dynamic_user_group_info` modules for managing tag-based dynamic user groups.
+- Created comprehensive example playbooks demonstrating dynamic user group creation, filtering, and management.
+- Followed the established pattern for other resource modules with robust error handling and validation.
+- Updated documentation (README.md, modules.md, TODO.md, PRD.md) to reflect completion of the dynamic_user_group modules.
+- Changed focus from config_scope modules to dynamic_user_group modules based on priority needs.
+- Updated development roadmap to focus on external_dynamic_list modules as our next implementation target.
 - Completed implementation of `application_filter` and `application_filter_info` modules for filtering applications based on criteria.
 - Added special handling for boolean fields in application_filter module to handle API requirements (only True values are sent to the API).
 - Implemented `application_group` and `application_group_info` modules with support for static application groups.
@@ -348,4 +359,3 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Added support for multiple filter types in address_group_info and application_info modules.
 - Standardized container-based resource handling (folder, snippet, device) across all network object modules.
 - Added consistent error handling and parameter validation across modules.
-- Updated TODO.md and PRD.md to reflect completed work and future planning, including the new application filter modules.

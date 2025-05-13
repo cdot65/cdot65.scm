@@ -96,12 +96,19 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [application_filter](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter.py) | Manage application filters | ✅ |
 | [application_filter_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter_info.py) | Retrieve application filter information | ✅ |
 
+### User and Security Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [dynamic_user_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group.py) | Manage dynamic user groups | ✅ |
+| [dynamic_user_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group_info.py) | Retrieve dynamic user group information | ✅ |
+| [external_dynamic_list](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list.py) | Manage external dynamic lists | 📝 |
+| [external_dynamic_list_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list_info.py) | Retrieve external dynamic list information | 📝 |
+
 ### Configuration and Deployment Modules (Planned)
 
 | Module | Description | Status |
 |--------|-------------|--------|
-| [dynamic_user_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group.py) | Manage dynamic user groups | 📝 |
-| [dynamic_user_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group_info.py) | Retrieve dynamic user group information | 📝 |
 | [deployment](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/deployment.py) | Trigger configuration push/deployment | 📝 |
 | [job_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/job_info.py) | Check job status | 📝 |
 
@@ -215,6 +222,10 @@ The collection includes several example playbooks in the `examples/` directory:
 - `application_group_info.yml` - Retrieve application group information
 - `application_filter.yml` - Create and manage application filters
 - `application_filter_info.yml` - Retrieve application filter information
+- `dynamic_user_group.yml` - Create and manage dynamic user groups
+- `dynamic_user_group_info.yml` - Retrieve dynamic user group information
+- `external_dynamic_list.yml` - Create and manage external dynamic lists (coming soon)
+- `external_dynamic_list_info.yml` - Retrieve external dynamic list information (coming soon)
 
 ## Development
 

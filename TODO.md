@@ -38,9 +38,12 @@ _Last updated: 2025-05-13_
 - [x] Implement application filter management modules:
     - [x] `plugins/modules/application_filter.py`
     - [x] `plugins/modules/application_filter_info.py`
-- [ ] Implement dynamic user group management modules:
-    - [ ] `plugins/modules/dynamic_user_group.py`
-    - [ ] `plugins/modules/dynamic_user_group_info.py`
+- [x] Implement dynamic user group management modules:
+    - [x] `plugins/modules/dynamic_user_group.py`
+    - [x] `plugins/modules/dynamic_user_group_info.py`
+- [ ] Implement external dynamic list management modules:
+    - [ ] `plugins/modules/external_dynamic_list.py`
+    - [ ] `plugins/modules/external_dynamic_list_info.py`
 - [ ] Enhance error handling for all modules with consistent patterns
 - [ ] Create integration tests for all resource modules
 
@@ -67,6 +70,18 @@ _Last updated: 2025-05-13_
   - Do not attempt to set boolean fields to False as this can cause validation errors
   - When updating existing resources, only include boolean fields that should be True
   - Document this behavior in the module description and examples
+
+## [2025-05-13] Dynamic User Group Modules Completed
+
+- Implemented dynamic_user_group.py and dynamic_user_group_info.py modules
+- Created comprehensive example playbooks demonstrating dynamic user group creation, filtering, and management
+- Implemented tag-based filter expressions support for user matching
+- Followed the established pattern for other resource modules with robust error handling and validation
+- Added support for multiple container types (folder, snippet, device)
+- Created example playbooks that demonstrate idempotency, filtering capabilities, and proper cleanup
+- Added consistent documentation in the modules and example playbooks
+- Updated module inventory and workflow pattern documentation
+- Next focus will be on implementing external_dynamic_list and external_dynamic_list_info modules
 
 ## [2025-05-13] Application Filter Modules Completed
 

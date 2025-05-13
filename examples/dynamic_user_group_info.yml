@@ -1,0 +1,205 @@
+---
+# Example playbook for retrieving dynamic user group information from Strata Cloud Manager
+# This playbook demonstrates various ways to query dynamic user groups
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM dynamic user group information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test resources for demonstration
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "DUG-Test-Folder"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "DUG-Test-Snippet"
+        description: "Snippet for testing dynamic user groups"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create dynamic user groups for testing
+    - name: Create high-risk-users dynamic user group
+      cdot65.scm.dynamic_user_group:
+        name: "high-risk-users"
+        description: "Users with high risk profile"
+        filter: "tag.criticality.high"
+        folder: "DUG-Test-Folder"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: high_risk_users
+
+    - name: Create marketing-users dynamic user group
+      cdot65.scm.dynamic_user_group:
+        name: "marketing-users"
+        description: "Users from marketing department"
+        filter: "tag.department.marketing"
+        folder: "DUG-Test-Folder"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create contractor-users dynamic user group with complex filter
+      cdot65.scm.dynamic_user_group:
+        name: "contractor-users"
+        description: "Active contractors with limited access"
+        filter: "tag.role.contractor and tag.status.active"
+        snippet: "DUG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Query 1: Get all dynamic user groups in the folder
+    - name: Get all dynamic user groups in the test folder
+      cdot65.scm.dynamic_user_group_info:
+        folder: "DUG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_dug_groups
+
+    - name: Display all folder dynamic user groups
+      debug:
+        var: folder_dug_groups.dynamic_user_groups
+        verbosity: 1
+
+    - name: Show count of dynamic user groups in folder
+      debug:
+        msg: "Found {{ folder_dug_groups.dynamic_user_groups | length }} dynamic user groups in folder"
+
+    # Query 2: Get all dynamic user groups in the snippet
+    - name: Get all dynamic user groups in the test snippet
+      cdot65.scm.dynamic_user_group_info:
+        snippet: "DUG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_dug_groups
+
+    - name: Display all snippet dynamic user groups
+      debug:
+        var: snippet_dug_groups.dynamic_user_groups
+        verbosity: 1
+
+    - name: Show count of dynamic user groups in snippet
+      debug:
+        msg: "Found {{ snippet_dug_groups.dynamic_user_groups | length }} dynamic user groups in snippet"
+
+    # Query 3: Get a specific dynamic user group by name
+    - name: Get high-risk-users group by name
+      cdot65.scm.dynamic_user_group_info:
+        name: "high-risk-users"
+        folder: "DUG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: high_risk_info
+
+    - name: Display high-risk-users dynamic user group
+      debug:
+        var: high_risk_info.dynamic_user_groups[0]
+      when: high_risk_info.dynamic_user_groups | length > 0
+
+    # Query 4: Get dynamic user groups with specific filter content
+    - name: Get dynamic user groups with 'criticality.high' in filter
+      cdot65.scm.dynamic_user_group_info:
+        filters: ["criticality.high"]
+        folder: "DUG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: criticality_groups
+
+    - name: Display criticality filter dynamic user groups
+      debug:
+        var: criticality_groups.dynamic_user_groups
+        verbosity: 1
+
+    - name: Show count of criticality filter dynamic user groups
+      debug:
+        msg: "Found {{ criticality_groups.dynamic_user_groups | length }} dynamic user groups with criticality.high in filter"
+
+    # Query 5: Get dynamic user groups with specific tags
+    - name: Get dynamic user groups with security tag
+      cdot65.scm.dynamic_user_group_info:
+        tags: ["security"]
+        folder: "DUG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: security_groups
+
+    - name: Display security tagged dynamic user groups
+      debug:
+        var: security_groups.dynamic_user_groups
+        verbosity: 1
+
+    - name: Show count of security tagged dynamic user groups
+      debug:
+        msg: "Found {{ security_groups.dynamic_user_groups | length }} dynamic user groups with security tag"
+
+    # Query 6: Get dynamic user groups with role in filter
+    - name: Get dynamic user groups with role in filter
+      cdot65.scm.dynamic_user_group_info:
+        filters: ["tag.role"]
+        snippet: "DUG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: role_filter_groups
+
+    - name: Display role filter dynamic user groups
+      debug:
+        var: role_filter_groups.dynamic_user_groups
+        verbosity: 1
+
+    - name: Show count of role filter dynamic user groups
+      debug:
+        msg: "Found {{ role_filter_groups.dynamic_user_groups | length }} dynamic user groups with role in filter"
+
+    # Query 7: Get dynamic user groups by ID
+    - name: Get dynamic user group by ID if available
+      cdot65.scm.dynamic_user_group_info:
+        id: "{{ high_risk_users.dynamic_user_group.id | default('00000000-0000-0000-0000-000000000000') }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: id_lookup_result
+      when: high_risk_users.dynamic_user_group is defined and high_risk_users.dynamic_user_group.id is defined
+
+    - name: Display dynamic user group retrieved by ID
+      debug:
+        var: id_lookup_result.dynamic_user_groups[0]
+      when: 
+        - id_lookup_result is defined 
+        - id_lookup_result.dynamic_user_groups is defined
+        - id_lookup_result.dynamic_user_groups | length > 0
+
+    # Cleanup
+    - name: Delete all test dynamic user groups
+      cdot65.scm.dynamic_user_group:
+        name: "{{ item.name }}"
+        folder: "{{ item.folder | default(omit) }}"
+        snippet: "{{ item.snippet | default(omit) }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - { name: "high-risk-users", folder: "DUG-Test-Folder" }
+        - { name: "marketing-users", folder: "DUG-Test-Folder" }
+        - { name: "contractor-users", snippet: "DUG-Test-Snippet" }
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "DUG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "DUG-Test-Folder"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
