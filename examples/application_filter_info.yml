@@ -40,6 +40,7 @@
         risk:
           - 4
           - 5
+        # Only include boolean fields that are true
         has_known_vulnerabilities: true
         folder: "AppFilter-Demo"
         scm_access_token: "{{ scm_access_token }}"
@@ -52,6 +53,7 @@
           - "business-systems"
         risk:
           - 3
+        # No boolean fields included
         folder: "AppFilter-Demo"
         scm_access_token: "{{ scm_access_token }}"
         state: present
@@ -64,6 +66,7 @@
           - "client-server"
         sub_category:
           - "file-sharing"
+        # Only include boolean fields that are true
         transfers_files: true
         snippet: "AppFilter-Snippet"
         scm_access_token: "{{ scm_access_token }}"
@@ -73,9 +76,10 @@
       cdot65.scm.application_filter:
         name: "social-media-apps"
         category:
-          - "social-networking"
+          - "saas"
         sub_category:
           - "social-networking"
+        # Only include boolean fields that are true
         is_saas: true
         snippet: "AppFilter-Snippet"
         scm_access_token: "{{ scm_access_token }}"
@@ -83,7 +87,7 @@
 
     # Now let's demonstrate various ways to query application filters
     
-    # Get all application filters in folder
+    # Get all application filters in a folder
     - name: List all application filters in the folder
       cdot65.scm.application_filter_info:
         folder: "AppFilter-Demo"
@@ -94,7 +98,7 @@
       debug:
         var: folder_filters.application_filters
         
-    # Get all application filters in snippet
+    # Get all application filters in a snippet
     - name: List all application filters in the snippet
       cdot65.scm.application_filter_info:
         snippet: "AppFilter-Snippet"

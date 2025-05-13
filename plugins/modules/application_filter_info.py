@@ -343,7 +343,7 @@ def main():
                 filter_params["category"] = params.get("category")
 
             if params.get("subcategory"):
-                filter_params["subcategory"] = params.get("subcategory")
+                filter_params["sub_category"] = params.get("subcategory")
 
             if params.get("technology"):
                 filter_params["technology"] = params.get("technology")

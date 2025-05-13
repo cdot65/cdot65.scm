@@ -33,6 +33,7 @@
         risk:
           - 4
           - 5
+        # Only include boolean fields that are true
         has_known_vulnerabilities: true
         folder: "Application-Filters"
         scm_access_token: "{{ scm_access_token }}"
@@ -59,6 +60,7 @@
           - "peer-to-peer"
         sub_category:
           - "file-sharing"
+        # Only include boolean fields that are true
         transfers_files: true
         snippet: "Security-Filters"
         scm_access_token: "{{ scm_access_token }}"
@@ -81,6 +83,8 @@
           - 3
           - 4
           - 5
+        # Keep the has_known_vulnerabilities field true
+        has_known_vulnerabilities: true
         folder: "Application-Filters"
         scm_access_token: "{{ scm_access_token }}"
         state: present
@@ -114,15 +118,19 @@
         var: filter_by_name.application_filters
 
     # Cleanup
-    - name: Delete the application filters
+    - name: Delete the folder-based application filter
       cdot65.scm.application_filter:
-        name: "{{ item.name }}"
-        "{{ item.container_type }}": "{{ item.container_name }}"
+        name: "high-risk-apps"
+        folder: "Application-Filters"
         scm_access_token: "{{ scm_access_token }}"
         state: absent
-      loop:
-        - { name: "high-risk-apps", container_type: "folder", container_name: "Application-Filters" }
-        - { name: "p2p-apps", container_type: "snippet", container_name: "Security-Filters" }
+      
+    - name: Delete the snippet-based application filter
+      cdot65.scm.application_filter:
+        name: "p2p-apps"
+        snippet: "Security-Filters"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
 
     - name: Delete the test snippet
       cdot65.scm.snippet:

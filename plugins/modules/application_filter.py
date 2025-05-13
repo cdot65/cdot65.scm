@@ -394,29 +394,47 @@ def main():
         if params.get("state") == "present":
             if application_filter_exists:
                 # Determine which fields differ and need to be updated
-                update_fields = {
-                    k: params[k]
-                    for k in [
-                        "category",
-                        "sub_category",
-                        "technology",
-                        "risk",
-                        "evasive",
-                        "pervasive",
-                        "used_by_malware",
-                        "transfers_files",
-                        "has_known_vulnerabilities",
-                        "tunnels_other_apps",
-                        "prone_to_misuse",
-                        "is_saas",
-                        "new_appid",
-                        "saas_certifications",
-                        "saas_risk",
-                        "folder",
-                        "snippet",
-                    ]
-                    if params[k] is not None and getattr(application_filter_obj, k, None) != params[k]
-                }
+                update_fields = {}
+                
+                # Handle non-boolean fields
+                for k in [
+                    "category",
+                    "sub_category",
+                    "technology",
+                    "risk",
+                    "saas_certifications",
+                    "saas_risk",
+                    "folder",
+                    "snippet",
+                ]:
+                    if params.get(k) is not None and getattr(application_filter_obj, k, None) != params[k]:
+                        update_fields[k] = params[k]
+                
+                # Boolean fields in SCM require special handling
+                # Only include true values, don't try to explicitly set false values
+                bool_fields = [
+                    "evasive",
+                    "pervasive",
+                    "used_by_malware",
+                    "transfers_files",
+                    "has_known_vulnerabilities",
+                    "tunnels_other_apps",
+                    "prone_to_misuse",
+                    "is_saas",
+                    "new_appid",
+                ]
+                
+                for k in bool_fields:
+                    # Only consider boolean fields that were explicitly provided
+                    if k in params and params[k] is not None:
+                        current_value = getattr(application_filter_obj, k, False) 
+                        new_value = params[k]
+                        
+                        # If changing to True, update field
+                        if new_value is True and current_value is not True:
+                            update_fields[k] = True
+                        # We don't handle setting to False here - it can only be "unset"
+                        # through the API by removing the field completely
 
                 # Update the application filter if needed
                 if update_fields:
@@ -436,30 +454,38 @@ def main():
 
             else:
                 # Create payload for new application filter object
-                create_payload = {
-                    k: params[k]
-                    for k in [
-                        "name",
-                        "category",
-                        "sub_category",
-                        "technology",
-                        "risk",
-                        "evasive",
-                        "pervasive",
-                        "used_by_malware",
-                        "transfers_files",
-                        "has_known_vulnerabilities",
-                        "tunnels_other_apps",
-                        "prone_to_misuse",
-                        "is_saas",
-                        "new_appid",
-                        "saas_certifications",
-                        "saas_risk",
-                        "folder",
-                        "snippet",
-                    ]
-                    if params.get(k) is not None
-                }
+                create_payload = {}
+                
+                # Handle non-boolean fields
+                for k in [
+                    "name",
+                    "category",
+                    "sub_category",
+                    "technology",
+                    "risk",
+                    "saas_certifications",
+                    "saas_risk",
+                    "folder",
+                    "snippet",
+                ]:
+                    if params.get(k) is not None:
+                        create_payload[k] = params[k]
+                
+                # Handle boolean fields - only add if they are True
+                # This avoids sending 'False' which gets converted to 'no' in the API
+                for k in [
+                    "evasive",
+                    "pervasive",
+                    "used_by_malware",
+                    "transfers_files",
+                    "has_known_vulnerabilities",
+                    "tunnels_other_apps",
+                    "prone_to_misuse",
+                    "is_saas",
+                    "new_appid",
+                ]:
+                    if params.get(k) is True:
+                        create_payload[k] = True
 
                 # Create an application filter object
                 if not module.check_mode:

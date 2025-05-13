@@ -24,6 +24,8 @@ This document provides a high-level summary of the structure and workflow patter
 - `application_info.py`
 - `application_group.py`
 - `application_group_info.py`
+- `application_filter.py`
+- `application_filter_info.py`
 
 ---
 
@@ -70,6 +72,8 @@ All modules generally follow this structure:
   - Address Group module supports both static and dynamic group types
   - Application module supports application categorization and risk attributes
   - Application Group module supports static groups and dynamic groups that reference other groups
+  - Application Filter module supports complex filtering of applications based on risk, behaviors, and characteristics
+  - Application Filter module handles boolean fields carefully, only including True values in API requests
 
 - **Info/Query Modules** (`*_info.py`):
   - Read-only: no `state` param, always `changed: False`
@@ -82,6 +86,7 @@ All modules generally follow this structure:
   - Address_group_info supports filtering by group type (static or dynamic) and member contents
   - Application_info supports filtering by category, subcategory, technology, and risk level
   - Application_group_info supports filtering by group type, members, and filter patterns
+  - Application_filter_info supports filtering by various criteria including risk level, category, subcategory, and technology
 
 - **Auth Module** (`auth.py`):
   - Validates credentials, returns token info
