@@ -26,6 +26,8 @@ This document provides a high-level summary of the structure and workflow patter
 - `application_group_info.py`
 - `application_filter.py`
 - `application_filter_info.py`
+- `dynamic_user_group.py`
+- `dynamic_user_group_info.py`
 
 ---
 
@@ -62,7 +64,7 @@ All modules generally follow this structure:
 
 ## Workflow Patterns
 
-- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`, `application_group.py`):
+- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`, `application_group.py`, `application_filter.py`, `dynamic_user_group.py`):
   - Support `state: present/absent` for idempotent create/update/delete
   - Require resource identifiers (name/id) and container context
   - Validate mutually exclusive container args (e.g., folder/snippet/device)
@@ -74,6 +76,7 @@ All modules generally follow this structure:
   - Application Group module supports static groups and dynamic groups that reference other groups
   - Application Filter module supports complex filtering of applications based on risk, behaviors, and characteristics
   - Application Filter module handles boolean fields carefully, only including True values in API requests
+  - Dynamic User Group module supports tag-based filter expressions for user matching
 
 - **Info/Query Modules** (`*_info.py`):
   - Read-only: no `state` param, always `changed: False`
@@ -87,6 +90,7 @@ All modules generally follow this structure:
   - Application_info supports filtering by category, subcategory, technology, and risk level
   - Application_group_info supports filtering by group type, members, and filter patterns
   - Application_filter_info supports filtering by various criteria including risk level, category, subcategory, and technology
+  - Dynamic_user_group_info supports filtering by filter expression content and tags
 
 - **Auth Module** (`auth.py`):
   - Validates credentials, returns token info
