@@ -106,8 +106,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [external_dynamic_list_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list_info.py) | Retrieve external dynamic list information | ✅ |
 | [hip_object](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object.py) | Manage host information profile objects | ✅ |
 | [hip_object_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object_info.py) | Retrieve host information profile object information | ✅ |
-| [hip_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile.py) | Manage host information profiles | 📝 |
-| [hip_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile_info.py) | Retrieve host information profile information | 📝 |
+| [hip_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile.py) | Manage host information profiles | ✅ |
+| [hip_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile_info.py) | Retrieve host information profile information | ✅ |
 
 ### Configuration and Deployment Modules (Planned)
 
@@ -232,8 +232,8 @@ The collection includes several example playbooks in the `examples/` directory:
 - `external_dynamic_list_info.yml` - Retrieve external dynamic list information
 - `hip_object.yml` - Create and manage host information profile objects 
 - `hip_object_info.yml` - Retrieve host information profile object information
-- `hip_profile.yml` - Create and manage host information profiles (planned)
-- `hip_profile_info.yml` - Retrieve host information profile information (planned)
+- `hip_profile.yml` - Create and manage host information profiles
+- `hip_profile_info.yml` - Retrieve host information profile information
 
 ## Development
 

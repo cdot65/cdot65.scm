@@ -90,7 +90,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) — Complete ✅
     *   External Dynamic Lists (`external_dynamic_list`, `external_dynamic_list_info`) — Complete ✅
     *   Host Information Profiles (`hip_object`, `hip_object_info`) — Complete ✅
-    *   HIP Profiles (`hip_profile`, `hip_profile_info`)
+    *   HIP Profiles (`hip_profile`, `hip_profile_info`) — Complete ✅
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
 *   **Action Modules:**
@@ -317,12 +317,11 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `hip_profile` and `hip_profile_info` modules for HIP profile management.
 - Implement `service_object` and `service_object_info` modules for service object management.
 - Implement `service_group` and `service_group_info` modules for service group management.
 - Complete standardization of all info modules to follow consistent error handling.
 - Build integration tests to verify modules against real SCM instances.
-- Add integration tests for the hip_object, dynamic_user_group and external_dynamic_list modules.
+- Add integration tests for the hip_object, hip_profile, dynamic_user_group and external_dynamic_list modules.
 - Continue to enhance documentation and examples with real-world use cases.
 - Explore options for rule management modules (security rules, NAT rules) for future releases.
 
@@ -344,6 +343,11 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Implemented `hip_profile` and `hip_profile_info` modules for managing Host Information Profiles.
+- Created comprehensive example playbooks for HIP profiles demonstrating various match expressions (AND, OR, NOT, nested).
+- Supported match expressions using boolean logic to reference HIP objects for security policy use.
+- Implemented robust validation and error handling for match expressions.
+- Added container-based profile management (folder, snippet, device) with proper validation.
 - Implemented `hip_object` and `hip_object_info` modules for managing Host Information Profile (HIP) objects.
 - Created example playbooks for HIP object management and retrieval with comprehensive examples.
 - Implemented support for all HIP criteria types (host_info, network_info, patch_management, disk_encryption, mobile_device, certificate).
