@@ -1,0 +1,293 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM HIP profile operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First, we create test containers to use for our examples
+    - name: Create a test folder for HIP profiles
+      cdot65.scm.folder:
+        name: "HIP-Profile-Demo"
+        parent: "Texas"
+        description: "Folder for HIP profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_folder
+
+    - name: Create a test snippet for HIP profiles
+      cdot65.scm.snippet:
+        name: "HIP-Profile-Snippet"
+        description: "Snippet for HIP profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_snippet
+
+    # Create HIP objects to reference in our profiles
+    - name: Create a Windows HIP object
+      cdot65.scm.hip_object:
+        name: "is-win"
+        description: "Windows operating system check"
+        folder: "HIP-Profile-Demo"
+        host_info:
+          criteria:
+            os:
+              contains:
+                Microsoft: "All"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: windows_hip_object
+
+    - name: Create a Mac HIP object
+      cdot65.scm.hip_object:
+        name: "is-mac"
+        description: "Mac operating system check"
+        folder: "HIP-Profile-Demo"
+        host_info:
+          criteria:
+            os:
+              contains:
+                Apple: "All"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: mac_hip_object
+
+    - name: Create a Firewall Enabled HIP object
+      cdot65.scm.hip_object:
+        name: "is-firewall-enabled"
+        description: "Firewall enabled check"
+        folder: "HIP-Profile-Demo"
+        host_info:
+          criteria:
+            firewall:
+              is_enabled: true
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: firewall_hip_object
+
+    - name: Create a Disk Encryption HIP object
+      cdot65.scm.hip_object:
+        name: "is-disk-encrypted"
+        description: "Disk encryption check"
+        folder: "HIP-Profile-Demo"
+        disk_encryption:
+          criteria:
+            is_installed: true
+            encrypted_locations:
+              - name: "C:"
+                encryption_state:
+                  is: "encrypted"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: disk_encryption_hip_object
+
+    # Now create different types of HIP profiles
+    - name: Create a basic HIP profile with a simple match expression
+      cdot65.scm.hip_profile:
+        name: "windows-workstations"
+        description: "Profile for Windows workstations"
+        folder: "HIP-Profile-Demo"
+        match: '"is-win"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: simple_profile
+
+    - name: Display created simple HIP profile
+      debug:
+        var: simple_profile
+
+    - name: Create a HIP profile with AND logic
+      cdot65.scm.hip_profile:
+        name: "secure-windows"
+        description: "Windows workstations with firewall enabled"
+        folder: "HIP-Profile-Demo"
+        match: '"is-win" and "is-firewall-enabled"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: and_profile
+
+    - name: Display created AND logic HIP profile
+      debug:
+        var: and_profile
+
+    - name: Create a HIP profile with OR logic
+      cdot65.scm.hip_profile:
+        name: "all-workstations"
+        description: "All Windows or Mac workstations"
+        folder: "HIP-Profile-Demo"
+        match: '"is-win" or "is-mac"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: or_profile
+
+    - name: Display created OR logic HIP profile
+      debug:
+        var: or_profile
+
+    - name: Create a HIP profile with NOT logic
+      cdot65.scm.hip_profile:
+        name: "non-windows"
+        description: "All non-Windows workstations"
+        folder: "HIP-Profile-Demo"
+        match: 'not ("is-win")'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: not_profile
+
+    - name: Display created NOT logic HIP profile
+      debug:
+        var: not_profile
+
+    - name: Create a HIP profile with complex nested logic
+      cdot65.scm.hip_profile:
+        name: "complex-security"
+        description: "Complex security requirements"
+        folder: "HIP-Profile-Demo"
+        match: '("is-win" and "is-firewall-enabled" and "is-disk-encrypted") or ("is-mac" and "is-disk-encrypted")'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: complex_profile
+
+    - name: Display created complex logic HIP profile
+      debug:
+        var: complex_profile
+
+    - name: Create a HIP profile in a snippet
+      cdot65.scm.hip_profile:
+        name: "snippet-profile"
+        description: "Profile in a snippet"
+        snippet: "HIP-Profile-Snippet"
+        match: '"is-win" and "is-firewall-enabled"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: snippet_profile
+
+    - name: Display created snippet HIP profile
+      debug:
+        var: snippet_profile
+
+    # Update an existing HIP profile
+    - name: Update the Windows workstation HIP profile
+      cdot65.scm.hip_profile:
+        name: "windows-workstations"
+        description: "Updated Windows workstation profile"
+        folder: "HIP-Profile-Demo"
+        match: '"is-win" and not "is-mac"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display updated HIP profile
+      debug:
+        var: updated_profile
+
+    # Demonstrate idempotence - this should not result in a change
+    - name: Attempt to update again with the same parameters (should be idempotent)
+      cdot65.scm.hip_profile:
+        name: "windows-workstations"
+        description: "Updated Windows workstation profile"
+        folder: "HIP-Profile-Demo"
+        match: '"is-win" and not "is-mac"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: idempotent_update
+
+    - name: Display idempotence result
+      debug:
+        msg: "Changed status: {{ idempotent_update.changed }}"
+
+    # Cleanup - delete the HIP profiles in reverse order of creation
+    - name: Delete the snippet-profile
+      cdot65.scm.hip_profile:
+        name: "snippet-profile"
+        snippet: "HIP-Profile-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the complex-security profile
+      cdot65.scm.hip_profile:
+        name: "complex-security"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the non-windows profile
+      cdot65.scm.hip_profile:
+        name: "non-windows"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the all-workstations profile
+      cdot65.scm.hip_profile:
+        name: "all-workstations"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the secure-windows profile
+      cdot65.scm.hip_profile:
+        name: "secure-windows"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the windows-workstations profile
+      cdot65.scm.hip_profile:
+        name: "windows-workstations"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Delete HIP objects
+    - name: Delete the is-disk-encrypted HIP object
+      cdot65.scm.hip_object:
+        name: "is-disk-encrypted"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the is-firewall-enabled HIP object
+      cdot65.scm.hip_object:
+        name: "is-firewall-enabled"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the is-mac HIP object
+      cdot65.scm.hip_object:
+        name: "is-mac"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the is-win HIP object
+      cdot65.scm.hip_object:
+        name: "is-win"
+        folder: "HIP-Profile-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up the containers
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "HIP-Profile-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "HIP-Profile-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
