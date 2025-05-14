@@ -104,6 +104,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [dynamic_user_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group_info.py) | Retrieve dynamic user group information | ✅ |
 | [external_dynamic_list](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list.py) | Manage external dynamic lists | ✅ |
 | [external_dynamic_list_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list_info.py) | Retrieve external dynamic list information | ✅ |
+| [hip_object](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object.py) | Manage host information profile objects | ✅ |
+| [hip_object_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object_info.py) | Retrieve host information profile object information | ✅ |
 
 ### Configuration and Deployment Modules (Planned)
 
@@ -226,6 +228,8 @@ The collection includes several example playbooks in the `examples/` directory:
 - `dynamic_user_group_info.yml` - Retrieve dynamic user group information
 - `external_dynamic_list.yml` - Create and manage external dynamic lists
 - `external_dynamic_list_info.yml` - Retrieve external dynamic list information
+- `hip_object.yml` - Create and manage host information profile objects 
+- `hip_object_info.yml` - Retrieve host information profile object information
 
 ## Development
 

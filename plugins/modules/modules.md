@@ -30,6 +30,8 @@ This document provides a high-level summary of the structure and workflow patter
 - `dynamic_user_group_info.py`
 - `external_dynamic_list.py`
 - `external_dynamic_list_info.py`
+- `hip_object.py`
+- `hip_object_info.py`
 
 ---
 
@@ -66,7 +68,7 @@ All modules generally follow this structure:
 
 ## Workflow Patterns
 
-- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`, `application_group.py`, `application_filter.py`, `dynamic_user_group.py`, `external_dynamic_list.py`):
+- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`, `application_group.py`, `application_filter.py`, `dynamic_user_group.py`, `external_dynamic_list.py`, `hip_object.py`):
   - Support `state: present/absent` for idempotent create/update/delete
   - Require resource identifiers (name/id) and container context
   - Validate mutually exclusive container args (e.g., folder/snippet/device)
@@ -80,6 +82,7 @@ All modules generally follow this structure:
   - Application Filter module handles boolean fields carefully, only including True values in API requests
   - Dynamic User Group module supports tag-based filter expressions for user matching
   - External Dynamic List module supports URL-based and predefined external lists
+  - HIP Object module supports complex criteria specifications for host posture assessment (host_info, network_info, patch_management, disk_encryption, mobile_device, certificate)
 
 - **Info/Query Modules** (`*_info.py`):
   - Read-only: no `state` param, always `changed: False`
@@ -95,6 +98,7 @@ All modules generally follow this structure:
   - Application_filter_info supports filtering by various criteria including risk level, category, subcategory, and technology
   - Dynamic_user_group_info supports filtering by filter expression content and tags
   - External_dynamic_list_info supports filtering by list type (predefined_ip, predefined_url, ip, domain, url, imsi, imei) and container context
+  - Hip_object_info supports filtering by criteria types (host_info, network_info, patch_management, disk_encryption, mobile_device, certificate) and container context
 
 - **Auth Module** (`auth.py`):
   - Validates credentials, returns token info
@@ -163,7 +167,6 @@ if __name__ == '__main__':
 
 ## Next Steps
 
-- Implement `hip_object` and `hip_object_info` modules following the standard pattern
 - Implement `service_object` and `service_object_info` modules
 - Implement `service_group` and `service_group_info` modules
 - Standardize all modules to match the current best practices:
@@ -171,6 +174,9 @@ if __name__ == '__main__':
   - Consistent error handling with specific exception types
   - Unified serialization with model_dump_json and json.loads
   - Comprehensive container parameter handling
+- Create integration tests for new modules
+- Continue to improve error handling for edge cases
+- Polish documentation and examples
 
 ---
 

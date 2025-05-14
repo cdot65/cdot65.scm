@@ -1,0 +1,259 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM HIP object operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First, we create test containers to use for our examples
+    - name: Create a test folder for HIP objects
+      cdot65.scm.folder:
+        name: "HIP-Demo"
+        parent: "Texas"
+        description: "Folder for HIP object examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_folder
+
+    - name: Create a test snippet for HIP objects
+      cdot65.scm.snippet:
+        name: "HIP-Snippet"
+        description: "Snippet for HIP object examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_snippet
+
+    # Now create different types of HIP objects
+    - name: Create a Host Info HIP object
+      cdot65.scm.hip_object:
+        name: "Macintosh-hd-drive-test"
+        description: "Windows workstation requirements"
+        folder: "HIP-Demo"
+        disk_encryption:
+
+        host_info:
+          criteria:
+            os:
+              contains:
+                Apple: "All"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: host_info_object
+
+    - name: Display created host info HIP object
+      debug:
+        var: host_info_object
+
+    - name: Create a Disk Encryption HIP object
+      cdot65.scm.hip_object:
+        name: "encrypted-endpoints"
+        description: "Disk encryption requirements"
+        folder: "HIP-Demo"
+        disk_encryption:
+          criteria:
+            is_installed: true
+            encrypted_locations:
+              - name: "C:"
+                encryption_state:
+                  is: "encrypted"
+          vendor:
+            - name: "Microsoft"
+              product: ["BitLocker"]
+          exclude_vendor: false
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: disk_encryption_object
+
+    - name: Display created disk encryption HIP object
+      debug:
+        var: disk_encryption_object
+
+    - name: Create a Network Info HIP object in snippet
+      cdot65.scm.hip_object:
+        name: "corporate-wifi"
+        description: "Corporate WiFi requirements"
+        snippet: "HIP-Snippet"
+        network_info:
+          criteria:
+            network_type:  # Using network_type instead of network
+              is: "wifi"   # Direct string value for network type
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: network_info_object
+
+    - name: Display created network info HIP object
+      debug:
+        var: network_info_object
+
+    - name: Create a Patch Management HIP object
+      cdot65.scm.hip_object:
+        name: "patch-compliant"
+        description: "Patch compliance requirements"
+        folder: "HIP-Demo"
+        patch_management:
+          criteria:
+            is_installed: true
+            missing_patches: 
+              severity: 10  # Direct integer value as expected by the model
+              check: "has-none"
+          vendor:
+            - name: "Microsoft"
+              product: ["Windows Update"]
+          exclude_vendor: false
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: patch_management_object
+
+    - name: Display created patch management HIP object
+      debug:
+        var: patch_management_object
+
+    - name: Create a Mobile Device HIP object
+      cdot65.scm.hip_object:
+        name: "secure-mobile"
+        description: "Mobile device security requirements"
+        folder: "HIP-Demo"
+        mobile_device:
+          criteria:
+            jailbroken: false
+            disk_encrypted: true
+            passcode_set: true
+            last_checkin_time:
+              days: 7
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: mobile_device_object
+
+    - name: Display created mobile device HIP object
+      debug:
+        var: mobile_device_object
+
+    - name: Create a Certificate HIP object
+      cdot65.scm.hip_object:
+        name: "corp-certificates"
+        description: "Corporate certificate requirements"
+        folder: "HIP-Demo"
+        certificate:
+          criteria:
+            certificate_profile: "corp-profile"
+            certificate_attributes:
+              - name: "Subject"
+                value: "CN=CorporateUser"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: certificate_object
+
+    - name: Display created certificate HIP object
+      debug:
+        var: certificate_object
+
+    # Update an existing HIP object
+    - name: Update the Windows workstation HIP object to add domain criteria
+      cdot65.scm.hip_object:
+        name: "windows-workstations"
+        description: "Updated Windows workstation requirements"
+        folder: "HIP-Demo"
+        host_info:
+          criteria:
+            domain:
+              contains: "corporate.local"
+            os:
+              contains:
+                Microsoft: "All"
+            managed: true
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_host_info_object
+
+    - name: Display updated host info HIP object
+      debug:
+        var: updated_host_info_object
+
+    # Demonstrate idempotence - this should not result in a change
+    - name: Attempt to update again with the same parameters (should be idempotent)
+      cdot65.scm.hip_object:
+        name: "windows-workstations"
+        description: "Updated Windows workstation requirements"
+        folder: "HIP-Demo"
+        host_info:
+          criteria:
+            domain:
+              contains: "corporate.local"
+            os:
+              contains:
+                Microsoft: "All"
+            managed: true
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: idempotent_update
+
+    - name: Display idempotence result
+      debug:
+        msg: "Changed status: {{ idempotent_update.changed }}"
+
+    # Cleanup - delete the HIP objects in reverse order of creation
+    - name: Delete the Certificate HIP object
+      cdot65.scm.hip_object:
+        name: "corp-certificates"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the Mobile Device HIP object
+      cdot65.scm.hip_object:
+        name: "secure-mobile"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the Patch Management HIP object
+      cdot65.scm.hip_object:
+        name: "patch-compliant"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the Network Info HIP object
+      cdot65.scm.hip_object:
+        name: "corporate-wifi"
+        snippet: "HIP-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the Disk Encryption HIP object
+      cdot65.scm.hip_object:
+        name: "encrypted-endpoints"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the Host Info HIP object
+      cdot65.scm.hip_object:
+        name: "windows-workstations"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up the containers
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "HIP-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "HIP-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
