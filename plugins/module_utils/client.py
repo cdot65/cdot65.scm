@@ -6,6 +6,7 @@
 """Strata Cloud Manager API client module utilities."""
 
 import logging
+from ansible.module_utils.basic import missing_required_lib
 
 # Import Python libs
 
@@ -26,8 +27,6 @@ except ImportError as e:
     BadRequestError = Exception
     NotFoundError = Exception
     SCM_SDK_IMPORT_ERROR = e
-
-from ansible.module_utils.basic import missing_required_lib
 
 
 def get_scm_client_argument_spec():

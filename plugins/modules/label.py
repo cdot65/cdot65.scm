@@ -193,7 +193,6 @@ def main():
 
                 # Create a new label
                 if not module.check_mode:
-
                     # Create label
                     created = client.label.create(create_payload)
 

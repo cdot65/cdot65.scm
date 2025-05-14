@@ -269,7 +269,6 @@ def main():
 
                 # Create a new folder
                 if not module.check_mode:
-
                     # Create folder
                     created = client.folder.create(create_payload)
 

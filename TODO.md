@@ -54,6 +54,7 @@ _Last updated: 2025-05-16_
 - [ ] Implement service object modules (`service_object`, `service_object_info`) 
 - [ ] Implement service group modules (`service_group`, `service_group_info`)
 - [ ] Develop comprehensive test coverage (unit + integration)
+  - [ ] Reimplement unit tests for module_utils (client.py)
 - [ ] Create example playbooks for all resource types
 - [ ] Enhance documentation with real-world usage patterns
 - [ ] Ensure all modules support idempotency and check_mode
@@ -73,6 +74,17 @@ _Last updated: 2025-05-16_
   - Do not attempt to set boolean fields to False as this can cause validation errors
   - When updating existing resources, only include boolean fields that should be True
   - Document this behavior in the module description and examples
+
+## [2025-05-16] Test Structure Cleanup and Module Utils Cleanup
+
+- Removed outdated unit tests for module_utils
+- Updated CLAUDE.md to document authentication best practices
+- Added TODO items to reimplement module_utils tests
+- Added documentation on OAuth2 authentication as the preferred method
+- Removed test files that were incompatible with current implementation
+- Cleaned up test directory structure for future reimplementation
+- Removed deprecated scm.py as it was no longer used in any modules
+- All modules now use direct SDK imports or client.py for authentication
 
 ## [2025-05-16] Host Information Profile (HIP) Modules Completed
 

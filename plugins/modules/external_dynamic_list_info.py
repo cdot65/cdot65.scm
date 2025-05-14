@@ -282,9 +282,7 @@ def main():
                     )
 
                 # For any container type, fetch the external dynamic list object
-                edl_obj = client.external_dynamic_list.fetch(
-                    name=params.get("name"), **{container_type: container_name}
-                )
+                edl_obj = client.external_dynamic_list.fetch(name=params.get("name"), **{container_type: container_name})
                 if edl_obj:
                     result["external_dynamic_lists"] = [json.loads(edl_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:

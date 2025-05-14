@@ -302,89 +302,89 @@ hip_object:
 def clean_hip_criteria(criteria_data):
     """
     Preprocess HIP object criteria to ensure proper formatting and prevent validation errors.
-    
+
     The function processes several common validation issues:
     1. Removes empty string fields that would cause validation errors
     2. Converts empty dicts to proper values for contains/is/is_not fields
     3. Cleans up nested structures with more than one of contains/is/is_not
     4. Fixes patch management severity format (must be an object with 'value' property)
     5. Ensures network_type has proper formatting
-    
+
     Args:
         criteria_data (dict): The raw criteria data from Ansible parameters
-        
+
     Returns:
         dict: The preprocessed criteria data ready for API submission
     """
     if not criteria_data:
         return criteria_data
-        
+
     # Deep copy to avoid modifying the original data
     cleaned = copy.deepcopy(criteria_data)
-    
+
     # Handle criteria field if present
-    if 'criteria' in cleaned:
-        for key, value in list(cleaned['criteria'].items()):
+    if "criteria" in cleaned:
+        for key, value in list(cleaned["criteria"].items()):
             # Special case for missing_patches severity
-            if key == 'missing_patches' and isinstance(value, dict):
-                if 'severity' in value and not isinstance(value['severity'], dict):
+            if key == "missing_patches" and isinstance(value, dict):
+                if "severity" in value and not isinstance(value["severity"], dict):
                     # If severity is provided as an integer, convert to the required object format
-                    severity_value = value['severity']
-                    value['severity'] = {'level': severity_value}
-            
+                    severity_value = value["severity"]
+                    value["severity"] = {"level": severity_value}
+
             # Check string comparison fields (domain, client_version, host_name, etc.)
-            if isinstance(value, dict) and any(op in value for op in ['contains', 'is', 'is_not']):
+            if isinstance(value, dict) and any(op in value for op in ["contains", "is", "is_not"]):
                 # Handle contains operator
-                if 'contains' in value:
+                if "contains" in value:
                     # If contains is empty dict, remove it
-                    if value['contains'] == {}:
-                        del value['contains']
+                    if value["contains"] == {}:
+                        del value["contains"]
                     # If contains is empty string, remove it
-                    elif value['contains'] == '':
-                        del value['contains']
-                        
+                    elif value["contains"] == "":
+                        del value["contains"]
+
                 # Handle is operator
-                if 'is' in value:
+                if "is" in value:
                     # If is is empty dict, remove it
-                    if value['is'] == {}:
-                        del value['is']
+                    if value["is"] == {}:
+                        del value["is"]
                     # If is is empty string, remove it
-                    elif value['is'] == '':
-                        del value['is']
-                        
+                    elif value["is"] == "":
+                        del value["is"]
+
                 # Handle is_not operator
-                if 'is_not' in value:
+                if "is_not" in value:
                     # If is_not is empty dict, remove it
-                    if value['is_not'] == {}:
-                        del value['is_not']
+                    if value["is_not"] == {}:
+                        del value["is_not"]
                     # If is_not is empty string, remove it
-                    elif value['is_not'] == '':
-                        del value['is_not']
-                
+                    elif value["is_not"] == "":
+                        del value["is_not"]
+
                 # If all operators were removed, remove the entire key
                 if not value:
-                    del cleaned['criteria'][key]
-                    
+                    del cleaned["criteria"][key]
+
             # Handle nested dicts for things like os.contains or network.is
             elif isinstance(value, dict):
                 for subkey, subvalue in list(value.items()):
                     if isinstance(subvalue, dict):
                         # Clean up nested operators
-                        if 'contains' in subvalue and subvalue['contains'] == {}:
-                            del subvalue['contains']
-                        if 'is' in subvalue and subvalue['is'] == {}:
-                            del subvalue['is']
-                        if 'is_not' in subvalue and subvalue['is_not'] == {}:
-                            del subvalue['is_not']
-                        
+                        if "contains" in subvalue and subvalue["contains"] == {}:
+                            del subvalue["contains"]
+                        if "is" in subvalue and subvalue["is"] == {}:
+                            del subvalue["is"]
+                        if "is_not" in subvalue and subvalue["is_not"] == {}:
+                            del subvalue["is_not"]
+
                         # If all operators were removed, remove the subkey
                         if not subvalue:
                             del value[subkey]
-                            
+
                 # If all subkeys were removed, remove the key
                 if not value:
-                    del cleaned['criteria'][key]
-    
+                    del cleaned["criteria"][key]
+
     return cleaned
 
 
@@ -427,15 +427,10 @@ def main():
     if params.get("state") == "present":
         # For creation/update, one of the container types is required
         if not any(params.get(container_type) for container_type in ["folder", "snippet", "device"]):
-            module.fail_json(
-                msg="When state=present, one of the following is required: folder, snippet, device"
-            )
-        
+            module.fail_json(msg="When state=present, one of the following is required: folder, snippet, device")
+
         # At least one criteria type should be present
-        criteria_types = [
-            "host_info", "network_info", "patch_management", 
-            "disk_encryption", "mobile_device", "certificate"
-        ]
+        criteria_types = ["host_info", "network_info", "patch_management", "disk_encryption", "mobile_device", "certificate"]
         if not any(params.get(c_type) for c_type in criteria_types):
             module.fail_json(
                 msg="At least one criteria type is required: host_info, network_info, patch_management, disk_encryption, mobile_device, or certificate"
@@ -484,23 +479,29 @@ def main():
             if hip_exists:
                 # Collect fields that might need to be updated
                 update_fields = {}
-                
+
                 # Add basic fields directly
                 for basic_field in ["description", "folder", "snippet", "device"]:
                     if params.get(basic_field) is not None and getattr(hip_obj, basic_field, None) != params.get(basic_field):
                         update_fields[basic_field] = params.get(basic_field)
-                
+
                 # Process criteria fields with preprocessing to avoid validation errors
-                for criteria_field in ["host_info", "network_info", "patch_management",
-                                       "disk_encryption", "mobile_device", "certificate"]:
+                for criteria_field in [
+                    "host_info",
+                    "network_info",
+                    "patch_management",
+                    "disk_encryption",
+                    "mobile_device",
+                    "certificate",
+                ]:
                     if params.get(criteria_field) is not None:
                         # Clean criteria data
                         cleaned_criteria = clean_hip_criteria(params.get(criteria_field))
-                        
+
                         # Only add if non-empty and different from current value
                         if cleaned_criteria and getattr(hip_obj, criteria_field, None) != cleaned_criteria:
                             update_fields[criteria_field] = cleaned_criteria
-                
+
                 # Update if needed
                 if update_fields:
                     if not module.check_mode:
@@ -521,7 +522,7 @@ def main():
                     else:
                         # In check mode, just show what would be updated
                         result["hip_object"] = json.loads(hip_obj.model_dump_json(exclude_unset=True))
-                    
+
                     result["changed"] = True
                     module.exit_json(**result)
                 else:
@@ -535,11 +536,11 @@ def main():
                 create_payload = {
                     "name": params.get("name"),
                 }
-                
+
                 # Add description if provided
                 if params.get("description"):
                     create_payload["description"] = params.get("description")
-                
+
                 # Add container
                 if params.get("folder"):
                     create_payload["folder"] = params.get("folder")
@@ -547,10 +548,16 @@ def main():
                     create_payload["snippet"] = params.get("snippet")
                 elif params.get("device"):
                     create_payload["device"] = params.get("device")
-                
+
                 # Add HIP criteria with preprocessing
-                for criteria_field in ["host_info", "network_info", "patch_management", 
-                                      "disk_encryption", "mobile_device", "certificate"]:
+                for criteria_field in [
+                    "host_info",
+                    "network_info",
+                    "patch_management",
+                    "disk_encryption",
+                    "mobile_device",
+                    "certificate",
+                ]:
                     if params.get(criteria_field):
                         # Clean criteria data to prevent validation errors
                         cleaned_criteria = clean_hip_criteria(params.get(criteria_field))
@@ -595,7 +602,7 @@ def main():
                             msg=f"API Error deleting HIP object: {str(e)}",
                             error_code=getattr(e, "error_code", None),
                             details=getattr(e, "details", None),
-                            id=hip_obj.id
+                            id=hip_obj.id,
                         )
                     except Exception as e:
                         module.fail_json(msg=f"Error deleting HIP object: {str(e)}", id=hip_obj.id)

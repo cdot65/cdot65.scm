@@ -381,7 +381,6 @@ def main():
 
                 # Create a variable
                 if not module.check_mode:
-
                     # Create a variable
                     created = client.variable.create(create_payload)
 

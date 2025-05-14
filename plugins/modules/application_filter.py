@@ -395,7 +395,7 @@ def main():
             if application_filter_exists:
                 # Determine which fields differ and need to be updated
                 update_fields = {}
-                
+
                 # Handle non-boolean fields
                 for k in [
                     "category",
@@ -409,7 +409,7 @@ def main():
                 ]:
                     if params.get(k) is not None and getattr(application_filter_obj, k, None) != params[k]:
                         update_fields[k] = params[k]
-                
+
                 # Boolean fields in SCM require special handling
                 # Only include true values, don't try to explicitly set false values
                 bool_fields = [
@@ -423,13 +423,13 @@ def main():
                     "is_saas",
                     "new_appid",
                 ]
-                
+
                 for k in bool_fields:
                     # Only consider boolean fields that were explicitly provided
                     if k in params and params[k] is not None:
-                        current_value = getattr(application_filter_obj, k, False) 
+                        current_value = getattr(application_filter_obj, k, False)
                         new_value = params[k]
-                        
+
                         # If changing to True, update field
                         if new_value is True and current_value is not True:
                             update_fields[k] = True
@@ -455,7 +455,7 @@ def main():
             else:
                 # Create payload for new application filter object
                 create_payload = {}
-                
+
                 # Handle non-boolean fields
                 for k in [
                     "name",
@@ -470,7 +470,7 @@ def main():
                 ]:
                     if params.get(k) is not None:
                         create_payload[k] = params[k]
-                
+
                 # Handle boolean fields - only add if they are True
                 # This avoids sending 'False' which gets converted to 'no' in the API
                 for k in [

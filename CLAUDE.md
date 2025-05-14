@@ -64,9 +64,9 @@ make integration-test
 # OR
 poetry run tox -e integration
 
-# Run a specific unit test
+# Run a specific unit test (note: unit tests for module_utils need to be reimplemented)
 cd ~/.ansible/collections/ansible_collections/cdot65/scm/ && \
-poetry run ansible-test units --docker default tests/unit/plugins/module_utils/test_scm.py
+poetry run ansible-test units --docker default tests/unit/YOUR_TEST_PATH.py
 ```
 
 ### Linting and Formatting
@@ -114,10 +114,10 @@ This collection follows a consistent pattern for all resource types:
 - Each resource has a standard module for CRUD operations (e.g., `folder.py`) supporting `state: present` (Create/Update) and `state: absent` (Delete)
 - Each resource has a corresponding information module for retrieval (e.g., `folder_info.py`)
 - Shared functionality is in `plugins/module_utils/`
-- The `client.py` module handles authentication and API interactions
+- The `client.py` module handles authentication and API interactions using OAuth2
 - All modules must be idempotent and support check mode
 
-When developing new modules, use the existing `folder` and `folder_info` modules as a template for structure and best practices.
+When developing new modules, use the existing `folder` and `folder_info` modules as a template for structure and best practices. Always use direct SDK imports and OAuth2 authentication via access token.
 
 ## Module Design Patterns
 
