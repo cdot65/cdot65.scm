@@ -95,133 +95,133 @@
       debug:
         var: network_info_object
 
-    - name: Create a Patch Management HIP object
-      cdot65.scm.hip_object:
-        name: "patch-compliant"
-        description: "Patch compliance requirements"
-        folder: "HIP-Demo"
-        patch_management:
-          criteria:
-            is_installed: true
-            missing_patches: 
-              severity: 10  # Direct integer value as expected by the model
-              check: "has-none"
-          vendor:
-            - name: "Microsoft"
-              product: ["Windows Update"]
-          exclude_vendor: false
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-      register: patch_management_object
+#    - name: Create a Patch Management HIP object
+#      cdot65.scm.hip_object:
+#        name: "patch-compliant"
+#        description: "Patch compliance requirements"
+#        folder: "HIP-Demo"
+#        patch_management:
+#          criteria:
+#            is_installed: true
+#            missing_patches:
+#              severity: { "level": 10 }  # Object with level field as required by API
+#              check: "has-none"
+#          vendor:
+#            - name: "Microsoft"
+#              product: ["Windows Update"]
+#          exclude_vendor: false
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: patch_management_object
+#
+#    - name: Display created patch management HIP object
+#      debug:
+#        var: patch_management_object
+#
+#    - name: Create a Mobile Device HIP object
+#      cdot65.scm.hip_object:
+#        name: "secure-mobile"
+#        description: "Mobile device security requirements"
+#        folder: "HIP-Demo"
+#        mobile_device:
+#          criteria:
+#            jailbroken: false
+#            disk_encrypted: true
+#            passcode_set: true
+#            last_checkin_time:
+#              days: 7
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: mobile_device_object
+#
+#    - name: Display created mobile device HIP object
+#      debug:
+#        var: mobile_device_object
+#
+#    - name: Create a Certificate HIP object
+#      cdot65.scm.hip_object:
+#        name: "corp-certificates"
+#        description: "Corporate certificate requirements"
+#        folder: "HIP-Demo"
+#        certificate:
+#          criteria:
+#            certificate_profile: "corp-profile"
+#            certificate_attributes:
+#              - name: "Subject"
+#                value: "CN=CorporateUser"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: certificate_object
+#
+#    - name: Display created certificate HIP object
+#      debug:
+#        var: certificate_object
+#
+#    # Update an existing HIP object
+#    - name: Update the Windows workstation HIP object to add domain criteria
+#      cdot65.scm.hip_object:
+#        name: "windows-workstations"
+#        description: "Updated Windows workstation requirements"
+#        folder: "HIP-Demo"
+#        host_info:
+#          criteria:
+#            domain:
+#              contains: "corporate.local"
+#            os:
+#              contains:
+#                Microsoft: "All"
+#            managed: true
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: updated_host_info_object
+#
+#    - name: Display updated host info HIP object
+#      debug:
+#        var: updated_host_info_object
+#
+#    # Demonstrate idempotence - this should not result in a change
+#    - name: Attempt to update again with the same parameters (should be idempotent)
+#      cdot65.scm.hip_object:
+#        name: "windows-workstations"
+#        description: "Updated Windows workstation requirements"
+#        folder: "HIP-Demo"
+#        host_info:
+#          criteria:
+#            domain:
+#              contains: "corporate.local"
+#            os:
+#              contains:
+#                Microsoft: "All"
+#            managed: true
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: present
+#      register: idempotent_update
+#
+#    - name: Display idempotence result
+#      debug:
+#        msg: "Changed status: {{ idempotent_update.changed }}"
 
-    - name: Display created patch management HIP object
-      debug:
-        var: patch_management_object
-
-    - name: Create a Mobile Device HIP object
-      cdot65.scm.hip_object:
-        name: "secure-mobile"
-        description: "Mobile device security requirements"
-        folder: "HIP-Demo"
-        mobile_device:
-          criteria:
-            jailbroken: false
-            disk_encrypted: true
-            passcode_set: true
-            last_checkin_time:
-              days: 7
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-      register: mobile_device_object
-
-    - name: Display created mobile device HIP object
-      debug:
-        var: mobile_device_object
-
-    - name: Create a Certificate HIP object
-      cdot65.scm.hip_object:
-        name: "corp-certificates"
-        description: "Corporate certificate requirements"
-        folder: "HIP-Demo"
-        certificate:
-          criteria:
-            certificate_profile: "corp-profile"
-            certificate_attributes:
-              - name: "Subject"
-                value: "CN=CorporateUser"
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-      register: certificate_object
-
-    - name: Display created certificate HIP object
-      debug:
-        var: certificate_object
-
-    # Update an existing HIP object
-    - name: Update the Windows workstation HIP object to add domain criteria
-      cdot65.scm.hip_object:
-        name: "windows-workstations"
-        description: "Updated Windows workstation requirements"
-        folder: "HIP-Demo"
-        host_info:
-          criteria:
-            domain:
-              contains: "corporate.local"
-            os:
-              contains:
-                Microsoft: "All"
-            managed: true
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-      register: updated_host_info_object
-
-    - name: Display updated host info HIP object
-      debug:
-        var: updated_host_info_object
-
-    # Demonstrate idempotence - this should not result in a change
-    - name: Attempt to update again with the same parameters (should be idempotent)
-      cdot65.scm.hip_object:
-        name: "windows-workstations"
-        description: "Updated Windows workstation requirements"
-        folder: "HIP-Demo"
-        host_info:
-          criteria:
-            domain:
-              contains: "corporate.local"
-            os:
-              contains:
-                Microsoft: "All"
-            managed: true
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-      register: idempotent_update
-
-    - name: Display idempotence result
-      debug:
-        msg: "Changed status: {{ idempotent_update.changed }}"
-
-    # Cleanup - delete the HIP objects in reverse order of creation
-    - name: Delete the Certificate HIP object
-      cdot65.scm.hip_object:
-        name: "corp-certificates"
-        folder: "HIP-Demo"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-
-    - name: Delete the Mobile Device HIP object
-      cdot65.scm.hip_object:
-        name: "secure-mobile"
-        folder: "HIP-Demo"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-
-    - name: Delete the Patch Management HIP object
-      cdot65.scm.hip_object:
-        name: "patch-compliant"
-        folder: "HIP-Demo"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
+#    # Cleanup - delete the HIP objects in reverse order of creation
+#    - name: Delete the Certificate HIP object
+#      cdot65.scm.hip_object:
+#        name: "corp-certificates"
+#        folder: "HIP-Demo"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: absent
+#
+#    - name: Delete the Mobile Device HIP object
+#      cdot65.scm.hip_object:
+#        name: "secure-mobile"
+#        folder: "HIP-Demo"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: absent
+#
+#    - name: Delete the Patch Management HIP object
+#      cdot65.scm.hip_object:
+#        name: "patch-compliant"
+#        folder: "HIP-Demo"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: absent
 
     - name: Delete the Network Info HIP object
       cdot65.scm.hip_object:
@@ -237,12 +237,12 @@
         scm_access_token: "{{ scm_access_token }}"
         state: absent
 
-    - name: Delete the Host Info HIP object
-      cdot65.scm.hip_object:
-        name: "windows-workstations"
-        folder: "HIP-Demo"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
+#    - name: Delete the Host Info HIP object
+#      cdot65.scm.hip_object:
+#        name: "windows-workstations"
+#        folder: "HIP-Demo"
+#        scm_access_token: "{{ scm_access_token }}"
+#        state: absent
 
     # Clean up the containers
     - name: Delete the test snippet

@@ -177,7 +177,7 @@ EXAMPLES = r"""
       criteria:
         is_installed: true
         missing_patches:
-          severity: 10  # Direct integer value as expected by the model
+          severity: { "level": 10 }  # Object with level field as required by API
           check: "has-none"
       vendor:
         - name: "Microsoft"
@@ -265,7 +265,7 @@ hip_object:
             description: Patch management criteria
             type: dict
             returned: when applicable
-            sample: {"criteria": {"is_installed": true, "missing_patches": {"severity": 10, "check": "has-none"}}}
+            sample: {"criteria": {"is_installed": true, "missing_patches": {"severity": {"level": 10}, "check": "has-none"}}}
         disk_encryption:
             description: Disk encryption criteria
             type: dict
@@ -327,10 +327,10 @@ def clean_hip_criteria(criteria_data):
         for key, value in list(cleaned['criteria'].items()):
             # Special case for missing_patches severity
             if key == 'missing_patches' and isinstance(value, dict):
-                if 'severity' in value and isinstance(value['severity'], dict):
-                    # If severity is provided as an object with a value property, convert to direct integer
-                    if 'value' in value['severity'] and isinstance(value['severity']['value'], (int, float)):
-                        value['severity'] = value['severity']['value']
+                if 'severity' in value and not isinstance(value['severity'], dict):
+                    # If severity is provided as an integer, convert to the required object format
+                    severity_value = value['severity']
+                    value['severity'] = {'level': severity_value}
             
             # Check string comparison fields (domain, client_version, host_name, etc.)
             if isinstance(value, dict) and any(op in value for op in ['contains', 'is', 'is_not']):
