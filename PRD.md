@@ -89,6 +89,8 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Application Filters (`application_filter`, `application_filter_info`) — Complete ✅
     *   Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) — Complete ✅
     *   External Dynamic Lists (`external_dynamic_list`, `external_dynamic_list_info`) — Complete ✅
+    *   Host Information Profiles (`hip_object`, `hip_object_info`) — Complete ✅
+    *   HIP Profiles (`hip_profile`, `hip_profile_info`)
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
 *   **Action Modules:**
@@ -302,7 +304,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
-- Implement Host Information Profile modules (hip_object, hip_object_info).
+- Implement HIP Profile modules (hip_profile, hip_profile_info).
 - Implement Service objects modules (service_object, service_object_info).
 - Implement Service Group modules (service_group, service_group_info).
 - Standardize all other info modules to follow the same pattern as folder_info/device_info.
@@ -315,12 +317,12 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `hip_object` and `hip_object_info` modules for host information profile management.
+- Implement `hip_profile` and `hip_profile_info` modules for HIP profile management.
 - Implement `service_object` and `service_object_info` modules for service object management.
 - Implement `service_group` and `service_group_info` modules for service group management.
 - Complete standardization of all info modules to follow consistent error handling.
 - Build integration tests to verify modules against real SCM instances.
-- Add integration tests for the dynamic_user_group and external_dynamic_list modules.
+- Add integration tests for the hip_object, dynamic_user_group and external_dynamic_list modules.
 - Continue to enhance documentation and examples with real-world use cases.
 - Explore options for rule management modules (security rules, NAT rules) for future releases.
 
@@ -342,14 +344,15 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Implemented `hip_object` and `hip_object_info` modules for managing Host Information Profile (HIP) objects.
+- Created example playbooks for HIP object management and retrieval with comprehensive examples.
+- Implemented support for all HIP criteria types (host_info, network_info, patch_management, disk_encryption, mobile_device, certificate).
+- Added support for complex criteria specifications with proper nesting and validation.
 - Fixed error in `external_dynamic_list_info` module related to filtering by list types, specifically addressing the "'NoneType' object has no attribute '__dict__'" error.
-- Improved type checking in the EDL info module by using model_dump_json for safer serialization and comparison.
-- Fully completed `external_dynamic_list` and `external_dynamic_list_info` modules for managing external dynamic lists.
-- Verified comprehensive support for all EDL types (predefined_ip, predefined_url, ip, domain, url, imsi, imei) with proper type-specific validation.
-- Ensured proper handling of recurring schedule configurations (five_minute, hourly, daily, weekly, monthly) for EDL updates.
-- Thoroughly tested filtering by list type, URL, and container context in the info module.
-- Updated documentation (README.md, modules.md, TODO.md, PRD.md) to reflect completion of the external_dynamic_list modules.
-- Updated development roadmap to focus on hip_object modules as our next implementation target.
+- Improved type checking in modules by using model_dump_json for safer serialization and comparison.
+- Followed the established pattern for other resource modules with robust error handling and validation.
+- Updated documentation (README.md, modules.md, TODO.md, PRD.md) to reflect completion of new modules.
+- Updated development roadmap to focus on service_object modules as our next implementation target.
 - Implemented `dynamic_user_group` and `dynamic_user_group_info` modules for managing tag-based dynamic user groups.
 - Created comprehensive example playbooks demonstrating dynamic user group creation, filtering, and management.
 - Followed the established pattern for other resource modules with robust error handling and validation.

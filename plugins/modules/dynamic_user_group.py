@@ -273,7 +273,8 @@ def main():
 
                 # For any container type, fetch the dynamic user group object
                 if container_type and container_name:
-                    dynamic_user_group_obj = client.dynamic_user_group.fetch(name=params.get("name"), **{container_type: container_name})
+                    dynamic_user_group_obj = client.dynamic_user_group.fetch(name=params.get("name"),
+                                                                             **{container_type: container_name})
                     if dynamic_user_group_obj:
                         dynamic_user_group_exists = True
             except ObjectNotPresentError:
@@ -304,12 +305,14 @@ def main():
                         updated = client.dynamic_user_group.update(update_model)
                         result["dynamic_user_group"] = json.loads(updated.model_dump_json(exclude_unset=True))
                     else:
-                        result["dynamic_user_group"] = json.loads(dynamic_user_group_obj.model_dump_json(exclude_unset=True))
+                        result["dynamic_user_group"] = json.loads(
+                            dynamic_user_group_obj.model_dump_json(exclude_unset=True))
                     result["changed"] = True
                     module.exit_json(**result)
                 else:
                     # No update needed
-                    result["dynamic_user_group"] = json.loads(dynamic_user_group_obj.model_dump_json(exclude_unset=True))
+                    result["dynamic_user_group"] = json.loads(
+                        dynamic_user_group_obj.model_dump_json(exclude_unset=True))
                     result["changed"] = False
                     module.exit_json(**result)
 

@@ -280,14 +280,14 @@ def build_edl_type_config(params):
         return None
 
     type_config = {}
-    
+
     # Common fields for all types
     type_fields = {
         "url": params.get("url"),
         "description": params.get("description"),
         "exception_list": params.get("exception_list"),
     }
-    
+
     # Remove None values
     type_fields = {k: v for k, v in type_fields.items() if v is not None}
 
@@ -298,17 +298,17 @@ def build_edl_type_config(params):
     else:
         # Other types need recurring and can have auth and certificate_profile
         type_fields["recurring"] = params.get("recurring")
-        
+
         if params.get("auth"):
             type_fields["auth"] = params.get("auth")
-        
+
         if params.get("certificate_profile"):
             type_fields["certificate_profile"] = params.get("certificate_profile")
-        
+
         # Domain type can have expand_domain
         if edl_type == "domain" and params.get("expand_domain") is not None:
             type_fields["expand_domain"] = params.get("expand_domain")
-        
+
         type_config[edl_type] = type_fields
 
     return type_config
@@ -318,8 +318,8 @@ def main():
     module_args = dict(
         name=dict(type="str", required=False),
         type=dict(
-            type="str", 
-            required=False, 
+            type="str",
+            required=False,
             choices=["predefined_ip", "predefined_url", "ip", "domain", "url", "imsi", "imei"]
         ),
         url=dict(type="str", required=False),
@@ -361,20 +361,20 @@ def main():
             module.fail_json(
                 msg="When state=present, one of the following is required: folder, snippet, device"
             )
-        
+
         # Validate URL is provided for all types
         if not params.get("url"):
             module.fail_json(
                 msg="The 'url' parameter is required for all external dynamic list types"
             )
-        
+
         # Validate recurring is provided for non-predefined types
         edl_type = params.get("type")
         if edl_type not in ["predefined_ip", "predefined_url"] and not params.get("recurring"):
             module.fail_json(
                 msg=f"The 'recurring' parameter is required for '{edl_type}' type"
             )
-        
+
         # Validate recurring configuration
         recurring = params.get("recurring")
         if recurring:
@@ -382,26 +382,27 @@ def main():
                 module.fail_json(
                     msg="The 'recurring' must contain exactly one key (five_minute, hourly, daily, weekly, or monthly)"
                 )
-            
+
             valid_keys = ["five_minute", "hourly", "daily", "weekly", "monthly"]
             recurring_key = list(recurring.keys())[0]
-            
+
             if recurring_key not in valid_keys:
                 module.fail_json(
                     msg=f"Invalid 'recurring' key: {recurring_key}. Must be one of: {', '.join(valid_keys)}"
                 )
-            
+
             # Validate time format for daily, weekly, monthly
             if recurring_key in ["daily", "weekly", "monthly"]:
                 recurring_value = recurring[recurring_key]
-                
+
                 if "at" in recurring_value:
                     at_value = recurring_value["at"]
-                    if not isinstance(at_value, str) or not at_value.isdigit() or int(at_value) < 0 or int(at_value) > 23:
+                    if not isinstance(at_value, str) or not at_value.isdigit() or int(at_value) < 0 or int(
+                            at_value) > 23:
                         module.fail_json(
                             msg=f"Invalid 'at' value in {recurring_key}: {at_value}. Must be a string representing an hour (00-23)"
                         )
-                
+
                 if recurring_key == "weekly" and "day_of_week" in recurring_value:
                     valid_days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
                     day = recurring_value["day_of_week"]
@@ -409,7 +410,7 @@ def main():
                         module.fail_json(
                             msg=f"Invalid 'day_of_week' value: {day}. Must be one of: {', '.join(valid_days)}"
                         )
-                
+
                 if recurring_key == "monthly" and "day_of_month" in recurring_value:
                     day = recurring_value["day_of_month"]
                     if not isinstance(day, int) or day < 1 or day > 31:
@@ -438,6 +439,8 @@ def main():
             except ObjectNotPresentError:
                 edl_exists = False
                 edl_obj = None
+
+        # Fetch by name
         elif params.get("name"):
             try:
                 # Handle different container types (folder, snippet, device)
@@ -456,7 +459,8 @@ def main():
 
                 # For any container type, fetch the object
                 if container_type and container_name:
-                    edl_obj = client.external_dynamic_list.fetch(name=params.get("name"), **{container_type: container_name})
+                    edl_obj = client.external_dynamic_list.fetch(name=params.get("name"),
+                                                                 **{container_type: container_name})
                     if edl_obj:
                         edl_exists = True
             except ObjectNotPresentError:
@@ -468,14 +472,14 @@ def main():
             if edl_exists:
                 # Build the type configuration
                 type_config = build_edl_type_config(params)
-                
+
                 # Determine the updates needed
                 update_fields = {}
-                
+
                 # Basic fields
                 if params.get("name") and params.get("name") != edl_obj.name:
                     update_fields["name"] = params.get("name")
-                
+
                 # Container fields - only one should be set
                 if params.get("folder") and getattr(edl_obj, "folder", None) != params.get("folder"):
                     update_fields["folder"] = params.get("folder")
@@ -483,7 +487,7 @@ def main():
                     update_fields["snippet"] = params.get("snippet")
                 elif params.get("device") and getattr(edl_obj, "device", None) != params.get("device"):
                     update_fields["device"] = params.get("device")
-                
+
                 # Type configuration
                 if type_config and type_config != getattr(edl_obj, "type", None):
                     update_fields["type"] = type_config
@@ -507,13 +511,13 @@ def main():
             else:
                 # Build the type configuration
                 type_config = build_edl_type_config(params)
-                
+
                 # Create payload
                 create_payload = {
                     "name": params.get("name"),
                     "type": type_config,
                 }
-                
+
                 # Add container
                 if params.get("folder"):
                     create_payload["folder"] = params.get("folder")
