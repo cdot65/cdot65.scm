@@ -318,9 +318,7 @@ def main():
     module_args = dict(
         name=dict(type="str", required=False),
         type=dict(
-            type="str",
-            required=False,
-            choices=["predefined_ip", "predefined_url", "ip", "domain", "url", "imsi", "imei"]
+            type="str", required=False, choices=["predefined_ip", "predefined_url", "ip", "domain", "url", "imsi", "imei"]
         ),
         url=dict(type="str", required=False),
         description=dict(type="str", required=False),
@@ -358,22 +356,16 @@ def main():
     if params.get("state") == "present":
         # For creation/update, one of the container types is required
         if not any(params.get(container_type) for container_type in ["folder", "snippet", "device"]):
-            module.fail_json(
-                msg="When state=present, one of the following is required: folder, snippet, device"
-            )
+            module.fail_json(msg="When state=present, one of the following is required: folder, snippet, device")
 
         # Validate URL is provided for all types
         if not params.get("url"):
-            module.fail_json(
-                msg="The 'url' parameter is required for all external dynamic list types"
-            )
+            module.fail_json(msg="The 'url' parameter is required for all external dynamic list types")
 
         # Validate recurring is provided for non-predefined types
         edl_type = params.get("type")
         if edl_type not in ["predefined_ip", "predefined_url"] and not params.get("recurring"):
-            module.fail_json(
-                msg=f"The 'recurring' parameter is required for '{edl_type}' type"
-            )
+            module.fail_json(msg=f"The 'recurring' parameter is required for '{edl_type}' type")
 
         # Validate recurring configuration
         recurring = params.get("recurring")
@@ -387,9 +379,7 @@ def main():
             recurring_key = list(recurring.keys())[0]
 
             if recurring_key not in valid_keys:
-                module.fail_json(
-                    msg=f"Invalid 'recurring' key: {recurring_key}. Must be one of: {', '.join(valid_keys)}"
-                )
+                module.fail_json(msg=f"Invalid 'recurring' key: {recurring_key}. Must be one of: {', '.join(valid_keys)}")
 
             # Validate time format for daily, weekly, monthly
             if recurring_key in ["daily", "weekly", "monthly"]:
@@ -397,8 +387,7 @@ def main():
 
                 if "at" in recurring_value:
                     at_value = recurring_value["at"]
-                    if not isinstance(at_value, str) or not at_value.isdigit() or int(at_value) < 0 or int(
-                            at_value) > 23:
+                    if not isinstance(at_value, str) or not at_value.isdigit() or int(at_value) < 0 or int(at_value) > 23:
                         module.fail_json(
                             msg=f"Invalid 'at' value in {recurring_key}: {at_value}. Must be a string representing an hour (00-23)"
                         )
@@ -407,16 +396,12 @@ def main():
                     valid_days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
                     day = recurring_value["day_of_week"]
                     if day not in valid_days:
-                        module.fail_json(
-                            msg=f"Invalid 'day_of_week' value: {day}. Must be one of: {', '.join(valid_days)}"
-                        )
+                        module.fail_json(msg=f"Invalid 'day_of_week' value: {day}. Must be one of: {', '.join(valid_days)}")
 
                 if recurring_key == "monthly" and "day_of_month" in recurring_value:
                     day = recurring_value["day_of_month"]
                     if not isinstance(day, int) or day < 1 or day > 31:
-                        module.fail_json(
-                            msg=f"Invalid 'day_of_month' value: {day}. Must be an integer between 1 and 31"
-                        )
+                        module.fail_json(msg=f"Invalid 'day_of_month' value: {day}. Must be an integer between 1 and 31")
 
     # Initialize results
     result = {"changed": False, "external_dynamic_list": None}
@@ -459,8 +444,7 @@ def main():
 
                 # For any container type, fetch the object
                 if container_type and container_name:
-                    edl_obj = client.external_dynamic_list.fetch(name=params.get("name"),
-                                                                 **{container_type: container_name})
+                    edl_obj = client.external_dynamic_list.fetch(name=params.get("name"), **{container_type: container_name})
                     if edl_obj:
                         edl_exists = True
             except ObjectNotPresentError:

@@ -260,7 +260,9 @@ def main():
                     )
 
                 # For any container type, fetch the dynamic user group object
-                dynamic_user_group_obj = client.dynamic_user_group.fetch(name=params.get("name"), **{container_type: container_name})
+                dynamic_user_group_obj = client.dynamic_user_group.fetch(
+                    name=params.get("name"), **{container_type: container_name}
+                )
                 if dynamic_user_group_obj:
                     result["dynamic_user_groups"] = [json.loads(dynamic_user_group_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:

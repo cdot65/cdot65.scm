@@ -1,4 +1,4 @@
-.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format lint-all lint-fix run-examples run-example
+.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format lint-all lint-fix run-examples run-example quality mypy flake8 ruff-check
 
 COLLECTION_NAMESPACE := cdot65
 COLLECTION_NAME := scm
@@ -32,6 +32,9 @@ lint-check:
 flake8:
 	poetry run flake8 plugins tests
 
+mypy:
+	poetry run mypy --config-file pyproject.toml plugins
+
 ruff-check:
 	poetry run ruff check plugins tests
 
@@ -39,6 +42,12 @@ lint-fix:
 	poetry run ruff check --fix plugins tests
 	poetry run black plugins tests
 	poetry run isort plugins tests
+
+# Format plugins with ruff and run flake8 and mypy
+quality:
+	poetry run ruff format --config pyproject.toml plugins
+	poetry run flake8 plugins
+	poetry run mypy --config-file pyproject.toml plugins
 
 # Testing options with poetry
 sanity:

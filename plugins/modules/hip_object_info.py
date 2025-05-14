@@ -336,9 +336,7 @@ def main():
                     )
 
                 # For any container type, fetch the HIP object
-                hip_obj = client.hip_object.fetch(
-                    name=params.get("name"), **{container_type: container_name}
-                )
+                hip_obj = client.hip_object.fetch(name=params.get("name"), **{container_type: container_name})
                 if hip_obj:
                     result["hip_objects"] = [json.loads(hip_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:

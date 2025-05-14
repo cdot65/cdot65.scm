@@ -38,6 +38,16 @@ repos:
         exclude: ^plugins/module_utils/.*\.py$
       - id: ruff-format
         exclude: ^plugins/module_utils/.*\.py$
+        
+  - repo: local
+    hooks:
+      - id: quality
+        name: Format plugins with ruff and run flake8 and mypy
+        entry: make quality
+        language: system
+        pass_filenames: false
+        types: [python]
+        files: ^plugins/
 
   - repo: https://github.com/ansible-community/ansible-lint
     rev: v24.2.1

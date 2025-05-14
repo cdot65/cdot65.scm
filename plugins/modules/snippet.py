@@ -250,7 +250,6 @@ def main():
 
                 # Create a new snippet
                 if not module.check_mode:
-
                     # Map 'snippet_type' to 'type' for SDK/model
                     if "snippet_type" in create_payload:
                         create_payload["type"] = create_payload.pop("snippet_type")

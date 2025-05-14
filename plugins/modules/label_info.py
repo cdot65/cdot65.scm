@@ -147,7 +147,7 @@ def main():
             else:
                 labels = client.label.list()
 
-            label_dicts = [json.loads(l.model_dump_json(exclude_unset=True)) for l in labels]
+            label_dicts = [json.loads(each.model_dump_json(exclude_unset=True)) for each in labels]
             result["labels"] = label_dicts
         module.exit_json(**result)
     except (InvalidObjectError, APIError) as e:
