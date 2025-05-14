@@ -8,7 +8,7 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
-from scm.models.objects.address_group import AddressGroupCreateModel, DynamicFilter
+from scm.models.objects.address_group import AddressGroupCreateModel
 
 DOCUMENTATION = r"""
 ---
