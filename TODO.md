@@ -49,7 +49,8 @@ _Last updated: 2025-05-16_
 
 ## Short-term Goals (MVP)
 
-- [x] Implement host information profile modules (`hip_object`, `hip_object_info`)
+- [x] Implement host information profile modules (`hip_object`, `hip_object_info`) — Completed ✅ (see [2025-05-16] note below)
+- [ ] Implement HIP profile modules (`hip_profile`, `hip_profile_info`)
 - [ ] Implement service object modules (`service_object`, `service_object_info`) 
 - [ ] Implement service group modules (`service_group`, `service_group_info`)
 - [ ] Develop comprehensive test coverage (unit + integration)

@@ -167,6 +167,7 @@ if __name__ == '__main__':
 
 ## Next Steps
 
+- Implement `hip_profile` and `hip_profile_info` modules
 - Implement `service_object` and `service_object_info` modules
 - Implement `service_group` and `service_group_info` modules
 - Standardize all modules to match the current best practices:

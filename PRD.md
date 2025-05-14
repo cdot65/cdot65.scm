@@ -90,6 +90,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) — Complete ✅
     *   External Dynamic Lists (`external_dynamic_list`, `external_dynamic_list_info`) — Complete ✅
     *   Host Information Profiles (`hip_object`, `hip_object_info`) — Complete ✅
+    *   HIP Profiles (`hip_profile`, `hip_profile_info`)
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
 *   **Action Modules:**
@@ -303,7 +304,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
-- Implement Host Information Profile modules (hip_object, hip_object_info).
+- Implement HIP Profile modules (hip_profile, hip_profile_info).
 - Implement Service objects modules (service_object, service_object_info).
 - Implement Service Group modules (service_group, service_group_info).
 - Standardize all other info modules to follow the same pattern as folder_info/device_info.
@@ -316,6 +317,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
+- Implement `hip_profile` and `hip_profile_info` modules for HIP profile management.
 - Implement `service_object` and `service_object_info` modules for service object management.
 - Implement `service_group` and `service_group_info` modules for service group management.
 - Complete standardization of all info modules to follow consistent error handling.
