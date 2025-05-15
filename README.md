@@ -108,6 +108,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [hip_object_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object_info.py) | Retrieve host information profile object information | ✅ |
 | [hip_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile.py) | Manage host information profiles | ✅ |
 | [hip_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile_info.py) | Retrieve host information profile information | ✅ |
+| [http_server_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile.py) | Manage HTTP server profiles | ✅ |
+| [http_server_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile_info.py) | Retrieve HTTP server profile information | ✅ |
 
 ### Configuration and Deployment Modules (Planned)
 
@@ -234,6 +236,8 @@ The collection includes several example playbooks in the `examples/` directory:
 - `hip_object_info.yml` - Retrieve host information profile object information
 - `hip_profile.yml` - Create and manage host information profiles
 - `hip_profile_info.yml` - Retrieve host information profile information
+- `http_server_profile.yml` - Create and manage HTTP server profiles
+- `http_server_profile_info.yml` - Retrieve HTTP server profile information
 
 ## Development
 

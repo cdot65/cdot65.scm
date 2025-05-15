@@ -1,6 +1,6 @@
 # TODO: cdot65.scm Ansible Collection (Strata Cloud Manager)
 
-_Last updated: 2025-05-16_
+_Last updated: 2025-05-17_
 
 ## Immediate Tasks
 
@@ -51,7 +51,8 @@ _Last updated: 2025-05-16_
 
 - [x] Implement host information profile modules (`hip_object`, `hip_object_info`) — Completed ✅ (see [2025-05-16] note below)
 - [x] Implement HIP profile modules (`hip_profile`, `hip_profile_info`) — Completed ✅ (see [2025-05-16] note below)
-- [ ] Implement HTTP server profile modules (`http_server_profile`, `http_server_profile_info`)
+- [x] Implement HTTP server profile modules (`http_server_profile`, `http_server_profile_info`) — Completed ✅ (see [2025-05-17] note below)
+- [ ] Implement log forwarding profile modules (`log_forwarding_profile`, `log_forwarding_profile_info`)
 - [ ] Implement service object modules (`service_object`, `service_object_info`) 
 - [ ] Implement service group modules (`service_group`, `service_group_info`)
 - [ ] Develop comprehensive test coverage (unit + integration)
@@ -87,6 +88,20 @@ _Last updated: 2025-05-16_
 - Removed deprecated scm.py as it was no longer used in any modules
 - All modules now use direct SDK imports or client.py for authentication
 
+## [2025-05-17] HTTP Server Profile Modules Fixed and Completed
+
+- Fixed http_server_profile.py and http_server_profile_info.py modules with proper field mappings
+- Updated uri_format (Ansible parameter) to url_format (SDK field) mapping in both directions
+- Implemented client-side filtering for protocol and tag registration status due to API limitations
+- Resolved issues with invalid certificate profile references by updating documentation and examples
+- Added proper authentication parameters to all example playbook tasks
+- Updated documentation in modules and example playbooks to clarify proper usage
+- Created comprehensive examples demonstrating HTTP and HTTPS configurations with error handling
+- Both modules now handle field name differences between Ansible conventions and SDK model fields
+- Fixed info module to properly handle filtering with consistent patterns
+- Identified log_forwarding_profile and log_forwarding_profile_info as the next modules to implement
+- Updated all documentation to reflect the completed modules and new priorities
+
 ## [2025-05-16] Host Information Profile (HIP) Modules Completed
 
 - Implemented hip_object.py and hip_object_info.py modules for HIP object management
@@ -99,7 +114,7 @@ _Last updated: 2025-05-16_
 - Added comprehensive filtering by criteria types and container context in the info module
 - Added consistent documentation in the modules and example playbooks
 - Updated module inventory and workflow pattern documentation
-- Next focus will be on implementing service_object and service_object_info modules
+- Next focus will be on implementing http_server_profile and http_server_profile_info modules
 
 ## [2025-05-15] External Dynamic List Modules Completed
 

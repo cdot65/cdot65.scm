@@ -34,6 +34,8 @@ This document provides a high-level summary of the structure and workflow patter
 - `hip_object_info.py`
 - `hip_profile.py`
 - `hip_profile_info.py`
+- `http_server_profile.py`
+- `http_server_profile_info.py`
 
 ---
 
@@ -70,7 +72,7 @@ All modules generally follow this structure:
 
 ## Workflow Patterns
 
-- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`, `application_group.py`, `application_filter.py`, `dynamic_user_group.py`, `external_dynamic_list.py`, `hip_object.py`, `hip_profile.py`):
+- **Stateful Modules** (`variable.py`, `snippet.py`, `folder.py`, `label.py`, `address.py`, `address_group.py`, `application.py`, `application_group.py`, `application_filter.py`, `dynamic_user_group.py`, `external_dynamic_list.py`, `hip_object.py`, `hip_profile.py`, `http_server_profile.py`):
   - Support `state: present/absent` for idempotent create/update/delete
   - Require resource identifiers (name/id) and container context
   - Validate mutually exclusive container args (e.g., folder/snippet/device)
@@ -86,6 +88,7 @@ All modules generally follow this structure:
   - External Dynamic List module supports URL-based and predefined external lists
   - HIP Object module supports complex criteria specifications for host posture assessment (host_info, network_info, patch_management, disk_encryption, mobile_device, certificate)
   - HIP Profile module supports match expressions using boolean logic (AND, OR, NOT) to reference HIP objects for security policy use
+  - HTTP Server Profile module supports configuration of HTTP and HTTPS servers with various security options
 
 - **Info/Query Modules** (`*_info.py`):
   - Read-only: no `state` param, always `changed: False`
@@ -103,6 +106,7 @@ All modules generally follow this structure:
   - External_dynamic_list_info supports filtering by list type (predefined_ip, predefined_url, ip, domain, url, imsi, imei) and container context
   - Hip_object_info supports filtering by criteria types (host_info, network_info, patch_management, disk_encryption, mobile_device, certificate) and container context
   - Hip_profile_info supports filtering by container context and supports exact matching
+  - Http_server_profile_info supports filtering by server protocol (HTTP, HTTPS), tag registration status, and container context
 
 - **Auth Module** (`auth.py`):
   - Validates credentials, returns token info
@@ -171,8 +175,10 @@ if __name__ == '__main__':
 
 ## Next Steps
 
+- Implement `log_forwarding_profile` and `log_forwarding_profile_info` modules
 - Implement `service_object` and `service_object_info` modules
 - Implement `service_group` and `service_group_info` modules
+- Continue improving comprehensive example playbooks for all modules
 - Standardize all modules to match the current best practices:
   - Direct SDK imports vs module_utils abstraction
   - Consistent error handling with specific exception types
