@@ -1,0 +1,202 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM HTTP Server Profile operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First, we create test containers to use for our examples
+    - name: Create a test folder for HTTP server profiles
+      cdot65.scm.folder:
+        name: "HTTP-Server-Demo"
+        parent: "Texas"
+        description: "Folder for HTTP server profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: http_folder
+
+    - name: Create a test snippet for HTTP server profiles
+      cdot65.scm.snippet:
+        name: "HTTP-Server-Snippet"
+        description: "Snippet for HTTP server profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: http_snippet
+
+    # Now create different types of HTTP server profiles
+    - name: Create a simple HTTP server profile
+      cdot65.scm.http_server_profile:
+        name: "http-server-profile-example"
+        folder: "HTTP-Server-Demo"
+        protocol: HTTP
+        server:
+          - name: "http-server-1"
+            address: "192.168.1.1"
+            protocol: "HTTP"
+            port: 80
+            http_method: "POST"
+            uri_format: "/"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: http_profile
+
+    - name: Display created HTTP server profile
+      debug:
+        var: http_profile
+
+    - name: Create an HTTPS server profile with TLS configuration
+      cdot65.scm.http_server_profile:
+        name: "https-server-profile-example"
+        folder: "HTTP-Server-Demo"
+        protocol: HTTPS
+        server:
+          - name: "https-server-1"
+            address: "192.168.1.2"
+            protocol: "HTTPS"
+            port: 443
+            http_method: "POST"
+            uri_format: "/logs"
+            # Removed invalid certificate_profile reference
+            tls_version: "1.2"
+        timeout: 120
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: https_profile
+
+    - name: Display created HTTPS server profile
+      debug:
+        var: https_profile
+
+    - name: Create an HTTP server profile with multiple servers in snippet
+      cdot65.scm.http_server_profile:
+        name: "multi-server-profile-example"
+        snippet: "HTTP-Server-Snippet"
+        protocol: HTTP
+        server:
+          - name: "primary-server"
+            address: "192.168.1.10"
+            protocol: "HTTP"
+            port: 8080
+            http_method: "POST"
+            uri_format: "/primary"
+          - name: "backup-server"
+            address: "192.168.1.11"
+            protocol: "HTTP"
+            port: 8080
+            http_method: "POST"
+            uri_format: "/backup"
+        timeout: 30
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: multi_server_profile
+
+    - name: Display created multi-server profile
+      debug:
+        var: multi_server_profile
+
+    - name: Create an HTTP server profile with IETF payload format
+      cdot65.scm.http_server_profile:
+        name: "ietf-format-profile-example"
+        folder: "HTTP-Server-Demo"
+        protocol: HTTP
+        server:
+          - name: "syslog-server"
+            address: "192.168.1.20"
+            protocol: "HTTP"
+            port: 514
+            http_method: "POST"
+            uri_format: "/syslog"
+        payload_format: IETF
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: ietf_profile
+
+    - name: Display created IETF format profile
+      debug:
+        var: ietf_profile
+
+    - name: Update existing HTTP server profile
+      cdot65.scm.http_server_profile:
+        name: "http-server-profile-example"
+        folder: "HTTP-Server-Demo"
+        protocol: HTTPS
+        server:
+          - name: "updated-server"
+            address: "192.168.1.30"
+            protocol: "HTTPS"
+            port: 443
+            http_method: "PUT"
+            uri_format: "/updated"
+        timeout: 90
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display updated profile
+      debug:
+        var: updated_profile
+
+    # Demonstrate idempotence - this should not result in a change
+    - name: Attempt to update again with the same parameters (should be idempotent)
+      cdot65.scm.http_server_profile:
+        name: "http-server-profile-example"
+        folder: "HTTP-Server-Demo"
+        protocol: HTTPS
+        server:
+          - name: "updated-server"
+            address: "192.168.1.30"
+            protocol: "HTTPS"
+            port: 443
+            http_method: "PUT"
+            uri_format: "/updated"
+        timeout: 90
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: idempotent_update
+
+    - name: Display idempotence result
+      debug:
+        msg: "Changed status: {{ idempotent_update.changed }}"
+
+    # Cleanup - delete the HTTP server profiles
+    - name: Delete HTTP server profiles
+      cdot65.scm.http_server_profile:
+        name: "{{ item }}"
+        folder: "HTTP-Server-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - http-server-profile-example
+        - https-server-profile-example
+        - ietf-format-profile-example
+
+    - name: Delete HTTP server profile in snippet
+      cdot65.scm.http_server_profile:
+        name: "multi-server-profile-example"
+        snippet: "HTTP-Server-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up the containers
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "HTTP-Server-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "HTTP-Server-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
