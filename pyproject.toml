@@ -15,7 +15,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 ansible-core = "^2.17.0"
-pan-scm-sdk = "^0.3.33"
+pan-scm-sdk = "^0.3.36"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"

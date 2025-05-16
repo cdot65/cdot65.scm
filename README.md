@@ -110,6 +110,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [hip_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile_info.py) | Retrieve host information profile information | ✅ |
 | [http_server_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile.py) | Manage HTTP server profiles | ✅ |
 | [http_server_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile_info.py) | Retrieve HTTP server profile information | ✅ |
+| [log_forwarding_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile.py) | Manage log forwarding profiles | ✅ |
+| [log_forwarding_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile_info.py) | Retrieve log forwarding profile information | ✅ |
 
 ### Configuration and Deployment Modules (Planned)
 
@@ -238,6 +240,9 @@ The collection includes several example playbooks in the `examples/` directory:
 - `hip_profile_info.yml` - Retrieve host information profile information
 - `http_server_profile.yml` - Create and manage HTTP server profiles
 - `http_server_profile_info.yml` - Retrieve HTTP server profile information
+- `log_forwarding_profile.yml` - Create and manage log forwarding profiles
+- `log_forwarding_profile_info.yml` - Retrieve log forwarding profile information
+- `log_forwarding_profile_minimal.yml` - Minimal example for log forwarding profiles
 
 ## Development
 

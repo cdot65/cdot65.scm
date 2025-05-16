@@ -92,6 +92,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   Host Information Profiles (`hip_object`, `hip_object_info`) — Complete ✅
     *   HIP Profiles (`hip_profile`, `hip_profile_info`) — Complete ✅
     *   HTTP Server Profiles (`http_server_profile`, `http_server_profile_info`) — Complete ✅
+    *   Log Forwarding Profiles (`log_forwarding_profile`, `log_forwarding_profile_info`) — Complete ✅
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
 *   **Action Modules:**
@@ -305,9 +306,9 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
-- Implement Log Forwarding Profile modules (log_forwarding_profile, log_forwarding_profile_info).
 - Implement Service objects modules (service_object, service_object_info).
 - Implement Service Group modules (service_group, service_group_info).
+- Expand test coverage for recently added modules.
 - Standardize all other info modules to follow the same pattern as folder_info/device_info.
 - Expand test coverage and integration tests for all modules.
 - Add integration tests for the dynamic_user_group and external_dynamic_list modules.
@@ -318,9 +319,9 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `log_forwarding_profile` and `log_forwarding_profile_info` modules for log forwarding profile management.
 - Implement `service_object` and `service_object_info` modules for service object management.
 - Implement `service_group` and `service_group_info` modules for service group management.
+- Add integration tests for log_forwarding_profile modules.
 - Complete standardization of all info modules to follow consistent error handling.
 - Build integration tests to verify modules against real SCM instances.
 - Add integration tests for the http_server_profile, hip_object, hip_profile, dynamic_user_group and external_dynamic_list modules.
@@ -345,13 +346,15 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Implemented Log Forwarding Profile modules (`log_forwarding_profile`, `log_forwarding_profile_info`) for managing log forwarding configurations and match lists.
+- Created comprehensive example playbooks for log forwarding profile creation, update, and filtering.
 - Fixed HTTP server profile modules with proper handling of URL format field mapping between Ansible module (`uri_format`) and SDK model (`url_format`).
 - Updated the `http_server_profile_info.py` module to use client-side filtering for protocol and tag registration status due to API limitations.
 - Resolved issue with invalid certificate profile references by updating documentation and removing default values.
 - Added authentication parameters to all example playbook tasks to ensure proper authentication.
 - Updated documentation in both the module and example playbooks to clarify proper usage.
 - Completed all HTTP server profile-related tasks with comprehensive examples.
-- Updated documentation to reflect completed modules and new priorities for log forwarding profile implementation.
+- Updated documentation to reflect completed modules and new priorities for service object implementation.
 - Implemented `hip_profile` and `hip_profile_info` modules for managing Host Information Profiles.
 - Created comprehensive example playbooks for HIP profiles demonstrating various match expressions (AND, OR, NOT, nested).
 - Supported match expressions using boolean logic to reference HIP objects for security policy use.
