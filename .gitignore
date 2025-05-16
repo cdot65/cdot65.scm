@@ -401,3 +401,5 @@ tmp/
 vault.yml
 ai_docs
 .ansible
+.claude/
+.vscode/
