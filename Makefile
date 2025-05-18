@@ -1,10 +1,34 @@
-.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format lint-all lint-fix run-examples run-example quality mypy flake8 ruff-check
+.PHONY: help build install clean all lint format lint-fix lint-check flake8 mypy ruff-check quality test sanity unit-test integration-test test-integration tox tox-sanity tox-units tox-integration dev-setup example run-examples run-example shell poetry-cmd ansible-cmd playbook docker-test docker-lint docs-serve docs-stop rebuild
 
 COLLECTION_NAMESPACE := cdot65
 COLLECTION_NAME := scm
 COLLECTION_PATH := $(COLLECTION_NAMESPACE)-$(COLLECTION_NAME)
+DC_RUN = docker compose run --rm ansible
 
-# Basic collection operations
+# --- Help ---
+help:
+	@echo "\nCollection Build & Install:"
+	@echo "  make build         Build the Ansible collection"
+	@echo "  make install       Build & install the collection"
+	@echo "  make clean         Remove build artifacts & installed collection"
+	@echo "\nLinting & Formatting:"
+	@echo "  make lint          Run ansible-lint"
+	@echo "  make format        Run black & isort on plugins and tests"
+	@echo "  make lint-fix      Auto-fix lint errors with ruff, black, isort"
+	@echo "  make flake8        Run flake8 on plugins and tests"
+	@echo "  make mypy          Run mypy type checks"
+	@echo "  make ruff-check    Run ruff checks"
+	@echo "  make quality       Run all code quality checks"
+	@echo "\nDocker/Compose Dev:"
+	@echo "  make shell         Start a shell in the ansible dev container"
+	@echo "  make playbook      Build & install the collection, then run a playbook: make playbook PLAYBOOK=examples/your_playbook.yml"
+	@echo "  make docs-serve    Serve docs live (docs container)"
+	@echo "  make docs-stop     Stop docs server"
+	@echo "  make docker-build	Rebuild the ansible container"
+	@echo "  make playbook      Run a playbook in the ansible container"
+	@echo "\n"
+
+# --- Collection Build & Install ---
 build:
 	poetry run ansible-galaxy collection build --force
 
@@ -15,19 +39,13 @@ clean:
 	rm -f $(COLLECTION_PATH)-*.tar.gz
 	rm -rf ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME)
 
-# Linting and formatting
+# --- Linting & Formatting ---
 lint:
 	poetry run ansible-lint
 
 format:
 	poetry run black plugins tests
 	poetry run isort plugins tests
-
-lint-all:
-	./scripts/lint_and_format.sh || true
-
-lint-check:
-	./scripts/check-linting.sh
 
 flake8:
 	poetry run flake8 plugins tests
@@ -43,75 +61,27 @@ lint-fix:
 	poetry run black plugins tests
 	poetry run isort plugins tests
 
-# Format plugins with ruff and run flake8 and mypy
 quality:
 	poetry run ruff format --config pyproject.toml plugins
 	poetry run flake8 plugins
 	poetry run mypy --config-file pyproject.toml plugins
 
-# Testing options with poetry
-sanity:
-	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test sanity --docker default
+# --- Docker/Compose Development ---
+DC_RUN = docker compose run --rm ansible
 
-unit-test:
-	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test units --docker default tests/unit/plugins/module_utils/test_scm.py
+shell:
+	$(DC_RUN) /bin/sh
 
-integration-test:
-	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test integration --docker default
+# Build docker image, copying in the latest collection tarball
+docker-build: install
+	docker compose build ansible
 
-test: sanity unit-test integration-test
-
-# Tox testing (with multiple Python/Ansible versions)
-tox-sanity:
-	poetry run tox -e sanity
-
-tox-units:
-	poetry run tox -e py312-ansible2.14
-
-tox-integration:
-	poetry run tox -e integration
-
-tox: tox-sanity tox-units tox-integration
-
-# Development setup
-dev-setup:
-	poetry install
-	poetry run python -m pip install -r test-requirements.txt
-
-# Example runs
-example:
-	poetry run ansible-playbook docs/examples/folder_management.yml
-
-# Run all example playbooks
-run-examples:
-	@echo "Running all example playbooks..."
-	@for playbook in examples/*.yml; do \
-		echo "\n=== Running $$playbook ==="; \
-		poetry run ansible-playbook --vault-pass-file .vault_pass $$playbook || exit 1; \
-	done
-	@echo "\nAll example playbooks executed successfully!"
-
-# Run a specific example playbook
-# Usage: make run-example EXAMPLE=application_info
-run-example:
-	@if [ -z "$(EXAMPLE)" ]; then \
-		echo "Error: EXAMPLE parameter is required. Usage: make run-example EXAMPLE=application_info"; \
+# Run playbook in container (ensure docker image is up-to-date)
+playbook: docker-build
+	@if [ -z "$(PLAYBOOK)" ]; then \
+		echo "Error: PLAYBOOK parameter is required. Usage: make playbook PLAYBOOK=examples/your_playbook.yml"; \
 		exit 1; \
 	fi
-	@if [ ! -f "examples/$(EXAMPLE).yml" ]; then \
-		echo "Error: examples/$(EXAMPLE).yml not found"; \
-		exit 1; \
-	fi
-	@echo "Running examples/$(EXAMPLE).yml"
-	poetry run ansible-playbook --vault-pass-file .vault_pass examples/$(EXAMPLE).yml
+	$(DC_RUN) ansible-playbook --vault-pass-file .vault_pass $(PLAYBOOK) -v
 
-test-integration:
-	poetry run ansible-test integration --color --docker
-
-# All-in-one targets
-all: clean build install
-
-.DEFAULT_GOAL := build
+.DEFAULT_GOAL := help

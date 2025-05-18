@@ -440,7 +440,7 @@ def main():
         # For creation/update, validate server parameter
         if not params.get("server"):
             module.fail_json(msg="When state=present, the server parameter is required")
-        
+
         # For creation/update, one of the container types is required
         if not any(params.get(container_type) for container_type in ["folder", "snippet", "device"]):
             module.fail_json(msg="When state=present, one of the following is required: folder, snippet, device")
@@ -483,7 +483,7 @@ def main():
                         profiles = client.http_server_profile.list(snippet=container_name)
                     elif container_type == "device":
                         profiles = client.http_server_profile.list(device=container_name)
-                    
+
                     # Find matching profile by name
                     for profile in profiles:
                         if profile.name == params.get("name"):
@@ -496,7 +496,7 @@ def main():
                         error_code=getattr(e, "error_code", None),
                         details=getattr(e, "details", None),
                     )
-            
+
             # If specified by ID, try to get it directly
             elif params.get("id"):
                 try:
@@ -517,12 +517,22 @@ def main():
             if http_server_profile_exists:
                 # Determine which fields differ and need to be updated
                 update_fields = {}
-                
+
                 # Basic fields
-                for field in ["name", "description", "protocol", "payload_format", "tag_registration", "timeout", "folder", "snippet", "device"]:
+                for field in [
+                    "name",
+                    "description",
+                    "protocol",
+                    "payload_format",
+                    "tag_registration",
+                    "timeout",
+                    "folder",
+                    "snippet",
+                    "device",
+                ]:
                     if params.get(field) is not None and getattr(http_server_profile_obj, field, None) != params.get(field):
                         update_fields[field] = params.get(field)
-                
+
                 # Server configurations
                 if params.get("server"):
                     # Get new server configs from params, filter out None/empty values
@@ -530,13 +540,13 @@ def main():
                     for server_config in params.get("server"):
                         # Filter out None values to match the API's expectations
                         server_dict = {k: v for k, v in server_config.items() if v is not None}
-                        
+
                         # Add protocol field if not present (using the main profile's protocol)
-                        if 'protocol' not in server_dict and params.get('protocol'):
-                            server_dict['protocol'] = params.get('protocol')
-                            
+                        if "protocol" not in server_dict and params.get("protocol"):
+                            server_dict["protocol"] = params.get("protocol")
+
                         new_servers.append(server_dict)
-                    
+
                     # Compare current and new server configurations
                     current_servers = []
                     if hasattr(http_server_profile_obj, "server"):
@@ -544,25 +554,38 @@ def main():
                             # Only include fields that can come from Ansible to ensure fair comparison
                             server_dict = server.model_dump(exclude_unset=True)
                             # Filter to include only keys that could come from Ansible params
-                            filtered_dict = {k: v for k, v in server_dict.items() 
-                                         if k in ['name', 'address', 'protocol', 'port', 'http_method',
-                                                 'certificate_profile', 'tls_version', 'username',
-                                                 'payload_format', 'headers']}
-                            
+                            filtered_dict = {
+                                k: v
+                                for k, v in server_dict.items()
+                                if k
+                                in [
+                                    "name",
+                                    "address",
+                                    "protocol",
+                                    "port",
+                                    "http_method",
+                                    "certificate_profile",
+                                    "tls_version",
+                                    "username",
+                                    "payload_format",
+                                    "headers",
+                                ]
+                            }
+
                             # Map SDK's url_format to Ansible's uri_format for comparison
-                            if 'url_format' in server_dict:
-                                filtered_dict['uri_format'] = server_dict['url_format']
-                                
+                            if "url_format" in server_dict:
+                                filtered_dict["uri_format"] = server_dict["url_format"]
+
                             current_servers.append(filtered_dict)
-                    
+
                     # Sort the configs by name to ensure consistent comparison
-                    current_servers.sort(key=lambda x: x.get('name', ''))
-                    new_servers.sort(key=lambda x: x.get('name', ''))
-                    
+                    current_servers.sort(key=lambda x: x.get("name", ""))
+                    new_servers.sort(key=lambda x: x.get("name", ""))
+
                     # If server configurations differ, update them
                     if current_servers != new_servers:
                         update_fields["server"] = new_servers
-                
+
                 # Update the http_server_profile if needed
                 if update_fields:
                     if not module.check_mode:
@@ -585,7 +608,7 @@ def main():
                     else:
                         # In check mode, just return the existing object with projected changes
                         result["http_server_profile"] = json.loads(http_server_profile_obj.model_dump_json(exclude_unset=True))
-                    
+
                     result["changed"] = True
                     module.exit_json(**result)
                 else:
@@ -593,23 +616,16 @@ def main():
                     result["http_server_profile"] = json.loads(http_server_profile_obj.model_dump_json(exclude_unset=True))
                     result["changed"] = False
                     module.exit_json(**result)
-            
+
             else:
                 # Create payload for new http_server_profile
                 create_payload = {}
-                
+
                 # Add simple parameters directly
-                for k in [
-                    "name",
-                    "description",
-                    "protocol",
-                    "payload_format",
-                    "tag_registration",
-                    "timeout"
-                ]:
+                for k in ["name", "description", "protocol", "payload_format", "tag_registration", "timeout"]:
                     if params.get(k) is not None:
                         create_payload[k] = params[k]
-                
+
                 # Add container parameter
                 if params.get("folder"):
                     create_payload["folder"] = params["folder"]
@@ -617,47 +633,57 @@ def main():
                     create_payload["snippet"] = params["snippet"]
                 elif params.get("device"):
                     create_payload["device"] = params["device"]
-                
+
                 # Process server configuration
                 if params.get("server"):
                     # Filter out None values to match the API's expectations
                     server_list = []
                     for server_config in params.get("server"):
                         server_dict = {k: v for k, v in server_config.items() if v is not None}
-                        
+
                         # Add protocol field if not present (using the main profile's protocol)
-                        if 'protocol' not in server_dict and params.get('protocol'):
-                            server_dict['protocol'] = params.get('protocol')
-                        
+                        if "protocol" not in server_dict and params.get("protocol"):
+                            server_dict["protocol"] = params.get("protocol")
+
                         # Include only fields expected by the API
                         filtered_server = {}
-                        for field in ['name', 'address', 'protocol', 'port', 'http_method', 
-                                   'certificate_profile', 'tls_version', 'username', 'password',
-                                   'payload_format', 'headers']:
+                        for field in [
+                            "name",
+                            "address",
+                            "protocol",
+                            "port",
+                            "http_method",
+                            "certificate_profile",
+                            "tls_version",
+                            "username",
+                            "password",
+                            "payload_format",
+                            "headers",
+                        ]:
                             if field in server_dict and server_dict[field] is not None:
                                 filtered_server[field] = server_dict[field]
-                        
+
                         # Special handling for URI/URL format field (map Ansible's uri_format to SCM API's url_format)
-                        if 'uri_format' in server_dict and server_dict['uri_format'] is not None:
-                            filtered_server['url_format'] = server_dict['uri_format']
-                        
+                        if "uri_format" in server_dict and server_dict["uri_format"] is not None:
+                            filtered_server["url_format"] = server_dict["uri_format"]
+
                         # Make sure protocol is present (required by API)
-                        if 'protocol' not in filtered_server:
-                            filtered_server['protocol'] = params.get('protocol', 'HTTP')
-                            
+                        if "protocol" not in filtered_server:
+                            filtered_server["protocol"] = params.get("protocol", "HTTP")
+
                         server_list.append(filtered_server)
                     create_payload["server"] = server_list
-                    
+
                 # Debug the payload
                 if not module.check_mode:
                     module.debug(f"Creating HTTP server profile with payload: {json.dumps(create_payload)}")
-                
+
                 # Create a http_server_profile object
                 if not module.check_mode:
                     try:
                         # For debugging, print the payload using module's log mechanism
                         result["debug_payload"] = create_payload
-                        
+
                         created = client.http_server_profile.create(create_payload)
                         result["http_server_profile"] = json.loads(created.model_dump_json(exclude_unset=True))
                     except InvalidObjectError as e:
@@ -665,23 +691,23 @@ def main():
                             msg=f"Invalid HTTP server profile object: {str(e)}",
                             error_code=getattr(e, "error_code", None),
                             details=getattr(e, "details", None),
-                            payload=create_payload
+                            payload=create_payload,
                         )
                     except APIError as e:
                         module.fail_json(
                             msg=f"API Error creating HTTP server profile: {str(e)}",
                             error_code=getattr(e, "error_code", None),
                             details=getattr(e, "details", None),
-                            payload=create_payload
+                            payload=create_payload,
                         )
                 else:
                     # In check mode, simulate the creation
                     simulated = HTTPServerProfileCreateModel(**create_payload)
                     result["http_server_profile"] = simulated.model_dump(exclude_unset=True)
-                
+
                 result["changed"] = True
                 module.exit_json(**result)
-        
+
         # Handle absent state - delete the HTTP server profile
         elif params.get("state") == "absent":
             if http_server_profile_exists:
@@ -694,7 +720,7 @@ def main():
                             error_code=getattr(e, "error_code", None),
                             details=getattr(e, "details", None),
                         )
-                
+
                 # Mark as changed
                 result["changed"] = True
                 result["http_server_profile"] = json.loads(http_server_profile_obj.model_dump_json(exclude_unset=True))
@@ -703,7 +729,7 @@ def main():
                 # Already absent
                 result["changed"] = False
                 module.exit_json(**result)
-    
+
     # Handle errors
     except (ObjectNotPresentError, InvalidObjectError) as e:
         module.fail_json(msg=str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None))

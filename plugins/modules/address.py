@@ -271,17 +271,14 @@ def main():
         supports_check_mode=True,
     )
 
-    # Custom validation for address type parameters
-    params = module.params
-    if params.get("state") == "present":
-        # For creation/update, one of the address types is required
-        if not any(params.get(addr_type) for addr_type in ["ip_netmask", "ip_range", "ip_wildcard", "fqdn"]):
-            module.fail_json(
-                msg="When state=present, one of the following is required: ip_netmask, ip_range, ip_wildcard, fqdn"
-            )
-
     # Get parameters
     params = module.params
+
+    # Custom validation for address type parameters
+    if params.get("state") == "present" and not any(
+        params.get(addr_type) for addr_type in ["ip_netmask", "ip_range", "ip_wildcard", "fqdn"]
+    ):
+        module.fail_json(msg="When state=present, one of the following is required: ip_netmask, ip_range, ip_wildcard, fqdn")
 
     # Initialize results
     result = {"changed": False, "address": None}

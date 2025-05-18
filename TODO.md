@@ -52,7 +52,7 @@ _Last updated: 2025-05-17_
 - [x] Implement host information profile modules (`hip_object`, `hip_object_info`) — Completed ✅ (see [2025-05-16] note below)
 - [x] Implement HIP profile modules (`hip_profile`, `hip_profile_info`) — Completed ✅ (see [2025-05-16] note below)
 - [x] Implement HTTP server profile modules (`http_server_profile`, `http_server_profile_info`) — Completed ✅ (see [2025-05-17] note below)
-- [ ] Implement log forwarding profile modules (`log_forwarding_profile`, `log_forwarding_profile_info`)
+- [x] Implement log forwarding profile modules (`log_forwarding_profile`, `log_forwarding_profile_info`) — Completed ✅ (see [2025-05-18] note below)
 - [ ] Implement service object modules (`service_object`, `service_object_info`) 
 - [ ] Implement service group modules (`service_group`, `service_group_info`)
 - [ ] Develop comprehensive test coverage (unit + integration)
@@ -76,6 +76,7 @@ _Last updated: 2025-05-17_
   - Do not attempt to set boolean fields to False as this can cause validation errors
   - When updating existing resources, only include boolean fields that should be True
   - Document this behavior in the module description and examples
+- All SDK models must follow canonical modeling standards from WINDSURF_RULES.md, SDK_MODELS_TEMPLATE.py, SDK_MODELS_STYLING_GUIDE.md, and CLAUDE_MODELS.md.
 
 ## [2025-05-16] Test Structure Cleanup and Module Utils Cleanup
 
@@ -87,6 +88,19 @@ _Last updated: 2025-05-17_
 - Cleaned up test directory structure for future reimplementation
 - Removed deprecated scm.py as it was no longer used in any modules
 - All modules now use direct SDK imports or client.py for authentication
+
+## [2025-05-18] Log Forwarding Profile Modules Completed
+
+- Implemented log_forwarding_profile.py and log_forwarding_profile_info.py modules for managing log forwarding configurations
+- Added support for match list configurations with multiple log types and filters
+- Created comprehensive example playbooks demonstrating profile creation, updates, and filtering
+- Implemented proper handling of profile formats, match lists, and server references
+- Added support for different container types (folder, snippet, device) with proper validation
+- Implemented client-side filtering for log types in the info module
+- Followed established module pattern with robust error handling and validation
+- Added comprehensive documentation in the modules and example playbooks
+- Updated module inventory in modules.md and added to roadmap
+- Set service_object and service_object_info as the next modules to implement
 
 ## [2025-05-17] HTTP Server Profile Modules Fixed and Completed
 
