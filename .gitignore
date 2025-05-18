@@ -403,3 +403,4 @@ ai_docs
 .ansible
 .claude/
 .vscode/
+.claude/settings.local.json
