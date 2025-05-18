@@ -96,8 +96,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [http_server_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile_info.py) | Retrieve HTTP server profiles information | ✅ |
 | [log_forwarding_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile.py) | Log forwarding profile management | ✅ |
 | [log_forwarding_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile_info.py) | Retrieve log forwarding profile information | ✅ |
-| [quarantined_devices](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices.py) | Quarantined devices management | 📝 |
-| [quarantined_devices_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices_info.py) | Retrieve quarantined devices information | 📝 |
+| [quarantined_devices](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices.py) | Quarantined devices management | ✅ |
+| [quarantined_devices_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices_info.py) | Retrieve quarantined devices information | ✅ |
 | [region](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region.py) | Region object management | 📝 |
 | [region_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region_info.py) | Retrieve region object information | 📝 |
 | [schedules](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/schedules.py) | Schedules management | 📝 |
@@ -311,6 +311,8 @@ The collection includes several example playbooks in the `examples/` directory:
 - `log_forwarding_profile.yml` - Create and manage log forwarding profiles
 - `log_forwarding_profile_info.yml` - Retrieve log forwarding profile information
 - `log_forwarding_profile_minimal.yml` - Minimal example for log forwarding profiles
+- `quarantined_devices.yml` - Create and manage quarantined devices
+- `quarantined_devices_info.yml` - Retrieve quarantined device information
 
 ## Development
 
