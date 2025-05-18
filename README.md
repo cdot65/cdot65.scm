@@ -98,8 +98,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [log_forwarding_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile_info.py) | Retrieve log forwarding profile information | ✅ |
 | [quarantined_devices](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices.py) | Quarantined devices management | ✅ |
 | [quarantined_devices_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices_info.py) | Retrieve quarantined devices information | ✅ |
-| [region](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region.py) | Region object management | 📝 |
-| [region_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region_info.py) | Retrieve region object information | 📝 |
+| [region](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region.py) | Region object management | ✅ |
+| [region_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region_info.py) | Retrieve region object information | ✅ |
 | [schedules](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/schedules.py) | Schedules management | 📝 |
 | [schedules_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/schedules_info.py) | Retrieve schedules information | 📝 |
 | [service](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service.py) | Service object management | 📝 |

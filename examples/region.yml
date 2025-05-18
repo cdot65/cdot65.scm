@@ -1,0 +1,159 @@
+---
+# Example playbook for managing region objects in Strata Cloud Manager
+# This playbook demonstrates creating, updating, and querying regions with geographic locations and network addresses
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM region operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      ansible.builtin.debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create a US West region with geographic location
+    - name: Create a US West region with geographic location
+      cdot65.scm.region:
+        name: "us-west-region"
+        folder: "Texas"
+        geographic_location:
+          latitude: 37.7749
+          longitude: -122.4194
+        addresses:
+          - "10.0.0.0/8"
+          - "192.168.1.0/24"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: west_region
+
+    - name: Display created US West region information
+      ansible.builtin.debug:
+        var: west_region.region
+
+    # Create a snippet for European configuration
+    - name: Create a test snippet for European configuration
+      cdot65.scm.snippet:
+        name: "AnsibleTest"
+        description: "Snippet for European region configurations"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a European region in a snippet
+    - name: Create a European region in a snippet
+      cdot65.scm.region:
+        name: "europe-region"
+        snippet: "AnsibleTest"
+        geographic_location:
+          latitude: 48.8566
+          longitude: 2.3522
+        addresses:
+          - "172.16.0.0/12"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: eu_region
+
+    - name: Display created European region information
+      ansible.builtin.debug:
+        var: eu_region.region
+
+    # Update the US West region with additional addresses
+    - name: Update US West region with additional addresses
+      cdot65.scm.region:
+        name: "us-west-region"
+        folder: "Texas"
+        geographic_location:
+          latitude: 37.7749
+          longitude: -122.4194
+        addresses:
+          - "10.0.0.0/8"
+          - "192.168.1.0/24"
+          - "172.31.0.0/16"  # Added address
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_region
+
+    - name: Display updated region information
+      ansible.builtin.debug:
+        var: updated_region.region
+
+    # Query operations
+    - name: Get all regions in Texas folder
+      cdot65.scm.region_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_regions
+
+    - name: Display all regions count
+      ansible.builtin.debug:
+        msg: "Found {{ all_regions.total }} regions in the Texas folder"
+
+    # Filter by geographic location
+    - name: Filter regions by geographic location (US West Coast)
+      cdot65.scm.region_info:
+        folder: "Texas"
+        geographic_location:
+          latitude:
+            min: 30
+            max: 50
+          longitude:
+            min: -130
+            max: -110
+        scm_access_token: "{{ scm_access_token }}"
+      register: west_coast_regions
+
+    - name: Display west coast regions count
+      ansible.builtin.debug:
+        msg: "Found {{ west_coast_regions.total }} regions on the US West Coast"
+
+    # Filter by network address
+    - name: Filter regions by network address
+      cdot65.scm.region_info:
+        folder: "Texas"
+        addresses:
+          - "10.0.0.0/8"
+        scm_access_token: "{{ scm_access_token }}"
+      register: regions_with_10_network
+
+    - name: Display regions with specific network
+      ansible.builtin.debug:
+        msg: "Found {{ regions_with_10_network.total }} regions with 10.0.0.0/8 network"
+
+    # Get specific region by name
+    - name: Get specific region by name
+      cdot65.scm.region_info:
+        name: "us-west-region"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_region
+
+    - name: Display specific region details
+      ansible.builtin.debug:
+        var: specific_region.regions[0]
+
+    # Cleanup
+    - name: Delete the US West region
+      cdot65.scm.region:
+        name: "us-west-region"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the European region
+      cdot65.scm.region:
+        name: "europe-region"
+        snippet: "AnsibleTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "AnsibleTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
