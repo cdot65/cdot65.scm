@@ -94,6 +94,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
     *   HIP Profiles (`hip_profile`, `hip_profile_info`) — Complete ✅
     *   HTTP Server Profiles (`http_server_profile`, `http_server_profile_info`) — Complete ✅
     *   Log Forwarding Profiles (`log_forwarding_profile`, `log_forwarding_profile_info`) — Complete ✅
+    *   Quarantined Devices (`quarantined_devices`, `quarantined_devices_info`) — In Progress
     *   Service Objects (`service_object`, `service_object_info`)
     *   Service Groups (`service_group`, `service_group_info`)
 *   **Action Modules:**
@@ -307,6 +308,11 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 - Comprehensive README documentation with module matrix and usage examples.
 
 **In Progress / Next:**
+- Implement Quarantined Devices modules (quarantined_devices, quarantined_devices_info) - PRIORITY FOCUS
+  - Module design following established patterns from folder, address, application modules
+  - Support for container-based resource management (folder, snippet, device)
+  - Rich filtering capabilities for the info module
+  - Complete CRUD operations for managing quarantined device configurations
 - Implement Service objects modules (service_object, service_object_info).
 - Implement Service Group modules (service_group, service_group_info).
 - Expand test coverage for recently added modules.
@@ -320,14 +326,15 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 10. Next Steps & Immediate Tasks
 
-- Implement `service_object` and `service_object_info` modules for service object management.
-- Implement `service_group` and `service_group_info` modules for service group management.
-- Add integration tests for log_forwarding_profile modules.
-- Complete standardization of all info modules to follow consistent error handling.
-- Build integration tests to verify modules against real SCM instances.
-- Add integration tests for the http_server_profile, hip_object, hip_profile, dynamic_user_group and external_dynamic_list modules.
+- Implement `quarantined_devices` and `quarantined_devices_info` modules for managing quarantined device configurations in SCM.
+- Add integration tests for quarantined_devices modules.
+- Create comprehensive example playbooks for quarantined_devices management.
+- Document quarantined device operations and container-based resource management.
+- Add support for quarantine reasons, timestamps, and status management.
+- Implement filtering capabilities for quarantined_devices_info module.
+- Update module inventory and documentation to reflect quarantined_devices implementation.
+- After quarantined_devices, implement `service_object` and `service_object_info` modules for service object management.
 - Continue to enhance documentation and examples with real-world use cases.
-- Explore options for rule management modules (security rules, NAT rules) for future releases.
 
 ## 11. Future Considerations
 
@@ -347,6 +354,7 @@ The initial release focuses on core SCM objects and actions, with a strong empha
 
 ## 13. Recent Progress
 
+- Beginning implementation of Quarantined Devices modules (`quarantined_devices`, `quarantined_devices_info`) as the next priority for the collection.
 - Implemented Log Forwarding Profile modules (`log_forwarding_profile`, `log_forwarding_profile_info`) for managing log forwarding configurations and match lists.
 - Created comprehensive example playbooks for log forwarding profile creation, update, and filtering.
 - Fixed HTTP server profile modules with proper handling of URL format field mapping between Ansible module (`uri_format`) and SDK model (`url_format`).
