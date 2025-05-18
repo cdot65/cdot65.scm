@@ -67,24 +67,80 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | ✅ | Complete and available for use |
 | 📝 | Planned for future release |
 
-### Core Management Modules
+---
 
+### Objects Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| [folder](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/folder.py) | Create, update, or delete folders | ✅ |
-| [folder_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/folder_info.py) | Retrieve folder information with filtering | ✅ |
-| [label](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/label.py) | Create, update, or delete labels | ✅ |
-| [label_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/label_info.py) | Retrieve label information with filtering | ✅ |
-| [snippet](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/snippet.py) | Create, update, or delete configuration snippets | ✅ |
-| [snippet_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/snippet_info.py) | Retrieve snippet information with filtering | ✅ |
-| [variable](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/variable.py) | Create, update, or delete variables | ✅ |
-| [variable_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/variable_info.py) | Retrieve variable information with filtering | ✅ |
-| [device_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/device_info.py) | Retrieve device information with filtering | ✅ |
+| address | Address object management | ✅ |
+| address_group | Address group management | ✅ |
+| application | Application object management | ✅ |
+| application_filters | Application filters management | 📝 |
+| application_group | Application group management | ✅ |
+| auto_tag_actions | Auto tag actions management | 📝 |
+| dynamic_user_group | Dynamic user group management | ✅ |
+| external_dynamic_lists | External dynamic lists management | ✅ |
+| hip_object | HIP object management | ✅ |
+| hip_profile | HIP profile management | ✅ |
+| http_server_profiles | HTTP server profiles management | 📝 |
+| log_forwarding_profile | Log forwarding profile management | ✅ |
+| quarantined_devices | Quarantined devices management | 📝 |
+| region | Region object management | 📝 |
+| schedules | Schedules management | 📝 |
+| service | Service object management | 📝 |
+| service_group | Service group management | 📝 |
+| syslog_server_profiles | Syslog server profiles management | 📝 |
+| tag | Tag management | 📝 |
 
-### Network Objects Modules
-
+### Network Modules
 | Module | Description | Status |
 |--------|-------------|--------|
+| ike_crypto_profile | IKE crypto profile management | 📝 |
+| ike_gateway | IKE gateway management | 📝 |
+| ipsec_crypto_profile | IPsec crypto profile management | 📝 |
+| nat_rules | NAT rules management | 📝 |
+| security_zone | Security zone management | 📝 |
+
+### Deployment Modules
+| Module | Description | Status |
+|--------|-------------|--------|
+| bandwidth_allocations | Bandwidth allocations management | 📝 |
+| bgp_routing | BGP routing management | 📝 |
+| internal_dns_servers | Internal DNS servers management | 📝 |
+| network_locations | Network locations management | 📝 |
+| remote_networks | Remote networks management | 📝 |
+| service_connections | Service connections management | 📝 |
+
+### Security Modules
+| Module | Description | Status |
+|--------|-------------|--------|
+| anti_spyware_profile | Anti-spyware profile management | 📝 |
+| decryption_profile | Decryption profile management | 📝 |
+| dns_security_profile | DNS security profile management | 📝 |
+| security_rule | Security rule management | 📝 |
+| url_categories | URL categories management | 📝 |
+| vulnerability_protection_profile | Vulnerability protection profile management | 📝 |
+| wildfire_antivirus_profile | WildFire antivirus profile management | 📝 |
+
+### Setup Modules
+| Module | Description | Status |
+|--------|-------------|--------|
+| device | Device management | 📝 |
+| folder | Folder management | ✅ |
+| label | Label management | ✅ |
+| snippet | Snippet management | ✅ |
+| variable | Variable management | ✅ |
+
+### Mobile Agent Modules
+| Module | Description | Status |
+|--------|-------------|--------|
+| agent_versions | Agent versions management | 📝 |
+| auth_settings | Auth settings management | 📝 |
+| agent_versions | Agent versions management | ✅ |
+| auth_settings | Auth settings management | ✅ |
+
+---
+
 | [address](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address.py) | Manage address objects | ✅ |
 | [address_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_info.py) | Retrieve address object information | ✅ |
 | [address_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group.py) | Manage address groups | ✅ |
