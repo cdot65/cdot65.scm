@@ -1,0 +1,19 @@
+services:
+  ansible:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    tty: true
+    command: /bin/sh
+
+  docs:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    command: mkdocs serve -a 0.0.0.0:8000

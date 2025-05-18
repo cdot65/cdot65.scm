@@ -32,6 +32,7 @@
     *   [6.5 Testability](#65-testability)
     *   [6.6 Maintainability](#66-maintainability)
     *   [6.7 Documentation](#67-documentation)
+    *   [6.8 SDK Model Standards](#68-sdk-model-standards)
 7.  [Design & Implementation Considerations](#7-design--implementation-considerations)
     *   [7.1 SDK Dependency](#71-sdk-dependency)
     *   [7.2 Module Design Pattern](#72-module-design-pattern)

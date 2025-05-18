@@ -76,6 +76,7 @@ _Last updated: 2025-05-17_
   - Do not attempt to set boolean fields to False as this can cause validation errors
   - When updating existing resources, only include boolean fields that should be True
   - Document this behavior in the module description and examples
+- All SDK models must follow canonical modeling standards from WINDSURF_RULES.md, SDK_MODELS_TEMPLATE.py, SDK_MODELS_STYLING_GUIDE.md, and CLAUDE_MODELS.md.
 
 ## [2025-05-16] Test Structure Cleanup and Module Utils Cleanup
 
