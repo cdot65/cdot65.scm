@@ -3,8 +3,8 @@
 # Copyright: (c) 2025, Calvin Remsburg (@cdot65) <dev@cdot.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import json
 import copy
+import json
 
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
@@ -300,8 +300,7 @@ hip_object:
 
 
 def clean_hip_criteria(criteria_data):
-    """
-    Preprocess HIP object criteria to ensure proper formatting and prevent validation errors.
+    """Preprocess HIP object criteria to ensure proper formatting and prevent validation errors.
 
     The function processes several common validation issues:
     1. Removes empty string fields that would cause validation errors
@@ -337,28 +336,19 @@ def clean_hip_criteria(criteria_data):
                 # Handle contains operator
                 if "contains" in value:
                     # If contains is empty dict, remove it
-                    if value["contains"] == {}:
-                        del value["contains"]
-                    # If contains is empty string, remove it
-                    elif value["contains"] == "":
+                    if value["contains"] == {} or value["contains"] == "":
                         del value["contains"]
 
                 # Handle is operator
                 if "is" in value:
                     # If is is empty dict, remove it
-                    if value["is"] == {}:
-                        del value["is"]
-                    # If is is empty string, remove it
-                    elif value["is"] == "":
+                    if value["is"] == {} or value["is"] == "":
                         del value["is"]
 
                 # Handle is_not operator
                 if "is_not" in value:
                     # If is_not is empty dict, remove it
-                    if value["is_not"] == {}:
-                        del value["is_not"]
-                    # If is_not is empty string, remove it
-                    elif value["is_not"] == "":
+                    if value["is_not"] == {} or value["is_not"] == "":
                         del value["is_not"]
 
                 # If all operators were removed, remove the entire key

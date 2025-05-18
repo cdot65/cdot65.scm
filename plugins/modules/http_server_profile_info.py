@@ -389,13 +389,13 @@ def main():
 
                 # Get the profile data and convert it to a dictionary
                 profile_dict = json.loads(profile.model_dump_json(exclude_unset=True))
-                
+
                 # Map url_format to uri_format for consistency with the Ansible module
                 if "server" in profile_dict:
                     for server in profile_dict["server"]:
                         if "url_format" in server:
                             server["uri_format"] = server.pop("url_format")
-                
+
                 # Return the profile information
                 result["http_server_profile"] = profile_dict
             except ObjectNotPresentError:
@@ -414,7 +414,7 @@ def main():
             try:
                 # Build filter parameters - only include container parameters for API call
                 filter_params = {container_type: container_value}
-                
+
                 # Save the user's filter values for client-side filtering
                 user_protocol = params.get("protocol")
                 user_tag_registration = params.get("tag_registration")
@@ -426,29 +426,29 @@ def main():
                 profiles_list = []
                 for profile in profiles:
                     profile_dict = json.loads(profile.model_dump_json(exclude_unset=True))
-                    
+
                     # Map url_format to uri_format for consistency with the Ansible module
                     if "server" in profile_dict:
                         for server in profile_dict["server"]:
                             if "url_format" in server:
                                 server["uri_format"] = server.pop("url_format")
-                    
+
                     # Apply client-side filtering
                     should_include = True
-                    
+
                     # Filter by protocol
                     if user_protocol and profile_dict.get("protocol") != user_protocol:
                         should_include = False
-                    
+
                     # Filter by tag_registration
                     if user_tag_registration is not None:
                         if profile_dict.get("tag_registration") != user_tag_registration:
                             should_include = False
-                    
+
                     # Add profile to results if it passes all filters
                     if should_include:
                         profiles_list.append(profile_dict)
-                
+
                 result["http_server_profiles"] = profiles_list
             except (APIError, InvalidObjectError) as e:
                 module.fail_json(

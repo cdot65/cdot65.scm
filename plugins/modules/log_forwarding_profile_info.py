@@ -308,6 +308,22 @@ log_forwarding_profile:
 """
 
 
+def _normalize_match_list(match_list):
+    """Normalize and sort the match_list:
+    - Remove None values from each match item
+    - Sort the list by the 'name' key
+    """
+    cleaned = []
+    for item in match_list:
+        if isinstance(item, dict):
+            filtered = {k: v for k, v in item.items() if v is not None}
+            cleaned.append(filtered)
+        else:
+            cleaned.append(item)
+    cleaned.sort(key=lambda x: x.get("name", ""))
+    return cleaned
+
+
 def main():
     module_args = dict(
         name=dict(type="str", required=False),
@@ -380,13 +396,19 @@ def main():
                 # Get the profile data and convert it to a dictionary
                 profile_dict = json.loads(profile.model_dump_json(exclude_unset=True))
 
+                # Normalize and sort match_list if present
+                if "match_list" in profile_dict and profile_dict["match_list"]:
+                    profile_dict["match_list"] = _normalize_match_list(profile_dict["match_list"])
+
                 # Return the profile information
                 result["log_forwarding_profile"] = profile_dict
             except ObjectNotPresentError:
                 if profile_id:
                     module.fail_json(msg=f"Log forwarding profile with ID '{profile_id}' not found")
                 else:
-                    module.fail_json(msg=f"Log forwarding profile with name '{profile_name}' not found in the specified container")
+                    module.fail_json(
+                        msg=f"Log forwarding profile with name '{profile_name}' not found in the specified container"
+                    )
             except (APIError, InvalidObjectError) as e:
                 module.fail_json(
                     msg="API error: " + str(e),
@@ -412,9 +434,14 @@ def main():
                 try:
                     # Fetch profiles
                     profiles = client.log_forwarding_profile.list(**filter_params)
-                    
-                    # Convert to list of dictionaries
-                    profiles_list = [json.loads(profile.model_dump_json(exclude_unset=True)) for profile in profiles]
+
+                    # Convert to list of dictionaries and normalize match_list
+                    profiles_list = []
+                    for profile in profiles:
+                        profile_dict = json.loads(profile.model_dump_json(exclude_unset=True))
+                        if "match_list" in profile_dict and profile_dict["match_list"]:
+                            profile_dict["match_list"] = _normalize_match_list(profile_dict["match_list"])
+                        profiles_list.append(profile_dict)
                     result["log_forwarding_profiles"] = profiles_list
                 except Exception as e:
                     # Report the error but return an empty list
