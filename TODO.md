@@ -53,7 +53,15 @@ _Last updated: 2025-05-17_
 - [x] Implement HIP profile modules (`hip_profile`, `hip_profile_info`) — Completed ✅ (see [2025-05-16] note below)
 - [x] Implement HTTP server profile modules (`http_server_profile`, `http_server_profile_info`) — Completed ✅ (see [2025-05-17] note below)
 - [x] Implement log forwarding profile modules (`log_forwarding_profile`, `log_forwarding_profile_info`) — Completed ✅ (see [2025-05-18] note below)
-- [ ] Implement service object modules (`service_object`, `service_object_info`) 
+- [ ] Implement quarantined devices modules (`quarantined_devices`, `quarantined_devices_info`) — PRIORITY
+    - [ ] Create `plugins/modules/quarantined_devices.py` for CRUD operations
+    - [ ] Create `plugins/modules/quarantined_devices_info.py` for read operations
+    - [ ] Add support for quarantine reasons and timestamps
+    - [ ] Implement filtering by hostname, serial, and quarantine status
+    - [ ] Create comprehensive example playbooks (`examples/quarantined_devices.yml` and `examples/quarantined_devices_info.yml`)
+    - [ ] Write integration tests for quarantined devices modules
+    - [ ] Update module inventory and documentation
+- [ ] Implement service object modules (`service_object`, `service_object_info`)
 - [ ] Implement service group modules (`service_group`, `service_group_info`)
 - [ ] Develop comprehensive test coverage (unit + integration)
   - [ ] Reimplement unit tests for module_utils (client.py)
@@ -77,6 +85,20 @@ _Last updated: 2025-05-17_
   - When updating existing resources, only include boolean fields that should be True
   - Document this behavior in the module description and examples
 - All SDK models must follow canonical modeling standards from WINDSURF_RULES.md, SDK_MODELS_TEMPLATE.py, SDK_MODELS_STYLING_GUIDE.md, and CLAUDE_MODELS.md.
+
+## Quarantined Devices Module Implementation Guidelines
+
+The quarantined_devices modules must follow these established patterns:
+- Use folder/folder_info modules as the canonical template for structure
+- Implement OAuth2 authentication via access token
+- Support container-based resource management (folder, snippet, device)
+- Provide full CRUD operations in the main module
+- Include comprehensive filtering in the info module
+- Use direct SDK imports and the unified ScmClient interface
+- Include proper DOCUMENTATION, EXAMPLES, and RETURN blocks
+- Handle SDK exceptions with informative error messages
+- Support idempotency and check mode
+- Create example playbooks demonstrating all operations
 
 ## [2025-05-16] Test Structure Cleanup and Module Utils Cleanup
 

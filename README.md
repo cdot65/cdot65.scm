@@ -72,102 +72,114 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 ### Objects Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| address | Address object management | ✅ |
-| address_group | Address group management | ✅ |
-| application | Application object management | ✅ |
-| application_filters | Application filters management | 📝 |
-| application_group | Application group management | ✅ |
-| auto_tag_actions | Auto tag actions management | 📝 |
-| dynamic_user_group | Dynamic user group management | ✅ |
-| external_dynamic_lists | External dynamic lists management | ✅ |
-| hip_object | HIP object management | ✅ |
-| hip_profile | HIP profile management | ✅ |
-| http_server_profiles | HTTP server profiles management | 📝 |
-| log_forwarding_profile | Log forwarding profile management | ✅ |
-| quarantined_devices | Quarantined devices management | 📝 |
-| region | Region object management | 📝 |
-| schedules | Schedules management | 📝 |
-| service | Service object management | 📝 |
-| service_group | Service group management | 📝 |
-| syslog_server_profiles | Syslog server profiles management | 📝 |
-| tag | Tag management | 📝 |
+| [address](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address.py) | Address object management | ✅ |
+| [address_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_info.py) | Retrieve address object information | ✅ |
+| [address_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group.py) | Address group management | ✅ |
+| [address_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group_info.py) | Retrieve address group information | ✅ |
+| [application](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application.py) | Application object management | ✅ |
+| [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application object information | ✅ |
+| [application_filter](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter.py) | Application filters management | ✅ |
+| [application_filter_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter_info.py) | Retrieve application filters information | ✅ |
+| [application_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group.py) | Application group management | ✅ |
+| [application_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group_info.py) | Retrieve application group information | ✅ |
+| [auto_tag_actions](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/auto_tag_actions.py) | Auto tag actions management | 📝 |
+| [auto_tag_actions_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/auto_tag_actions_info.py) | Retrieve auto tag actions information | 📝 |
+| [dynamic_user_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group.py) | Dynamic user group management | ✅ |
+| [dynamic_user_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group_info.py) | Retrieve dynamic user group information | ✅ |
+| [external_dynamic_list](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list.py) | External dynamic lists management | ✅ |
+| [external_dynamic_list_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list_info.py) | Retrieve external dynamic lists information | ✅ |
+| [hip_object](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object.py) | HIP object management | ✅ |
+| [hip_object_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object_info.py) | Retrieve HIP object information | ✅ |
+| [hip_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile.py) | HIP profile management | ✅ |
+| [hip_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile_info.py) | Retrieve HIP profile information | ✅ |
+| [http_server_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile.py) | HTTP server profiles management | ✅ |
+| [http_server_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile_info.py) | Retrieve HTTP server profiles information | ✅ |
+| [log_forwarding_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile.py) | Log forwarding profile management | ✅ |
+| [log_forwarding_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile_info.py) | Retrieve log forwarding profile information | ✅ |
+| [quarantined_devices](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices.py) | Quarantined devices management | 📝 |
+| [quarantined_devices_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/quarantined_devices_info.py) | Retrieve quarantined devices information | 📝 |
+| [region](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region.py) | Region object management | 📝 |
+| [region_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/region_info.py) | Retrieve region object information | 📝 |
+| [schedules](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/schedules.py) | Schedules management | 📝 |
+| [schedules_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/schedules_info.py) | Retrieve schedules information | 📝 |
+| [service](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service.py) | Service object management | 📝 |
+| [service_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_info.py) | Retrieve service object information | 📝 |
+| [service_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group.py) | Service group management | 📝 |
+| [service_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group_info.py) | Retrieve service group information | 📝 |
+| [syslog_server_profiles](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/syslog_server_profiles.py) | Syslog server profiles management | 📝 |
+| [syslog_server_profiles_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/syslog_server_profiles_info.py) | Retrieve syslog server profiles information | 📝 |
+| [tag](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag.py) | Tag management | 📝 |
+| [tag_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag_info.py) | Retrieve tag information | 📝 |
 
 ### Network Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| ike_crypto_profile | IKE crypto profile management | 📝 |
-| ike_gateway | IKE gateway management | 📝 |
-| ipsec_crypto_profile | IPsec crypto profile management | 📝 |
-| nat_rules | NAT rules management | 📝 |
-| security_zone | Security zone management | 📝 |
+| [ike_crypto_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_crypto_profile.py) | IKE crypto profile management | 📝 |
+| [ike_crypto_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_crypto_profile_info.py) | Retrieve IKE crypto profile information | 📝 |
+| [ike_gateway](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_gateway.py) | IKE gateway management | 📝 |
+| [ike_gateway_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_gateway_info.py) | Retrieve IKE gateway information | 📝 |
+| [ipsec_crypto_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ipsec_crypto_profile.py) | IPsec crypto profile management | 📝 |
+| [ipsec_crypto_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ipsec_crypto_profile_info.py) | Retrieve IPsec crypto profile information | 📝 |
+| [nat_rules](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/nat_rules.py) | NAT rules management | 📝 |
+| [nat_rules_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/nat_rules_info.py) | Retrieve NAT rules information | 📝 |
+| [security_zone](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone.py) | Security zone management | 📝 |
+| [security_zone_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone_info.py) | Retrieve security zone information | 📝 |
 
 ### Deployment Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| bandwidth_allocations | Bandwidth allocations management | 📝 |
-| bgp_routing | BGP routing management | 📝 |
-| internal_dns_servers | Internal DNS servers management | 📝 |
-| network_locations | Network locations management | 📝 |
-| remote_networks | Remote networks management | 📝 |
-| service_connections | Service connections management | 📝 |
+| [bandwidth_allocations](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bandwidth_allocations.py) | Bandwidth allocations management | 📝 |
+| [bandwidth_allocations_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bandwidth_allocations_info.py) | Retrieve bandwidth allocations information | 📝 |
+| [bgp_routing](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bgp_routing.py) | BGP routing management | 📝 |
+| [bgp_routing_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bgp_routing_info.py) | Retrieve BGP routing information | 📝 |
+| [internal_dns_servers](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_servers.py) | Internal DNS servers management | 📝 |
+| [internal_dns_servers_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_servers_info.py) | Retrieve internal DNS servers information | 📝 |
+| [network_locations](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/network_locations.py) | Network locations management | 📝 |
+| [network_locations_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/network_locations_info.py) | Retrieve network locations information | 📝 |
+| [remote_networks](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/remote_networks.py) | Remote networks management | 📝 |
+| [remote_networks_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/remote_networks_info.py) | Retrieve remote networks information | 📝 |
+| [service_connections](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_connections.py) | Service connections management | 📝 |
+| [service_connections_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_connections_info.py) | Retrieve service connections information | 📝 |
 
 ### Security Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| anti_spyware_profile | Anti-spyware profile management | 📝 |
-| decryption_profile | Decryption profile management | 📝 |
-| dns_security_profile | DNS security profile management | 📝 |
-| security_rule | Security rule management | 📝 |
-| url_categories | URL categories management | 📝 |
-| vulnerability_protection_profile | Vulnerability protection profile management | 📝 |
-| wildfire_antivirus_profile | WildFire antivirus profile management | 📝 |
+| [anti_spyware_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/anti_spyware_profile.py) | Anti-spyware profile management | 📝 |
+| [anti_spyware_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/anti_spyware_profile_info.py) | Retrieve anti-spyware profile information | 📝 |
+| [decryption_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile.py) | Decryption profile management | 📝 |
+| [decryption_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile_info.py) | Retrieve decryption profile information | 📝 |
+| [dns_security_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dns_security_profile.py) | DNS security profile management | 📝 |
+| [dns_security_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dns_security_profile_info.py) | Retrieve DNS security profile information | 📝 |
+| [security_rule](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_rule.py) | Security rule management | 📝 |
+| [security_rule_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_rule_info.py) | Retrieve security rule information | 📝 |
+| [url_categories](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/url_categories.py) | URL categories management | 📝 |
+| [url_categories_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/url_categories_info.py) | Retrieve URL categories information | 📝 |
+| [vulnerability_protection_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/vulnerability_protection_profile.py) | Vulnerability protection profile management | 📝 |
+| [vulnerability_protection_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/vulnerability_protection_profile_info.py) | Retrieve vulnerability protection profile information | 📝 |
+| [wildfire_antivirus_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile.py) | WildFire antivirus profile management | 📝 |
+| [wildfire_antivirus_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile_info.py) | Retrieve WildFire antivirus profile information | 📝 |
 
 ### Setup Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| device | Device management | 📝 |
-| folder | Folder management | ✅ |
-| label | Label management | ✅ |
-| snippet | Snippet management | ✅ |
-| variable | Variable management | ✅ |
+| [device](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/device.py) | Device management | 📝 |
+| [device_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/device_info.py) | Retrieve device information | ✅ |
+| [folder](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/folder.py) | Folder management | ✅ |
+| [folder_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/folder_info.py) | Retrieve folder information | ✅ |
+| [label](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/label.py) | Label management | ✅ |
+| [label_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/label_info.py) | Retrieve label information | ✅ |
+| [snippet](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/snippet.py) | Snippet management | ✅ |
+| [snippet_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/snippet_info.py) | Retrieve snippet information | ✅ |
+| [variable](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/variable.py) | Variable management | ✅ |
+| [variable_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/variable_info.py) | Retrieve variable information | ✅ |
 
 ### Mobile Agent Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| agent_versions | Agent versions management | 📝 |
-| auth_settings | Auth settings management | 📝 |
-| agent_versions | Agent versions management | ✅ |
-| auth_settings | Auth settings management | ✅ |
-
----
-
-| [address](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address.py) | Manage address objects | ✅ |
-| [address_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_info.py) | Retrieve address object information | ✅ |
-| [address_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group.py) | Manage address groups | ✅ |
-| [address_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/address_group_info.py) | Retrieve address group information | ✅ |
-| [application](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application.py) | Manage application objects | ✅ |
-| [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | ✅ |
-| [application_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group.py) | Manage application groups | ✅ |
-| [application_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group_info.py) | Retrieve application group information | ✅ |
-| [application_filter](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter.py) | Manage application filters | ✅ |
-| [application_filter_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter_info.py) | Retrieve application filter information | ✅ |
-
-### User and Security Modules
-
-| Module | Description | Status |
-|--------|-------------|--------|
-| [dynamic_user_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group.py) | Manage dynamic user groups | ✅ |
-| [dynamic_user_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group_info.py) | Retrieve dynamic user group information | ✅ |
-| [external_dynamic_list](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list.py) | Manage external dynamic lists | ✅ |
-| [external_dynamic_list_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list_info.py) | Retrieve external dynamic list information | ✅ |
-| [hip_object](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object.py) | Manage host information profile objects | ✅ |
-| [hip_object_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object_info.py) | Retrieve host information profile object information | ✅ |
-| [hip_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile.py) | Manage host information profiles | ✅ |
-| [hip_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile_info.py) | Retrieve host information profile information | ✅ |
-| [http_server_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile.py) | Manage HTTP server profiles | ✅ |
-| [http_server_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile_info.py) | Retrieve HTTP server profile information | ✅ |
-| [log_forwarding_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile.py) | Manage log forwarding profiles | ✅ |
-| [log_forwarding_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/log_forwarding_profile_info.py) | Retrieve log forwarding profile information | ✅ |
+| [agent_versions](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/agent_versions.py) | Agent versions management | 📝 |
+| [agent_versions_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/agent_versions_info.py) | Retrieve agent versions information | 📝 |
+| [auth_settings](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/auth_settings.py) | Auth settings management | 📝 |
+| [auth_settings_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/auth_settings_info.py) | Retrieve auth settings information | 📝 |
 
 ### Configuration and Deployment Modules (Planned)
 
