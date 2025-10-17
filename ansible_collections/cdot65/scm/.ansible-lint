@@ -9,6 +9,7 @@ exclude_paths:
   - build/
   - '*.tar.gz'
   - plugins/modules/  # Exclude modules from ansible-lint due to external SDK imports
+  - tests/sanity/  # Exclude ansible-test sanity ignore files
 
 # Skip list of rules to ignore
 skip_list:

@@ -14,6 +14,7 @@ install: build
 clean:
 	rm -f $(COLLECTION_PATH)-*.tar.gz
 	rm -rf ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME)
+	rm -rf ansible_collections
 
 # Linting and formatting
 lint:

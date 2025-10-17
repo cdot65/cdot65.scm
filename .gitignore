@@ -401,3 +401,4 @@ tmp/
 vault.yml
 ai_docs
 .ansible
+ansible_collections/
