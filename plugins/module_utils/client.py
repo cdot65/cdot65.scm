@@ -5,6 +5,8 @@
 
 """Strata Cloud Manager API client module utilities."""
 
+from __future__ import annotations
+
 import logging
 
 # Import Python libs

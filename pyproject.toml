@@ -44,10 +44,20 @@ skip_list = ["no-handler"]
 [tool.black]
 line-length = 128
 target-version = ['py310', 'py311', 'py312', 'py313']
+extend-exclude = '''
+/(
+  \.venv
+  | \.tox
+  | build
+  | dist
+  | ansible_collections
+)/
+'''
 
 [tool.ruff]
 line-length = 128
 target-version = "py310"
+extend-exclude = [".venv", ".tox", "build", "dist", "ansible_collections"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "UP", "S", "BLE", "C4", "T20", "RET", "SIM", "ERA"]
@@ -72,7 +82,7 @@ known_ansible_core = ["ansible"]
 known_ansible_cdot65_scm = ["ansible_collections.cdot65.scm"]
 from_first = false
 # Skip Ansible modules as they have specific import requirements
-skip_glob = ["plugins/modules/*.py"]
+skip_glob = ["plugins/modules/*.py", ".venv/**", ".tox/**", "build/**", "dist/**", "ansible_collections/**"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -84,6 +94,14 @@ disallow_incomplete_defs = false
 ignore_missing_imports = true
 # Allow untyped calls from external libraries
 allow_untyped_calls = true
+# Exclude directories
+exclude = [
+    '\.venv',
+    '\.tox',
+    'build',
+    'dist',
+    'ansible_collections',
+]
 
 # NOTE:
 # - All runtime dependencies for collection users (for Galaxy) must be listed in galaxy.yml, not here.

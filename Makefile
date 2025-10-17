@@ -41,33 +41,33 @@ lint-fix:
 	poetry run black plugins tests
 	poetry run isort plugins tests
 
-# Testing options with poetry (Docker-based)
+# Testing options (Docker-based)
 sanity:
 	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test sanity --docker default
+	ansible-test sanity --docker default
 
 unit-test:
 	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test units --docker default tests/unit/plugins/module_utils/test_scm.py
+	ansible-test units --docker default
 
 integration-test:
 	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test integration --docker default
+	ansible-test integration --docker default
 
 test: sanity unit-test integration-test
 
-# Testing options with poetry (Local - no Docker)
+# Testing options (Local - no Docker)
 sanity-local:
 	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test sanity --local
+	ansible-test sanity --local
 
 unit-test-local:
 	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test units --local tests/unit/plugins/module_utils/test_scm.py
+	ansible-test units --local
 
 integration-test-local:
 	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
-	poetry run ansible-test integration --local
+	ansible-test integration --local
 
 test-local: sanity-local unit-test-local
 
@@ -142,7 +142,8 @@ run-example:
 	poetry run ansible-playbook --vault-pass-file .vault_pass examples/$(EXAMPLE).yml
 
 test-integration:
-	poetry run ansible-test integration --color --docker
+	cd ~/.ansible/collections/ansible_collections/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME) && \
+	ansible-test integration --color --docker
 
 # All-in-one targets
 all: clean build install

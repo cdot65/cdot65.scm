@@ -1,6 +1,6 @@
 [flake8]
 max-line-length = 128
-exclude = .git,__pycache__,build,dist
+exclude = .git,__pycache__,build,dist,.venv,.tox,ansible_collections
 per-file-ignores =
     # Allow Ansible modules to use dict() for argument specs (Ansible convention)
     plugins/modules/*.py: E501,F821,C408
