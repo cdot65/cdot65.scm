@@ -8,7 +8,7 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
-from scm.models.objects import RegionUpdateModel
+from scm.models.objects import RegionCreateModel
 
 DOCUMENTATION = r"""
 ---
@@ -16,57 +16,71 @@ module: region
 short_description: Manage region objects in Strata Cloud Manager (SCM)
 description:
     - Create, update, or delete region objects in Strata Cloud Manager using pan-scm-sdk.
-    - Supports all region attributes including geographic location and network addresses.
+    - Supports all region attributes including geographic location and addresses.
+    - Region objects must be associated with exactly one container (folder, snippet, or device).
 version_added: "0.1.0"
 author:
     - "Calvin Remsburg (@cdot65)"
 options:
     name:
         description:
-            - Name of the region.
-            - Required for all operations.
+            - Name of the region object.
+            - Required for state=present and for absent if id is not provided.
+            - Maximum length is 64 characters.
+            - Must match pattern '^[\w .:/\-]+$'.
         type: str
-        required: true
-    geographic_location:
+        required: false
+    geo_location:
         description:
-            - Geographic location with latitude and longitude coordinates.
-            - Requires both latitude and longitude to be provided.
+            - Geographic location of the region.
+            - Contains latitude and longitude coordinates.
         type: dict
         required: false
         suboptions:
             latitude:
                 description:
-                    - Latitude coordinate (-90 to 90).
+                    - Latitudinal position of the region.
+                    - Valid range is -90 to 90.
                 type: float
                 required: true
             longitude:
                 description:
-                    - Longitude coordinate (-180 to 180).
+                    - Longitudinal position of the region.
+                    - Valid range is -180 to 180.
                 type: float
                 required: true
-    addresses:
+    address:
         description:
-            - List of network addresses associated with the region.
-            - Can include IPv4/IPv6 addresses and subnets.
+            - List of addresses associated with the region.
+            - Each address is a string reference.
         type: list
         elements: str
         required: false
     folder:
         description:
-            - Name of the folder containing the region object.
-            - Mutually exclusive with snippet and device.
+            - The folder in which the region object is defined.
+            - Exactly one of folder, snippet, or device must be provided for state=present.
+            - Mutually exclusive with I(snippet) and I(device).
         type: str
         required: false
     snippet:
         description:
-            - Name of the snippet containing the region object.
-            - Mutually exclusive with folder and device.
+            - The snippet in which the region object is defined.
+            - Exactly one of folder, snippet, or device must be provided for state=present.
+            - Mutually exclusive with I(folder) and I(device).
         type: str
         required: false
     device:
         description:
-            - Name of the device containing the region object.
-            - Mutually exclusive with folder and snippet.
+            - The device in which the region object is defined.
+            - Exactly one of folder, snippet, or device must be provided for state=present.
+            - Mutually exclusive with I(folder) and I(snippet).
+        type: str
+        required: false
+    id:
+        description:
+            - Unique identifier for the region object (UUID).
+            - Used for lookup/deletion if provided.
         type: str
         required: false
     scm_access_token:
@@ -74,7 +88,6 @@ options:
             - Bearer access token for authenticating API calls, provided by the auth role.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -90,47 +103,77 @@ options:
 notes:
     - Check mode is supported.
     - All operations are idempotent.
-    - Exactly one of folder, snippet, or device must be specified.
     - Uses pan-scm-sdk via unified client and bearer token from the auth role.
-    - Although the SDK supports description and tag fields, they are not sent to the API.
+    - Region objects must be associated with exactly one container (folder, snippet, or device).
+    - The name field has a maximum length of 64 characters and must match pattern '^[\w .:/\-]+$'.
+    - Geographic location coordinates must be within valid ranges (latitude -90 to 90, longitude -180 to 180).
+    - Although the SDK supports description and tag fields, these are NOT sent to the API and should not be used.
 """
 
 EXAMPLES = r"""
+- name: Create a folder-based region object
+  cdot65.scm.region:
+    name: "North-America-East"
+    folder: "Network-Objects"
+    scm_access_token: "{{ scm_access_token }}"
+    state: present
+
 - name: Create a region with geographic location
   cdot65.scm.region:
-    name: "us-west-region"
-    folder: "Global"
-    geographic_location:
-      latitude: 37.7749
-      longitude: -122.4194
-    addresses:
-      - "10.0.0.0/8"
-      - "192.168.1.0/24"
+    name: "NYC-Region"
+    geo_location:
+      latitude: 40.7128
+      longitude: -74.0060
+    folder: "Network-Objects"
+    scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Update a region's network addresses
+- name: Create a region with addresses
   cdot65.scm.region:
-    name: "us-west-region"
-    folder: "Global"
-    addresses:
-      - "10.0.0.0/8"
-      - "192.168.1.0/24"
-      - "172.16.0.0/16"
+    name: "Europe-West"
+    address:
+      - "london-office"
+      - "paris-office"
+      - "berlin-office"
+    folder: "Network-Objects"
+    scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Create a region in a snippet
+- name: Create a comprehensive region object
   cdot65.scm.region:
-    name: "europe-region"
-    snippet: "EU Configs"
-    geographic_location:
-      latitude: 48.8566
-      longitude: 2.3522
+    name: "Asia-Pacific"
+    geo_location:
+      latitude: 1.3521
+      longitude: 103.8198
+    address:
+      - "singapore-dc"
+      - "tokyo-dc"
+      - "sydney-dc"
+    snippet: "global-regions"
+    scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Delete a region
+- name: Update a region's geographic location
   cdot65.scm.region:
-    name: "old-region"
-    folder: "Global"
+    name: "NYC-Region"
+    geo_location:
+      latitude: 40.7580
+      longitude: -73.9855
+    folder: "Network-Objects"
+    scm_access_token: "{{ scm_access_token }}"
+    state: present
+
+- name: Delete a region object by name
+  cdot65.scm.region:
+    name: "NYC-Region"
+    folder: "Network-Objects"
+    scm_access_token: "{{ scm_access_token }}"
+    state: absent
+
+- name: Delete a region object by ID
+  cdot65.scm.region:
+    id: "12345678-1234-1234-1234-123456789012"
+    scm_access_token: "{{ scm_access_token }}"
     state: absent
 """
 
@@ -146,44 +189,50 @@ region:
             returned: always
             sample: "12345678-1234-1234-1234-123456789012"
         name:
-            description: The region name
+            description: The region object name
             type: str
             returned: always
-            sample: "us-west-region"
+            sample: "North-America-East"
         geo_location:
-            description: The geographic location of the region
+            description: Geographic location of the region
             type: dict
-            returned: when configured
-            sample:
-                latitude: 37.7749
-                longitude: -122.4194
+            returned: when applicable
+            contains:
+                latitude:
+                    description: Latitudinal position
+                    type: float
+                    sample: 40.7128
+                longitude:
+                    description: Longitudinal position
+                    type: float
+                    sample: -74.0060
         address:
-            description: List of network addresses
+            description: List of addresses associated with the region
             type: list
-            returned: when configured
-            sample: ["10.0.0.0/8", "192.168.1.0/24"]
+            returned: when applicable
+            sample: ["london-office", "paris-office"]
         folder:
-            description: The name of the folder containing the region
+            description: The folder containing the region object
             type: str
             returned: when applicable
-            sample: "Global"
+            sample: "Network-Objects"
         snippet:
-            description: The name of the snippet containing the region
+            description: The snippet containing the region object
             type: str
             returned: when applicable
-            sample: "EU Configs"
+            sample: "global-regions"
         device:
-            description: The name of the device containing the region
+            description: The device containing the region object
             type: str
             returned: when applicable
-            sample: "fw-01"
+            sample: "firewall-01"
 """
 
 
 def main():
     module_args = dict(
-        name=dict(type="str", required=True),
-        geographic_location=dict(
+        name=dict(type="str", required=False),
+        geo_location=dict(
             type="dict",
             required=False,
             options=dict(
@@ -191,125 +240,190 @@ def main():
                 longitude=dict(type="float", required=True),
             ),
         ),
-        addresses=dict(type="list", elements="str", required=False),
+        address=dict(type="list", elements="str", required=False),
         folder=dict(type="str", required=False),
         snippet=dict(type="str", required=False),
         device=dict(type="str", required=False),
+        id=dict(type="str", required=False),
         scm_access_token=dict(type="str", required=True, no_log=True),
         api_url=dict(type="str", required=False),
         state=dict(type="str", required=False, choices=["present", "absent"], default="present"),
     )
 
+    # Initialize module
     module = AnsibleModule(
         argument_spec=module_args,
+        required_if=[
+            ["state", "present", ["name"]],
+            ["state", "absent", ["name", "id"], True],  # At least one of name or id required
+        ],
+        mutually_exclusive=[
+            ["folder", "snippet", "device"],
+        ],
         supports_check_mode=True,
-        mutually_exclusive=[["folder", "snippet", "device"]],
-        required_one_of=[["folder", "snippet", "device"]],
     )
 
+    # Get parameters
+    params = module.params
+
+    # Custom validation for name length and pattern
+    if params.get("name"):
+        import re
+
+        name = params.get("name")
+        if len(name) > 64:
+            module.fail_json(msg=f"The 'name' field must be 64 characters or less. Current length: {len(name)}")
+        if not re.match(r"^[\w .:/\-]+$", name):
+            module.fail_json(msg=f"The 'name' field must match pattern '^[\\w .:/\\-]+$'. Got: {name}")
+
+    # Custom validation for geo_location coordinates
+    if params.get("geo_location"):
+        geo = params.get("geo_location")
+        lat = geo.get("latitude")
+        lon = geo.get("longitude")
+
+        if lat is not None and (lat < -90 or lat > 90):
+            module.fail_json(msg=f"Latitude must be between -90 and 90. Got: {lat}")
+
+        if lon is not None and (lon < -180 or lon > 180):
+            module.fail_json(msg=f"Longitude must be between -180 and 180. Got: {lon}")
+
+    # Initialize results
+    result = {"changed": False, "region": None}
+
+    # Perform operations
     try:
         # Initialize SCM client
-        client = ScmClient(access_token=module.params.get("scm_access_token"))
+        client = ScmClient(access_token=params.get("scm_access_token"))
 
-        state = module.params["state"]
-        name = module.params["name"]
-        existing_object = None
+        # Initialize region_exists boolean
+        region_exists = False
+        region_obj = None
 
-        # Determine the container
-        container_parameters = {
-            k: v
-            for k, v in {
-                "folder": module.params.get("folder"),
-                "snippet": module.params.get("snippet"),
-                "device": module.params.get("device"),
-            }.items()
-            if v is not None
-        }
+        # Fetch region by name
+        if params.get("name"):
+            try:
+                # Handle different container types (folder, snippet, device)
+                container_type = None
+                container_name = None
 
-        # Try to fetch existing object by name
-        try:
-            existing_object = client.region.fetch(name=name, **container_parameters)
-        except ObjectNotPresentError:
-            existing_object = None
-        except APIError as e:
-            if e.http_status_code == 404:
-                existing_object = None
+                if params.get("folder"):
+                    container_type = "folder"
+                    container_name = params.get("folder")
+                elif params.get("snippet"):
+                    container_type = "snippet"
+                    container_name = params.get("snippet")
+                elif params.get("device"):
+                    container_type = "device"
+                    container_name = params.get("device")
+
+                # For any container type, fetch the region object
+                if container_type and container_name:
+                    region_obj = client.region.fetch(name=params.get("name"), **{container_type: container_name})
+                    if region_obj:
+                        region_exists = True
+            except ObjectNotPresentError:
+                region_exists = False
+                region_obj = None
+
+        # Create or update or delete a region
+        if params.get("state") == "present":
+            if region_exists:
+                # Determine which fields differ and need to be updated
+                update_fields = {}
+
+                # Check simple fields
+                for field in ["geo_location", "address", "folder", "snippet", "device"]:
+                    if params[field] is not None:
+                        current_value = getattr(region_obj, field, None)
+
+                        # Special handling for geo_location dict comparison
+                        if field == "geo_location" and current_value is not None:
+                            # Convert GeoLocation model to dict for comparison
+                            current_geo_dict = {
+                                "latitude": current_value.latitude,
+                                "longitude": current_value.longitude,
+                            }
+                            if current_geo_dict != params[field]:
+                                update_fields[field] = params[field]
+                        elif current_value != params[field]:
+                            update_fields[field] = params[field]
+
+                # Update the region if needed
+                if update_fields:
+                    if not module.check_mode:
+                        update_model = region_obj.model_copy(update=update_fields)
+                        updated = client.region.update(update_model)
+                        result["region"] = json.loads(updated.model_dump_json(exclude_unset=True))
+                    else:
+                        result["region"] = json.loads(region_obj.model_dump_json(exclude_unset=True))
+                    result["changed"] = True
+                    module.exit_json(**result)
+                else:
+                    # No update needed
+                    result["region"] = json.loads(region_obj.model_dump_json(exclude_unset=True))
+                    result["changed"] = False
+                    module.exit_json(**result)
+
             else:
-                raise
-
-        if state == "present":
-            if existing_object is None:
-                # Create new region
-                if module.check_mode:
-                    module.exit_json(changed=True, msg="Region would be created")
-
-                payload = {
-                    "name": name,
-                    **container_parameters,
+                # Create payload for new region object
+                create_payload = {
+                    k: params[k]
+                    for k in [
+                        "name",
+                        "geo_location",
+                        "address",
+                        "folder",
+                        "snippet",
+                        "device",
+                    ]
+                    if params.get(k) is not None
                 }
-                if module.params.get("geographic_location"):
-                    payload["geo_location"] = module.params["geographic_location"]
-                if module.params.get("addresses"):
-                    payload["address"] = module.params["addresses"]
 
-                # Create using direct SDK model
-                new_object = client.region.create(data=payload)
-                result = json.loads(new_object.model_dump_json(exclude_unset=True))
-                module.exit_json(changed=True, region=result)
+                # Create a region object
+                if not module.check_mode:
+                    # Create a region object
+                    created = client.region.create(create_payload)
+
+                    # Return the created region object
+                    result["region"] = json.loads(created.model_dump_json(exclude_unset=True))
+                else:
+                    # Simulate a created region object (minimal info)
+                    simulated = RegionCreateModel(**create_payload)
+                    result["region"] = simulated.model_dump(exclude_unset=True)
+
+                # Mark as changed
+                result["changed"] = True
+
+                # Exit
+                module.exit_json(**result)
+
+        # Delete a region object
+        elif params.get("state") == "absent":
+            if region_exists:
+                if not module.check_mode:
+                    client.region.delete(region_obj.id)
+
+                # Mark as changed
+                result["changed"] = True
+
+                # Exit
+                result["region"] = json.loads(region_obj.model_dump_json(exclude_unset=True))
+                module.exit_json(**result)
             else:
-                # Update existing region
-                # Check if any changes are needed
-                changes_needed = False
-                update_payload = {"id": existing_object.id, "name": name}
+                # Already absent
+                result["changed"] = False
+                module.exit_json(**result)
 
-                # Check geo_location
-                existing_geo_location = None
-                if existing_object.geo_location:
-                    existing_geo_location = {
-                        "latitude": existing_object.geo_location.latitude,
-                        "longitude": existing_object.geo_location.longitude,
-                    }
-                if module.params.get("geographic_location") != existing_geo_location:
-                    changes_needed = True
-                    update_payload["geo_location"] = module.params.get("geographic_location")
-
-                # Check addresses
-                existing_addresses = existing_object.address or []
-                param_addresses = module.params.get("addresses") or []
-                if sorted(existing_addresses) != sorted(param_addresses):
-                    changes_needed = True
-                    update_payload["address"] = param_addresses
-
-                if not changes_needed:
-                    result = json.loads(existing_object.model_dump_json(exclude_unset=True))
-                    module.exit_json(changed=False, region=result)
-
-                if module.check_mode:
-                    module.exit_json(changed=True, msg="Region would be updated")
-
-                # Update the region
-                update_model = RegionUpdateModel(**update_payload)
-                updated_object = client.region.update(update_model)
-                result = json.loads(updated_object.model_dump_json(exclude_unset=True))
-                module.exit_json(changed=True, region=result)
-
-        elif state == "absent":
-            if existing_object is None:
-                module.exit_json(changed=False, msg="Region not found, nothing to delete")
-
-            if module.check_mode:
-                module.exit_json(changed=True, msg="Region would be deleted")
-
-            # Delete the region
-            client.region.delete(object_id=str(existing_object.id))
-            module.exit_json(changed=True, msg=f"Deleted region {name}")
-
-    except InvalidObjectError as e:
-        module.fail_json(msg=f"Invalid object: {str(e)}")
+    # Handle errors
+    except (ObjectNotPresentError, InvalidObjectError) as e:
+        module.fail_json(msg=str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None))
     except APIError as e:
-        module.fail_json(msg=f"API error: {str(e)}")
-    except Exception as e:  # noqa
-        module.fail_json(msg=f"Unexpected error: {str(e)}")
+        module.fail_json(
+            msg="API error: " + str(e), error_code=getattr(e, "error_code", None), details=getattr(e, "details", None)
+        )
+    except Exception as e:
+        module.fail_json(msg="Unexpected error: " + str(e))
 
 
 if __name__ == "__main__":

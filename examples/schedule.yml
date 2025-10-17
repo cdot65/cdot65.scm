@@ -1,0 +1,192 @@
+---
+# Example playbook demonstrating schedule module usage
+# This playbook shows how to create, update, and delete schedule objects in SCM
+
+- name: Manage Schedule Objects in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # ============================================================================
+    # Authentication
+    # ============================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # ============================================================================
+    # Create Daily Recurring Schedule
+    # ============================================================================
+    - name: Create business hours schedule (daily)
+      cdot65.scm.schedule:
+        name: "business-hours"
+        schedule_type:
+          recurring:
+            daily:
+              - "08:00-17:00"
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: daily_schedule
+
+    - name: Display daily schedule
+      ansible.builtin.debug:
+        var: daily_schedule
+
+    # ============================================================================
+    # Create Weekly Recurring Schedule
+    # ============================================================================
+    - name: Create weekend maintenance schedule (weekly)
+      cdot65.scm.schedule:
+        name: "weekend-maintenance"
+        schedule_type:
+          recurring:
+            weekly:
+              saturday:
+                - "02:00-06:00"
+              sunday:
+                - "02:00-06:00"
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: weekly_schedule
+
+    - name: Display weekly schedule
+      ansible.builtin.debug:
+        var: weekly_schedule
+
+    # ============================================================================
+    # Create Complex Weekly Schedule
+    # ============================================================================
+    - name: Create weekday work schedule with lunch breaks
+      cdot65.scm.schedule:
+        name: "weekday-schedule"
+        schedule_type:
+          recurring:
+            weekly:
+              monday:
+                - "08:00-12:00"
+                - "13:00-17:00"
+              tuesday:
+                - "08:00-12:00"
+                - "13:00-17:00"
+              wednesday:
+                - "08:00-12:00"
+                - "13:00-17:00"
+              thursday:
+                - "08:00-12:00"
+                - "13:00-17:00"
+              friday:
+                - "08:00-12:00"
+                - "13:00-15:00"
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: complex_schedule
+
+    - name: Display complex weekly schedule
+      ansible.builtin.debug:
+        var: complex_schedule
+
+    # ============================================================================
+    # Create Non-Recurring Schedule
+    # ============================================================================
+    - name: Create holiday blackout schedule (non-recurring)
+      cdot65.scm.schedule:
+        name: "holiday-blackout"
+        schedule_type:
+          non_recurring:
+            - "2025/12/24@00:00-2025/12/26@23:59"
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: nonrecurring_schedule
+
+    - name: Display non-recurring schedule
+      ansible.builtin.debug:
+        var: nonrecurring_schedule
+
+    # ============================================================================
+    # Create Multi-Date Non-Recurring Schedule
+    # ============================================================================
+    - name: Create quarterly maintenance windows
+      cdot65.scm.schedule:
+        name: "quarterly-maintenance"
+        schedule_type:
+          non_recurring:
+            - "2025/01/15@02:00-2025/01/15@06:00"
+            - "2025/04/15@02:00-2025/04/15@06:00"
+            - "2025/07/15@02:00-2025/07/15@06:00"
+            - "2025/10/15@02:00-2025/10/15@06:00"
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: quarterly_schedule
+
+    - name: Display quarterly maintenance schedule
+      ansible.builtin.debug:
+        var: quarterly_schedule
+
+    # ============================================================================
+    # Retrieve Schedule Information
+    # ============================================================================
+    - name: Get all schedules in Security-Policies folder
+      cdot65.scm.schedule_info:
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_schedules
+
+    - name: Display all schedules
+      ansible.builtin.debug:
+        var: all_schedules
+
+    - name: Get specific schedule by name
+      cdot65.scm.schedule_info:
+        name: "business-hours"
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_schedule
+
+    - name: Display specific schedule
+      ansible.builtin.debug:
+        var: specific_schedule
+
+    # ============================================================================
+    # Update Schedule
+    # ============================================================================
+    - name: Update business hours (extend to 6 PM)
+      cdot65.scm.schedule:
+        name: "business-hours"
+        schedule_type:
+          recurring:
+            daily:
+              - "08:00-18:00"
+        folder: "Security-Policies"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_schedule
+
+    - name: Display updated schedule
+      ansible.builtin.debug:
+        var: updated_schedule
+
+    # ============================================================================
+    # Delete Schedule (commented out by default)
+    # ============================================================================
+    # - name: Delete holiday blackout schedule
+    #   cdot65.scm.schedule:
+    #     name: "holiday-blackout"
+    #     folder: "Security-Policies"
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: absent
+    #   register: deleted_schedule
+
+    # - name: Display deletion result
+    #   ansible.builtin.debug:
+    #     var: deleted_schedule
