@@ -22,24 +22,27 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 
 The following resources are supported by `pan-scm-sdk` but do not have Ansible modules yet:
 
-## Priority 1: Core Network Objects
+## Priority 1: Core Objects ✅ COMPLETED
 
 These are fundamental objects commonly used in security policies and should be prioritized.
 
-- [ ] **Service Objects** (`service.py`, `service_info.py`)
+- [x] **Service Objects** (`service.py`, `service_info.py`) ✅
   - SDK Models: `ServiceCreateModel`, `ServiceResponseModel`, `ServiceUpdateModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: Medium (similar to address objects)
+  - Status: Completed and tested
 
-- [ ] **Service Groups** (`service_group.py`, `service_group_info.py`)
+- [x] **Service Groups** (`service_group.py`, `service_group_info.py`) ✅
   - SDK Models: `ServiceGroupCreateModel`, `ServiceGroupResponseModel`, `ServiceGroupUpdateModel`
-  - Template: Use `address_group.py` as template
+  - Template: Used `address_group.py` as template
   - Complexity: Medium (similar to address groups)
+  - Status: Completed and tested
 
-- [ ] **Tags** (`tag.py`, `tag_info.py`)
+- [x] **Tags** (`tag.py`, `tag_info.py`) ✅
   - SDK Models: `TagCreateModel`, `TagResponseModel`, `TagUpdateModel`
-  - Template: Use `label.py` as template
+  - Template: Used `label.py` as template
   - Complexity: Low (similar to labels)
+  - Status: Completed and tested
 
 ## Priority 2: Application Management
 

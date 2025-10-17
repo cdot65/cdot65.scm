@@ -1,0 +1,161 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM tag operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our tag examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Tags"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create tags with different colors
+    - name: Create a production tag with red color
+      cdot65.scm.tag:
+        name: "production"
+        color: "Red"
+        comments: "Production environment tag"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: production_tag
+
+    - name: Display created production tag information
+      debug:
+        var: production_tag.tag
+
+    - name: Create a development tag with green color
+      cdot65.scm.tag:
+        name: "development"
+        color: "Green"
+        comments: "Development environment tag"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: development_tag
+
+    - name: Display created development tag information
+      debug:
+        var: development_tag.tag
+
+    - name: Create a staging tag with yellow color
+      cdot65.scm.tag:
+        name: "staging"
+        color: "Yellow"
+        comments: "Staging environment tag"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: staging_tag
+
+    - name: Display created staging tag information
+      debug:
+        var: staging_tag.tag
+
+    - name: Create a web tag with cyan color
+      cdot65.scm.tag:
+        name: "web"
+        color: "Cyan"
+        comments: "Web service tag"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: web_tag
+
+    - name: Display created web tag information
+      debug:
+        var: web_tag.tag
+
+    - name: Create a database tag with blue color
+      cdot65.scm.tag:
+        name: "database"
+        color: "Blue"
+        comments: "Database service tag"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: database_tag
+
+    - name: Display created database tag information
+      debug:
+        var: database_tag.tag
+
+    - name: Create a critical tag with magenta color
+      cdot65.scm.tag:
+        name: "critical"
+        color: "Magenta"
+        comments: "Critical services tag"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: critical_tag
+
+    - name: Display created critical tag information
+      debug:
+        var: critical_tag.tag
+
+    # Update an existing tag
+    - name: Update the production tag comments
+      cdot65.scm.tag:
+        name: "production"
+        color: "Red"
+        comments: "Updated production environment tag - high priority"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_tag
+
+    - name: Display updated tag information
+      debug:
+        var: updated_tag.tag
+
+    # Create a tag without color
+    - name: Create a tag without color
+      cdot65.scm.tag:
+        name: "uncolored"
+        comments: "Tag without color"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: uncolored_tag
+
+    - name: Display uncolored tag information
+      debug:
+        var: uncolored_tag.tag
+
+    # Cleanup
+    - name: Delete the tags
+      cdot65.scm.tag:
+        name: "{{ item }}"
+        folder: "Tags"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "production"
+        - "development"
+        - "staging"
+        - "web"
+        - "database"
+        - "critical"
+        - "uncolored"
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Tags"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

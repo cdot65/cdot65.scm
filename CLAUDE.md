@@ -159,11 +159,11 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Host Information Profiles (`hip_object`, `hip_object_info`) - Complete ✅
 - HIP Profiles (`hip_profile`, `hip_profile_info`) - Complete ✅
 - HTTP Server Profiles (`http_server_profile`, `http_server_profile_info`) - Complete ✅
+- Service Objects (`service`, `service_info`) - Complete ✅
+- Service Groups (`service_group`, `service_group_info`) - Complete ✅
+- Tags (`tag`, `tag_info`) - Complete ✅
 
 ### Planned Modules (See DEVELOPMENT_TODO.md)
-- Service Objects (`service`, `service_info`) - Priority 1
-- Service Groups (`service_group`, `service_group_info`) - Priority 1
-- Tags (`tag`, `tag_info`) - Priority 1
 - And additional resources (see DEVELOPMENT_TODO.md for complete list)
 
 ## Code Style and Quality Standards
