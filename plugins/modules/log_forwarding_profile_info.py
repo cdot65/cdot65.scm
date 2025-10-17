@@ -309,7 +309,8 @@ log_forwarding_profile:
 
 
 def _normalize_match_list(match_list):
-    """Normalize and sort the match_list:
+    """Normalize and sort the match_list.
+
     - Remove None values from each match item
     - Sort the list by the 'name' key
     """

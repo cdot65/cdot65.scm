@@ -1,0 +1,223 @@
+---
+# Example playbook for managing syslog server profiles in Strata Cloud Manager
+# This playbook demonstrates creating, updating, and deleting syslog server profiles with various configurations
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM syslog server profile operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      ansible.builtin.debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # ============================================================================
+    # Create Basic Syslog Server Profile with Single UDP Server
+    # ============================================================================
+    - name: Create basic syslog profile with single UDP server
+      cdot65.scm.syslog_server_profile:
+        name: "basic-syslog-profile"
+        folder: "Texas"
+        server:
+          - name: "syslog-server-01"
+            server: "192.168.1.100"
+            transport: "UDP"
+            port: 514
+            format: "BSD"
+            facility: "LOG_LOCAL0"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_profile
+
+    - name: Display created basic syslog profile
+      ansible.builtin.debug:
+        var: basic_profile.syslog_server_profile
+
+    # ============================================================================
+    # Create Advanced Profile with Multiple Servers and Custom Formatting
+    # ============================================================================
+    - name: Create advanced syslog profile with multiple servers and custom formatting
+      cdot65.scm.syslog_server_profile:
+        name: "advanced-syslog-profile"
+        folder: "Texas"
+        server:
+          - name: "primary-syslog-udp"
+            server: "10.1.1.50"
+            transport: "UDP"
+            port: 514
+            format: "BSD"
+            facility: "LOG_LOCAL1"
+          - name: "secondary-syslog-tcp"
+            server: "10.1.1.51"
+            transport: "TCP"
+            port: 6514
+            format: "IETF"
+            facility: "LOG_LOCAL2"
+          - name: "backup-syslog-tcp"
+            server: "syslog-backup.example.com"
+            transport: "TCP"
+            port: 514
+            format: "IETF"
+            facility: "LOG_LOCAL3"
+        format:
+          escaping:
+            escape_character: "\\"
+            escaped_characters: "[]"
+          traffic: "$time_generated $src $dst $sport $dport $proto"
+          threat: "$time_generated $threatid $severity $category"
+          system: "$time_generated $eventid $module $severity"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: advanced_profile
+
+    - name: Display created advanced syslog profile
+      ansible.builtin.debug:
+        var: advanced_profile.syslog_server_profile
+
+    # ============================================================================
+    # Create Profile with All Log Type Formats
+    # ============================================================================
+    - name: Create comprehensive syslog profile with all log type formats
+      cdot65.scm.syslog_server_profile:
+        name: "comprehensive-syslog-profile"
+        folder: "Texas"
+        server:
+          - name: "comprehensive-syslog"
+            server: "10.2.2.100"
+            transport: "TCP"
+            port: 6514
+            format: "IETF"
+            facility: "LOG_USER"
+        format:
+          escaping:
+            escape_character: "\\"
+            escaped_characters: "\\n\\t\\r"
+          traffic: "$time_generated $src $dst $app $action $bytes"
+          threat: "$time_generated $threatid $severity $category $action"
+          wildfire: "$time_generated $filedigest $verdict $malware_type"
+          url: "$time_generated $url $category $action $user"
+          data: "$time_generated $data_type $action $user $app"
+          gtp: "$time_generated $gtp_event $imsi $apn"
+          sctp: "$time_generated $sctp_event $assoc_id $stream_id"
+          tunnel: "$time_generated $tunnel_type $src $dst $action"
+          auth: "$time_generated $user $authmethod $result"
+          userid: "$time_generated $user $ip $domain"
+          iptag: "$time_generated $tag $ip $source"
+          decryption: "$time_generated $sessionid $policy $action"
+          config: "$time_generated $admin $cmd $result"
+          system: "$time_generated $eventid $module $severity $description"
+          globalprotect: "$time_generated $user $sourceip $gateway $status"
+          hip_match: "$time_generated $matchname $user $os $host"
+          correlation: "$time_generated $category $severity $evidence"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: comprehensive_profile
+
+    - name: Display created comprehensive syslog profile
+      ansible.builtin.debug:
+        var: comprehensive_profile.syslog_server_profile
+
+    # ============================================================================
+    # Update Operations
+    # ============================================================================
+    - name: Update basic syslog profile (change transport to TCP)
+      cdot65.scm.syslog_server_profile:
+        name: "basic-syslog-profile"
+        folder: "Texas"
+        server:
+          - name: "syslog-server-01"
+            server: "192.168.1.100"
+            transport: "TCP"
+            port: 514
+            format: "IETF"
+            facility: "LOG_LOCAL0"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display updated syslog profile
+      ansible.builtin.debug:
+        var: updated_profile.syslog_server_profile
+
+    # ============================================================================
+    # Query Operations
+    # ============================================================================
+    - name: Get all syslog server profiles in Texas folder
+      cdot65.scm.syslog_server_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display count of all syslog server profiles
+      ansible.builtin.debug:
+        msg: "Found {{ all_profiles.syslog_server_profiles | length }} syslog server profiles in the Texas folder"
+
+    - name: Get specific syslog server profile by name
+      cdot65.scm.syslog_server_profile_info:
+        name: "advanced-syslog-profile"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_profile
+
+    - name: Display specific syslog server profile details
+      ansible.builtin.debug:
+        var: specific_profile.syslog_server_profiles[0]
+
+    # ============================================================================
+    # Cleanup / Delete Operations
+    # ============================================================================
+    - name: Delete basic syslog server profile
+      cdot65.scm.syslog_server_profile:
+        name: "basic-syslog-profile"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_basic
+
+    - name: Display basic profile deletion result
+      ansible.builtin.debug:
+        msg: "Basic syslog profile deleted: {{ deleted_basic.changed }}"
+
+    - name: Delete advanced syslog server profile
+      cdot65.scm.syslog_server_profile:
+        name: "advanced-syslog-profile"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_advanced
+
+    - name: Display advanced profile deletion result
+      ansible.builtin.debug:
+        msg: "Advanced syslog profile deleted: {{ deleted_advanced.changed }}"
+
+    - name: Delete comprehensive syslog server profile
+      cdot65.scm.syslog_server_profile:
+        name: "comprehensive-syslog-profile"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_comprehensive
+
+    - name: Display comprehensive profile deletion result
+      ansible.builtin.debug:
+        msg: "Comprehensive syslog profile deleted: {{ deleted_comprehensive.changed }}"
+
+    # ============================================================================
+    # Verify Cleanup
+    # ============================================================================
+    - name: Verify all profiles have been deleted
+      cdot65.scm.syslog_server_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: final_profiles
+
+    - name: Display final profile count
+      ansible.builtin.debug:
+        msg: "Remaining syslog server profiles in Texas folder: {{ final_profiles.syslog_server_profiles | length }}"
