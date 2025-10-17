@@ -67,7 +67,6 @@ options:
             - The access token for SCM authentication.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -239,10 +238,7 @@ def main():
             try:
                 # First get all devices
                 response = client.device.list()
-                if hasattr(response, "data"):
-                    devices = response.data
-                else:
-                    devices = response
+                devices = response.data if hasattr(response, "data") else response
 
                 # Filter devices where display_name matches the provided name
                 matching_devices = [d for d in devices if getattr(d, "display_name", "") == params.get("name")]
@@ -276,10 +272,7 @@ def main():
                 filter_params["device_only"] = params.get("device_only")
 
             # List devices with filters
-            if filter_params:
-                response = client.device.list(**filter_params)
-            else:
-                response = client.device.list()
+            response = client.device.list(**filter_params) if filter_params else client.device.list()
 
             # Check if response has expected structure (with data field)
             if hasattr(response, "data"):

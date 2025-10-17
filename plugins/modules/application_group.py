@@ -98,7 +98,6 @@ options:
             - Bearer access token for authenticating API calls, provided by the auth role.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -216,7 +215,9 @@ application_group:
             description: List of application objects (for static groups) or filter expressions (for dynamic groups)
             type: list
             returned: always
-            sample: ["http", "https"] or ["'app.category.business-systems'"]
+            sample:
+                - ["http", "https"]
+                - ["app.category.business-systems"]
         tag:
             description: Tags associated with the application group
             type: list

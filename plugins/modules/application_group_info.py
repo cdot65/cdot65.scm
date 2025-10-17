@@ -94,7 +94,6 @@ options:
             - The access token for SCM authentication.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -103,7 +102,7 @@ options:
 notes:
     - Check mode is supported but does not change behavior since this is a read-only module.
     - Application groups must be associated with exactly one container (folder, snippet, or device).
-    - Application groups are of two types: static (containing a list of application objects) or dynamic (defined by a filter expression).
+    - 'Application groups are of two types: static (containing a list of application objects) or dynamic (defined by a filter expression).'
 """
 
 EXAMPLES = r"""
@@ -200,7 +199,9 @@ application_groups:
             description: List of application objects (for static groups) or filter expressions (for dynamic groups)
             type: list
             returned: always
-            sample: ["http", "https"] or ["'app.category.business-systems'"]
+            sample:
+                - ["http", "https"]
+                - ["app.category.business-systems"]
         tag:
             description: Tags associated with the application group
             type: list

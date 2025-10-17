@@ -6,6 +6,7 @@
 """Strata Cloud Manager API client module utilities."""
 
 import logging
+from typing import Optional
 
 # Import Python libs
 
@@ -13,10 +14,7 @@ HAS_SCM_SDK = False
 SCM_SDK_IMPORT_ERROR = None
 try:
     from scm.client import ScmClient
-    from scm.exceptions import APIError
-    from scm.exceptions import AuthenticationError
-    from scm.exceptions import BadRequestError
-    from scm.exceptions import NotFoundError
+    from scm.exceptions import APIError, AuthenticationError, BadRequestError, NotFoundError
 
     HAS_SCM_SDK = True
 except ImportError as e:
@@ -93,7 +91,7 @@ def get_oauth2_token(
     client_id: str,
     client_secret: str,
     tsg_id: str,
-    scopes: list | None = None,
+    scopes: Optional[list] = None,
     log_level: str = "ERROR",
 ) -> dict:
     """Obtain an OAuth2 token from Strata Cloud Manager using the SDK.

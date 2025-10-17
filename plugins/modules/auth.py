@@ -21,12 +21,10 @@ options:
         description: OAuth client ID for authentication. If not specified, the value of the SCM_CLIENT_ID environment variable will be used.
         type: str
         required: true
-        no_log: true
     client_secret:
         description: OAuth client secret for authentication. If not specified, the value of the SCM_CLIENT_SECRET environment variable will be used.
         type: str
         required: true
-        no_log: true
     tsg_id:
         description: Tenant Service Group ID for scope construction. If not specified, the value of the SCM_TSG_ID environment variable will be used.
         type: str

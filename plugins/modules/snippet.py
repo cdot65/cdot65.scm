@@ -63,7 +63,6 @@ options:
             - Bearer access token for authenticating API calls, provided by the auth role.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -250,7 +249,6 @@ def main():
 
                 # Create a new snippet
                 if not module.check_mode:
-
                     # Map 'snippet_type' to 'type' for SDK/model
                     if "snippet_type" in create_payload:
                         create_payload["type"] = create_payload.pop("snippet_type")

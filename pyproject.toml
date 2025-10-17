@@ -55,8 +55,8 @@ ignore = ["E402", "E501", "D100", "D101", "D102", "D103", "D107", "D203", "D213"
 
 # Ignore some rules in tests files and Ansible code
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S603", "S607", "T201", "ANN", "C408"]
-"plugins/modules/*.py" = ["C408"]  # Ansible module convention uses dict() calls for module specs
+"tests/**/*.py" = ["S101", "S105", "S106", "S603", "S607", "T201", "ANN", "C408"]  # S105/S106 for test credentials
+"plugins/modules/*.py" = ["C408", "BLE001", "SIM102"]  # Ansible module conventions and intentional broad exception handling
 "plugins/module_utils/*.py" = ["C408"]  # Ansible module utils also use dict() calls for argument specs
 
 [tool.ruff.lint.pydocstyle]

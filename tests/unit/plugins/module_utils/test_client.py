@@ -4,17 +4,16 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-from unittest.mock import MagicMock
-from unittest.mock import patch
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 # Import the module being tested
-from ansible_collections.cdot65.scm.plugins.module_utils.client import get_oauth2_token
-from ansible_collections.cdot65.scm.plugins.module_utils.client import get_scm_client
-from ansible_collections.cdot65.scm.plugins.module_utils.client import get_scm_client_argument_spec
-from ansible_collections.cdot65.scm.plugins.module_utils.client import handle_scm_error
-from ansible_collections.cdot65.scm.plugins.module_utils.client import is_resource_exists
+from ansible_collections.cdot65.scm.plugins.module_utils.client import (
+    get_oauth2_token,
+    get_scm_client,
+    get_scm_client_argument_spec,
+    handle_scm_error,
+    is_resource_exists,
+)
 
 
 # Create mock exceptions for testing
@@ -35,7 +34,7 @@ class MockNotFoundError(Exception):
 
 
 def test_scm_client_argument_spec():
-    """Test that the argument spec contains expected keys"""
+    """Test that the argument spec contains expected keys."""
     specs = get_scm_client_argument_spec()
     assert "client_id" in specs
     assert "client_secret" in specs
@@ -48,7 +47,7 @@ def test_scm_client_argument_spec():
 
 @patch("ansible_collections.cdot65.scm.plugins.module_utils.client.ScmClient")
 def test_get_scm_client_with_params(mock_scm_client):
-    """Test get_scm_client with parameters from the module"""
+    """Test get_scm_client with parameters from the module."""
     module = MagicMock()
     module.params = {
         "client_id": "test_client_id",
@@ -71,7 +70,7 @@ def test_get_scm_client_with_params(mock_scm_client):
 @patch("ansible_collections.cdot65.scm.plugins.module_utils.client.ScmClient")
 @patch("ansible_collections.cdot65.scm.plugins.module_utils.client.APIError", MockAPIError)
 def test_get_scm_client_handles_exceptions(mock_scm_client):
-    """Test get_scm_client handles SDK exceptions"""
+    """Test get_scm_client handles SDK exceptions."""
     module = MagicMock()
     module.params = {
         "client_id": "test_client_id",
@@ -83,7 +82,7 @@ def test_get_scm_client_handles_exceptions(mock_scm_client):
     # Mock the ScmClient to raise an APIError
     mock_scm_client.side_effect = MockAPIError("SDK Error")
 
-    client = get_scm_client(module)
+    get_scm_client(module)
 
     # Should call fail_json when exception occurs
     module.fail_json.assert_called_once()
@@ -91,7 +90,7 @@ def test_get_scm_client_handles_exceptions(mock_scm_client):
 
 
 def test_handle_scm_error():
-    """Test that handle_scm_error translates errors correctly"""
+    """Test that handle_scm_error translates errors correctly."""
     module = MagicMock()
 
     # Test with generic exception
@@ -101,7 +100,7 @@ def test_handle_scm_error():
 
 @patch("ansible_collections.cdot65.scm.plugins.module_utils.client.NotFoundError", MockNotFoundError)
 def test_is_resource_exists_by_id():
-    """Test is_resource_exists for resources found by ID"""
+    """Test is_resource_exists for resources found by ID."""
     # Setup mock client
     client = MagicMock()
     folder_service = MagicMock()
@@ -119,7 +118,7 @@ def test_is_resource_exists_by_id():
 
 @patch("ansible_collections.cdot65.scm.plugins.module_utils.client.NotFoundError", MockNotFoundError)
 def test_is_resource_exists_by_name():
-    """Test is_resource_exists for resources found by name"""
+    """Test is_resource_exists for resources found by name."""
     # Setup mock client
     client = MagicMock()
     folder_service = MagicMock()
@@ -143,7 +142,7 @@ def test_is_resource_exists_by_name():
 
 @patch("ansible_collections.cdot65.scm.plugins.module_utils.client.NotFoundError", MockNotFoundError)
 def test_is_resource_exists_not_found():
-    """Test is_resource_exists when resource is not found"""
+    """Test is_resource_exists when resource is not found."""
     # Setup mock client
     client = MagicMock()
     folder_service = MagicMock()
@@ -166,7 +165,7 @@ def test_is_resource_exists_not_found():
 @patch("scm.auth.OAuth2Client")
 @patch("scm.models.auth.AuthRequestModel")
 def test_get_oauth2_token(mock_auth_request, mock_oauth_client):
-    """Test get_oauth2_token function"""
+    """Test get_oauth2_token function."""
     # Setup mocks
     mock_token_data = {
         "access_token": "test_token_123",
