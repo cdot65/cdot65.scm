@@ -26,8 +26,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 ## Features
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
-- **Network Objects**: Manage address objects, address groups, application objects, and application groups.
-- **Comprehensive Module Set**: 18 production-ready modules with 17+ additional modules planned (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
+- **Comprehensive Module Set**: 36 production-ready modules (18 resource modules + 18 info modules) with additional modules planned (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -63,9 +63,9 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 18 production-ready modules (9 resource modules + 9 info modules)
+**Current Status**: 36 production-ready modules (18 resource modules + 18 info modules)
 
-**Roadmap**: 17+ additional resource types planned ([DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md))
+**Roadmap**: Additional resource types planned ([DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md))
 
 ### Module Status Legend
 
@@ -106,26 +106,38 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | ✅ |
 | [application_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group.py) | Manage application groups | ✅ |
 | [application_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group_info.py) | Retrieve application group information | ✅ |
+| [application_filter](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter.py) | Manage application filters | ✅ |
+| [application_filter_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter_info.py) | Retrieve application filter information | ✅ |
+| [service](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service.py) | Manage service objects | ✅ |
+| [service_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_info.py) | Retrieve service object information | ✅ |
+| [service_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group.py) | Manage service groups | ✅ |
+| [service_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group_info.py) | Retrieve service group information | ✅ |
+| [tag](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag.py) | Manage tags | ✅ |
+| [tag_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag_info.py) | Retrieve tag information | ✅ |
 
-### Service Objects Modules (Planned)
+### User & Device Management Modules
 
 | Module | Description | Status |
 |--------|-------------|--------|
-| [service](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service.py) | Manage service objects | 📝 |
-| [service_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_info.py) | Retrieve service object information | 📝 |
-| [service_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group.py) | Manage service groups | 📝 |
-| [service_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group_info.py) | Retrieve service group information | 📝 |
+| [dynamic_user_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group.py) | Manage dynamic user groups | ✅ |
+| [dynamic_user_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dynamic_user_group_info.py) | Retrieve dynamic user group information | ✅ |
+| [hip_object](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object.py) | Manage Host Information Profile objects | ✅ |
+| [hip_object_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_object_info.py) | Retrieve HIP object information | ✅ |
+| [hip_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile.py) | Manage HIP profiles | ✅ |
+| [hip_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/hip_profile_info.py) | Retrieve HIP profile information | ✅ |
+
+### External Resources & Monitoring Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [external_dynamic_list](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list.py) | Manage external dynamic lists | ✅ |
+| [external_dynamic_list_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/external_dynamic_list_info.py) | Retrieve external dynamic list information | ✅ |
+| [http_server_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile.py) | Manage HTTP server profiles | ✅ |
+| [http_server_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/http_server_profile_info.py) | Retrieve HTTP server profile information | ✅ |
 
 ### Additional Modules (Planned)
 
 The following modules are planned for future releases. See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed roadmap and priorities.
-
-#### Priority 1: Core Network Objects
-
-| Module | Description | Status |
-|--------|-------------|--------|
-| [tag](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag.py) | Manage tags | 📝 |
-| [tag_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag_info.py) | Retrieve tag information | 📝 |
 
 #### Priority 2+: Advanced Features
 
@@ -252,26 +264,34 @@ scm_tsg_id: "your-tsg-id"
 
 ## Example Playbooks
 
-The collection includes several example playbooks in the `examples/` directory:
+The collection includes comprehensive example playbooks in the `examples/` directory:
 
+**Core Management:**
 - `auth.yml` - Authentication example
-- `folder.yml` - Create and manage folders
-- `folder_info.yml` - Retrieve folder information
-- `label.yml` - Create and manage labels
-- `label_info.yml` - Retrieve label information
-- `snippet.yml` - Create and manage snippets
-- `snippet_info.yml` - Retrieve snippet information
-- `variable.yml` - Create and manage variables
-- `variable_info.yml` - Retrieve variable information
-- `device_info.yml` - Retrieve device information
-- `address.yml` - Create and manage address objects
-- `address_info.yml` - Retrieve address information
-- `address_group.yml` - Create and manage address groups
-- `address_group_info.yml` - Retrieve address group information
-- `application.yml` - Create and manage application objects
-- `application_info.yml` - Retrieve application information
-- `application_group.yml` - Create and manage application groups
-- `application_group_info.yml` - Retrieve application group information
+- `folder.yml` / `folder_info.yml` - Folder management
+- `label.yml` / `label_info.yml` - Label management
+- `snippet.yml` / `snippet_info.yml` - Snippet management
+- `variable.yml` / `variable_info.yml` - Variable management
+- `device_info.yml` - Device information retrieval
+
+**Network Objects:**
+- `address.yml` / `address_info.yml` - Address object management
+- `address_group.yml` / `address_group_info.yml` - Address group management
+- `application.yml` / `application_info.yml` - Application object management
+- `application_group.yml` / `application_group_info.yml` - Application group management
+- `application_filter.yml` / `application_filter_info.yml` - Application filter management
+- `service.yml` / `service_info.yml` - Service object management
+- `service_group.yml` / `service_group_info.yml` - Service group management
+- `tag.yml` / `tag_info.yml` - Tag management
+
+**User & Device Management:**
+- `dynamic_user_group.yml` / `dynamic_user_group_info.yml` - Dynamic user group management
+- `hip_object.yml` / `hip_object_info.yml` - HIP object management
+- `hip_profile.yml` / `hip_profile_info.yml` - HIP profile management
+
+**External Resources & Monitoring:**
+- `external_dynamic_list.yml` / `external_dynamic_list_info.yml` - External dynamic list management
+- `http_server_profile.yml` / `http_server_profile_info.yml` - HTTP server profile management
 
 ## Development
 
