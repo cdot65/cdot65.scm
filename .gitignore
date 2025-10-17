@@ -402,3 +402,6 @@ vault.yml
 ai_docs
 .ansible
 ansible_collections/
+
+# Module development workflow documentation
+MODULE_DEVELOPMENT_WORKFLOW.md

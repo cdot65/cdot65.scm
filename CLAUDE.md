@@ -129,16 +129,24 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 
 ## Resource Modules Status
 
+### Completed Modules
 - Folder management (`folder`, `folder_info`) - Complete ✅
 - Label management (`label`, `label_info`) - Complete ✅
 - Snippet management (`snippet`, `snippet_info`) - Complete ✅
 - Device Info (`device_info`) - Complete ✅
 - Variable management (`variable`, `variable_info`) - Complete ✅
-- Configuration Scopes (`config_scope`, `config_scope_info`) - Planned
-- Address Objects (`address_object`, `address_object_info`) - Planned
-- Address Groups (`address_group`, `address_group_info`) - Planned
-- Service Objects (`service_object`, `service_object_info`) - Planned
-- Service Groups (`service_group`, `service_group_info`) - Planned
+- Address Objects (`address`, `address_info`) - Complete ✅
+- Address Groups (`address_group`, `address_group_info`) - Complete ✅
+- Application Objects (`application`, `application_info`) - Complete ✅
+- Application Groups (`application_group`, `application_group_info`) - Complete ✅
+
+### Planned Modules (See DEVELOPMENT_TODO.md)
+- Service Objects (`service`, `service_info`) - Priority 1
+- Service Groups (`service_group`, `service_group_info`) - Priority 1
+- Tags (`tag`, `tag_info`) - Priority 1
+- Application Filters (`application_filter`, `application_filter_info`) - Priority 2
+- Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) - Priority 3
+- And 12+ additional resources (see DEVELOPMENT_TODO.md for complete list)
 
 ## Code Style and Quality Standards
 

@@ -26,11 +26,13 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 ## Features
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
-- **Comprehensive Module Set**: Collection includes modules for organizational elements, configuration management, and future support for security objects.
+- **Network Objects**: Manage address objects, address groups, application objects, and application groups.
+- **Comprehensive Module Set**: 18 production-ready modules with 17+ additional modules planned (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
 - **Role-Based Automation**: Ready-to-use roles for common operational tasks.
+- **SDK Integration**: Built on the official `pan-scm-sdk` library for reliable API interactions.
 
 ## Requirements
 
@@ -59,6 +61,10 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
    ```
 
 ## Available Modules
+
+**Current Status**: 18 production-ready modules (9 resource modules + 9 info modules)
+
+**Roadmap**: 17+ additional resource types planned ([DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md))
 
 ### Module Status Legend
 
@@ -111,22 +117,29 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ### Additional Modules (Planned)
 
+The following modules are planned for future releases. See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed roadmap and priorities.
+
+#### Priority 1: Core Network Objects
+
 | Module | Description | Status |
 |--------|-------------|--------|
 | [tag](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag.py) | Manage tags | 📝 |
 | [tag_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag_info.py) | Retrieve tag information | 📝 |
-| [application_filter](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter.py) | Manage application filters | 📝 |
-| [application_filter_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter_info.py) | Retrieve application filter information | 📝 |
-| [agent_version_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/agent_version_info.py) | Retrieve agent version information | 📝 |
 
-### Configuration and Deployment Modules (Planned)
+#### Priority 2+: Advanced Features
 
-| Module | Description | Status |
-|--------|-------------|--------|
-| [config_scope](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/config_scope.py) | Manage configuration scopes | 📝 |
-| [config_scope_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/config_scope_info.py) | Retrieve configuration scope information | 📝 |
-| [deployment](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/deployment.py) | Trigger configuration push/deployment | 📝 |
-| [job_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/job_info.py) | Check job status | 📝 |
+| Module Category | Status | Details |
+|-----------------|--------|---------|
+| Application Filters | 📝 | See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) |
+| User & Device Management | 📝 | Dynamic User Groups, HIP Objects, HIP Profiles |
+| External Resources | 📝 | External Dynamic Lists, Regions |
+| Scheduling | 📝 | Schedule objects |
+| Logging & Monitoring | 📝 | HTTP Server Profiles, Syslog, Log Forwarding |
+| Device Management | 📝 | Quarantined Devices |
+
+**Total Planned Modules**: 17 additional modules (34 including info modules)
+
+For complete details on planned features, priorities, and estimated effort, see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md).
 
 ## Example Usage
 
@@ -263,6 +276,8 @@ The collection includes several example playbooks in the `examples/` directory:
 
 This collection is built using [poetry](https://python-poetry.org/) for dependency management.
 
+### Quick Start
+
 ```bash
 # Setup development environment
 make dev-setup
@@ -288,6 +303,29 @@ make lint-fix
 # Run all tests
 make test
 ```
+
+### Development Resources
+
+- **[CLAUDE.md](CLAUDE.md)** - Complete development guide and collection overview
+- **[MODULE_DEVELOPMENT_WORKFLOW.md](MODULE_DEVELOPMENT_WORKFLOW.md)** - Quick reference for building new modules
+- **[DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)** - Prioritized roadmap for future modules
+
+### Creating New Modules
+
+To create a new module, follow the workflow documented in [MODULE_DEVELOPMENT_WORKFLOW.md](MODULE_DEVELOPMENT_WORKFLOW.md). The process involves:
+
+1. Choose an appropriate template module based on complexity
+2. Copy the template to a new module file
+3. Update documentation, parameters, and SDK client calls
+4. Test thoroughly with example playbooks
+5. Run linting and quality checks
+
+All modules must:
+- Use the `pan-scm-sdk` library for API operations
+- Support idempotent operations
+- Include check mode support
+- Follow consistent parameter naming conventions
+- Include comprehensive documentation
 
 ## Module Design Patterns
 
