@@ -1,0 +1,333 @@
+# Cursor Rules for cdot65.scm Ansible Collection
+
+## Project Overview
+
+This is an Ansible Collection (`cdot65.scm`) focused on using the pan-scm-sdk to interact with Strata Cloud Manager's REST API. It enables infrastructure-as-code practices for managing SCM resources like folders, snippets, labels, and security objects through Ansible playbooks.
+
+## Development Environment
+
+This collection uses Poetry for dependency management and build tooling. All commands should be run through Poetry to ensure consistent environments.
+
+```bash
+# Initial setup
+poetry install
+
+# Run a specific command
+poetry run <command>
+
+# Setup development environment with all dependencies
+make dev-setup
+```
+
+## Directory & Package Structure
+
+- **Ansible modules**: `plugins/modules/` - CRUD and info modules for SCM resources
+- **Module utilities**: `plugins/module_utils/` - Shared functionality and client code
+- **Tests**: `tests/` - Unit, integration, and sanity tests
+- **Documentation**: `docs/` - Collection documentation
+- **Usage examples**: `examples/` - Example playbooks for each resource type
+- **Dependency management**: `pyproject.toml` (Poetry configuration)
+- **Collection metadata**: `galaxy.yml` (for Ansible Galaxy publishing)
+
+## Coding Standards
+
+### Python Code Style
+
+- **Linting/Formatting**: Use `ruff` (configured in `pyproject.toml`) for linting and formatting
+- **PEP 8**: Strictly enforced
+  - `snake_case` for functions, methods, variables
+  - `PascalCase` for classes
+  - `UPPER_CASE` for constants
+- **Line Length**: 128 characters (configured in pyproject.toml)
+- **Imports**: Use ruff's isort; prefer absolute imports within the collection
+- **Type Hints**: Python 3.10+ for all function/method parameters and return values
+- **Typing**: Use `Optional`, `List`, `Dict`, `Any`, `Union`, `Literal`, `Type` from `typing`
+- **Docstrings**: Google-style docstrings for all public classes, methods, and functions
+
+### Ansible Module Standards
+
+- **Module Design**: Each resource has a standard module for CRUD operations (e.g., `folder.py`) supporting `state: present` (Create/Update) and `state: absent` (Delete)
+- **Info Modules**: Each resource has a corresponding information module for retrieval (e.g., `folder_info.py`)
+- **Idempotency**: All modules must be idempotent and support check mode
+- **Parameters**: Map clearly to SCM resource attributes in `snake_case`
+- **Return Values**: Standard Ansible results with `changed`, `failed`, `msg` status
+- **Error Handling**: Proper error handling for API errors with informative error messages
+
+### Code Quality Tools
+
+- **black**: Code formatting with 128 character line length
+- **isort**: Import sorting configured to work with black
+- **ruff**: Comprehensive Python linter with multiple rule sets enabled
+- **ansible-lint**: Checks Ansible-specific best practices and rules
+- **mypy**: Static type checking for Python
+- **pre-commit**: Git hooks to automatically run checks before commits
+
+## HTTP & Authentication
+
+- Use `requests` for HTTP, `requests_oauthlib` for OAuth2
+- OAuth2 Client Credentials in `auth.py`
+- Robust token refresh in `OAuth2Client` and `Scm` client
+- Centralize API calls in `Scm` client (`_get`, `_post`, etc.)
+- Support custom `token_url` and `base_url` on client init
+- **Security**: Never commit secrets to source control; always use Ansible Vault for secret storage
+
+## Error Handling
+
+- Custom exception hierarchy rooted in `APIError` (`scm/exceptions.py`)
+- Raise specific exceptions (e.g., `ObjectNotPresentError`, `NameNotUniqueError`)
+- Use `ErrorHandler` to map HTTP status/API errors to exceptions
+- Exceptions must include `message`, `error_code`, `http_status_code`, `details`
+- Use `try...except` in examples and high-level SDK methods
+
+## Testing
+
+- Use `pytest` for all tests
+- >80% code coverage (`coverage.py`, Codecov)
+- Unit tests for:
+  - Pydantic model validation
+  - Auth logic (mock external calls)
+  - Client methods (mock `requests`)
+  - `BaseObject` & resource service methods
+  - `ErrorHandler` logic
+- Integration tests for key API interactions (mocking, VCR/cassettes, or test tenant)
+- Use `pytest` fixtures for setup
+
+## Common Commands
+
+### Build and Install
+
+```bash
+# Build the collection
+make build
+# OR
+poetry run ansible-galaxy collection build --force
+
+# Install the collection locally
+make install
+# OR
+poetry run ansible-galaxy collection install cdot65-scm-*.tar.gz -f
+
+# Build and install in one step
+make all
+
+# Clean up (remove built tarballs and installed collections)
+make clean
+```
+
+### Testing
+
+```bash
+# Run all tests
+make test
+
+# Run only sanity tests
+make sanity
+# OR
+poetry run tox -e sanity
+
+# Run only unit tests
+make unit-test
+# OR
+poetry run tox -e py312-ansible2.14
+
+# Run integration tests
+make integration-test
+# OR
+poetry run tox -e integration
+
+# Run a specific unit test
+cd ~/.ansible/collections/ansible_collections/cdot65/scm/ && \
+poetry run ansible-test units --docker default tests/unit/plugins/module_utils/test_scm.py
+```
+
+### Linting and Formatting
+
+```bash
+# Run all formatting and linting checks
+make lint-all
+
+# Run minimal linting checks (CI-compatible)
+make lint-check
+
+# Automatically fix issues with ruff, black, and isort
+make lint-fix
+
+# Run individual tools
+make format        # Run black and isort formatters
+make lint          # Run ansible-lint
+make flake8        # Run flake8
+make ruff-check    # Run ruff linter
+
+# Run pre-commit hooks on all files
+pre-commit run --all-files
+```
+
+### Running Example Playbooks
+
+```bash
+# Run an example playbook
+poetry run ansible-playbook examples/folder.yml
+
+# Run all example playbooks
+make run-examples
+
+# Run a specific example
+make run-example EXAMPLE=application_info
+```
+
+## Resource Modules Status
+
+- Folder management (`folder`, `folder_info`) - Complete ✅
+- Label management (`label`, `label_info`) - Complete ✅
+- Snippet management (`snippet`, `snippet_info`) - Complete ✅
+- Device Info (`device_info`) - Complete ✅
+- Variable management (`variable`, `variable_info`) - Complete ✅
+- Configuration Scopes (`config_scope`, `config_scope_info`) - Planned
+- Address Objects (`address_object`, `address_object_info`) - Planned
+- Address Groups (`address_group`, `address_group_info`) - Planned
+- Service Objects (`service_object`, `service_object_info`) - Planned
+- Service Groups (`service_group`, `service_group_info`) - Planned
+
+## Authentication
+
+The collection supports OAuth2 authentication with SCM. Credentials must be stored in an Ansible Vault-encrypted file (never in plain text or committed to source control).
+
+Example `vault.yml` structure:
+
+```yaml
+scm_client_id: "your-client-id"
+scm_client_secret: "your-client-secret"
+scm_tsg_id: "your-tsg-id"
+```
+
+Authentication is managed via the `cdot65.scm.auth` role which sets up the token for use by other modules.
+
+## Module Architecture
+
+This collection follows a consistent pattern for all resource types:
+
+- Each resource has a standard module for CRUD operations (e.g., `folder.py`) supporting `state: present` (Create/Update) and `state: absent` (Delete)
+- Each resource has a corresponding information module for retrieval (e.g., `folder_info.py`)
+- Shared functionality is in `plugins/module_utils/`
+- The `client.py` module handles authentication and API interactions
+- All modules must be idempotent and support check mode
+
+When developing new modules, use the existing `folder` and `folder_info` modules as a template for structure and best practices.
+
+## Module Design Patterns
+
+- Parameters should map clearly to SCM resource attributes in `snake_case`
+- Be consistent with identifier parameters (e.g., `name`, `folder`, `snippet`, `id`)
+- Return standard Ansible results with `changed`, `failed`, `msg` status
+- `_info` modules should return found resources under a consistent key (e.g., `resources`)
+- Proper error handling for API errors with informative error messages
+
+## SDK Integration
+
+- Use the latest version of the SCM Python SDK (pan-scm-sdk) for all API interactions
+- Abstract SDK usage within `module_utils` to simplify module code
+- Use Pydantic's `.model_dump_json()` method for serialization
+- Properly handle API errors and translate them to informative Ansible failure messages
+
+## Dependency Management
+
+- Use Poetry for all dependencies, locking, and packaging
+- All project metadata, dependencies, and tool configs in `pyproject.toml`
+- Pin direct dependencies; use `poetry.lock` for transitive
+- Minimize external dependencies
+
+## Release & Workflow
+
+- Build and publish with Poetry (to PyPI)
+- Use Git with Feature Branch workflow
+- Require PRs for merging to `main`, with reviews
+- Enforce pre-commit hooks (ruff format/check) before commit
+- Use GitHub Actions for CI/CD: test, lint, coverage, docs, PyPI
+- Semantic Versioning (SemVer)
+- Maintain `CHANGELOG.md` or `release-notes.md`
+
+## Security Best Practices
+
+- Never commit secrets to source control
+- Always use Ansible Vault for secret storage
+- Use `no_log: true` for all sensitive parameters
+- Store API credentials in vault.yml (not .env files)
+- Authentication must be handled securely following the pattern in `client.py`
+
+## Pre-commit Hooks
+
+Pre-commit hooks automatically run linting and formatting checks before each commit, ensuring code quality standards are maintained.
+
+### Setup
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Set up the hooks
+pre-commit install
+```
+
+### Usage
+
+The hooks will run automatically when you commit code. You can also run them manually:
+
+```bash
+# Run on all files
+pre-commit run --all-files
+
+# Run on staged files
+pre-commit run
+```
+
+## Configuration Files
+
+The linting and formatting tools are configured in the following files:
+
+- **pyproject.toml**: Contains configuration for black, isort, ruff, and mypy
+- **.flake8**: Contains configuration for flake8
+- **.pre-commit-config.yaml**: Configures pre-commit hooks
+
+### Key Configuration Decisions
+
+1. **Line Length**: Set to 128 characters across all tools
+2. **Ignored Rules**: Certain rules are disabled where they conflict with Ansible conventions
+3. **Per-File Ignores**: Test files have more relaxed rules for print statements and assert-usage
+4. **Ansible Modules**: Special handling for Ansible's module argument conventions
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Conflicting Rules**: If different tools give conflicting advice, prefer ruff and ansible-lint for their specific domains
+2. **False Positives**: In rare cases where a linter flags something incorrectly, add a specific inline ignore:
+
+   ```python
+   # For ruff
+   some_code()  # noqa: F401
+   
+   # For flake8
+   some_code()  # noqa: E501
+   ```
+
+3. **Test Files**: Test files have different requirements - if you're getting errors in test files, check the per-file-ignores configuration
+4. **CI/CD Compatibility**: For CI pipelines, use `make lint-check` instead of `make lint-all` as it's less strict and won't fail on known violations in module_utils and test files
+
+## Integration with CI/CD
+
+Add the linting checks to your CI/CD pipeline by running:
+
+```bash
+# In your CI config
+python -m pip install poetry
+make lint-all
+```
+
+## Documentation
+
+- Google-style docstrings for all public classes, methods, and functions
+- Generate API docs with MkDocs and `mkdocstrings`
+- Maintain user docs: README, Installation, Getting Started, Troubleshooting, Release Notes
+- Dedicated pages for each service/model
+- Runnable examples in `examples/` and snippets in docs
+- Deploy docs via GitHub Pages

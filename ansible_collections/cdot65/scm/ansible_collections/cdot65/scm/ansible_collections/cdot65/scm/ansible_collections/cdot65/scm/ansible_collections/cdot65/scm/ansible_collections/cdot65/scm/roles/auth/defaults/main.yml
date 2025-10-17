@@ -1,0 +1,10 @@
+---
+# Authentication parameters with more flexible environment variable handling
+scm_client_id: "{{ lookup('env', 'CLIENT_ID') | default(lookup('env', 'SCM_CLIENT_ID'), true) | default('') }}"
+scm_client_secret: "{{ lookup('env', 'CLIENT_SECRET') | default(lookup('env', 'SCM_CLIENT_SECRET'), true) | default('') }}"
+scm_tsg_id: "{{ lookup('env', 'TSG_ID') | default(lookup('env', 'SCM_TSG_ID'), true) | default('') }}"
+scm_log_level: "{{ lookup('env', 'LOG_LEVEL') | default(lookup('env', 'SCM_LOG_LEVEL'), true) | default('ERROR') }}"
+
+# Option to store token in a file for long-running sessions
+scm_save_token: false
+scm_token_path: "~/.scm_token.json"

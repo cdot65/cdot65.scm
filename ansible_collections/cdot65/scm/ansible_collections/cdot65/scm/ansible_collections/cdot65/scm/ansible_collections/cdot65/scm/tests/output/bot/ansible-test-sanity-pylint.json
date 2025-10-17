@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.19/dev_guide/testing/sanity/pylint.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test pylint` [[explain](https://docs.ansible.com/ansible-core/2.19/dev_guide/testing/sanity/pylint.html)] failed with 1 error:", 
+            "output": "plugins/module_utils/client.py:93:12: unsupported-binary-operation: unsupported operand type(s) for |"
+        }
+    ], 
+    "verified": false
+}

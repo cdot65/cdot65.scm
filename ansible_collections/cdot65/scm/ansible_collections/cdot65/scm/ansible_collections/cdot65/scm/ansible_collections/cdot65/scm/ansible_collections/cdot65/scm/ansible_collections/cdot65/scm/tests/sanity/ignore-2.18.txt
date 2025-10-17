@@ -1,0 +1,44 @@
+# Ignore import errors for external SDK dependency
+# The pan-scm-sdk is a runtime requirement (Python 3.10+) installed by users, not available during sanity import tests
+
+# Import errors - SDK not available during testing
+plugins/modules/address.py validate-modules:import-error
+plugins/modules/address_group.py validate-modules:import-error
+plugins/modules/address_group_info.py validate-modules:import-error
+plugins/modules/address_info.py validate-modules:import-error
+plugins/modules/application.py validate-modules:import-error
+plugins/modules/application_group.py validate-modules:import-error
+plugins/modules/application_group_info.py validate-modules:import-error
+plugins/modules/application_info.py validate-modules:import-error
+plugins/modules/device_info.py validate-modules:import-error
+plugins/modules/folder.py validate-modules:import-error
+plugins/modules/folder_info.py validate-modules:import-error
+plugins/modules/label.py validate-modules:import-error
+plugins/modules/label_info.py validate-modules:import-error
+plugins/modules/snippet.py validate-modules:import-error
+plugins/modules/snippet_info.py validate-modules:import-error
+plugins/modules/variable.py validate-modules:import-error
+plugins/modules/variable_info.py validate-modules:import-error
+
+# Import before documentation - required pattern for external SDK collections
+plugins/modules/address.py validate-modules:import-before-documentation
+plugins/modules/address_group.py validate-modules:import-before-documentation
+plugins/modules/address_group_info.py validate-modules:import-before-documentation
+plugins/modules/address_info.py validate-modules:import-before-documentation
+plugins/modules/application.py validate-modules:import-before-documentation
+plugins/modules/application_group.py validate-modules:import-before-documentation
+plugins/modules/application_group_info.py validate-modules:import-before-documentation
+plugins/modules/application_info.py validate-modules:import-before-documentation
+plugins/modules/auth.py validate-modules:import-before-documentation
+plugins/modules/device_info.py validate-modules:import-before-documentation
+plugins/modules/folder.py validate-modules:import-before-documentation
+plugins/modules/folder_info.py validate-modules:import-before-documentation
+plugins/modules/label.py validate-modules:import-before-documentation
+plugins/modules/label_info.py validate-modules:import-before-documentation
+plugins/modules/snippet.py validate-modules:import-before-documentation
+plugins/modules/snippet_info.py validate-modules:import-before-documentation
+plugins/modules/variable.py validate-modules:import-before-documentation
+plugins/modules/variable_info.py validate-modules:import-before-documentation
+
+# Doc choices mismatch for auth module (choices dynamically set)
+plugins/modules/auth.py validate-modules:doc-choices-do-not-match-spec

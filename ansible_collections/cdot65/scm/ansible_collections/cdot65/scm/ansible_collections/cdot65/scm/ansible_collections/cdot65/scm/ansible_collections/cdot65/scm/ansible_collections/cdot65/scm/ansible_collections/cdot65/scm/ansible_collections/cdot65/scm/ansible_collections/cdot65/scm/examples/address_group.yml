@@ -1,0 +1,159 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM address group operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our address group examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Network-Objects"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create address objects for use in static address group
+    - name: Create address objects for static group
+      cdot65.scm.address:
+        name: "{{ item }}"
+        ip_netmask: "192.168.1.{{ idx + 10 }}/32"
+        folder: "Network-Objects"
+        tag:
+          - "Ansible" 
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - "web-server-1"
+        - "web-server-2"
+        - "web-server-3"
+      loop_control:
+        index_var: idx
+
+    # Create a static address group with explicit group_type
+    - name: Create a static address group
+      cdot65.scm.address_group:
+        name: "web-servers"
+        description: "Web server group"
+        group_type: "static"
+        static_addresses:
+          - "web-server-1"
+          - "web-server-2"
+        folder: "Network-Objects"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: static_group
+
+    - name: Display created static group information
+      debug:
+        var: static_group
+
+    # Create a snippet for dynamic address group example
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Web-ACL"
+        description: "Snippet for web traffic ACLs"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a dynamic address group with explicit group_type
+    - name: Create a dynamic address group
+      cdot65.scm.address_group:
+        name: "dynamic-servers"
+        description: "Dynamic web server group"
+        group_type: "dynamic"
+        dynamic_filter: "'aws.ec2.tag.Server.web'"
+        snippet: "Web-ACL"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: dynamic_group
+
+    - name: Display created dynamic group information
+      debug:
+        var: dynamic_group
+
+    # Update an existing static address group
+    - name: Update a static address group
+      cdot65.scm.address_group:
+        name: "web-servers"
+        description: "Updated web server group"
+        group_type: "static"
+        static_addresses:
+          - "web-server-1"
+          - "web-server-2"
+          - "web-server-3"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_static_group
+
+    - name: Display updated static group information
+      debug:
+        var: updated_static_group
+
+    # Update an existing dynamic address group
+    - name: Update a dynamic address group
+      cdot65.scm.address_group:
+        name: "dynamic-servers"
+        description: "Updated dynamic server group"
+        group_type: "dynamic"
+        dynamic_filter: "'aws.ec2.tag.Server.web' or 'aws.ec2.tag.Server.api'"
+        snippet: "Web-ACL"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_dynamic_group
+
+    - name: Display updated dynamic group information
+      debug:
+        var: updated_dynamic_group
+
+    # Cleanup
+    - name: Delete the static address group
+      cdot65.scm.address_group:
+        name: "web-servers"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the dynamic address group
+      cdot65.scm.address_group:
+        name: "dynamic-servers"
+        snippet: "Web-ACL"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the address objects
+      cdot65.scm.address:
+        name: "{{ item }}"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "web-server-1"
+        - "web-server-2"
+        - "web-server-3"
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Web-ACL"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Network-Objects"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

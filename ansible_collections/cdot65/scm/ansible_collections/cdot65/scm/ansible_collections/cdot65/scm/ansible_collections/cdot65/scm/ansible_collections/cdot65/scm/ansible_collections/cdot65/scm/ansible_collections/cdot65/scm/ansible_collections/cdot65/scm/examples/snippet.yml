@@ -1,0 +1,46 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    - name: Create DMZ and IoT snippets
+      cdot65.scm.snippet:
+        name: "DMZ IoT Snippet"
+        description: "Common security policy configurations for IoT and DMZ environments"
+        labels:
+          - dmz
+          - iot
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create AnsibleTest snippet
+      cdot65.scm.snippet:
+        name: "AnsibleTest"
+        description: "Just a test snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Update AnsibleTest snippet
+      cdot65.scm.snippet:
+        name: "AnsibleTest"
+        description: "Just a test snippet getting updated"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Delete AnsibleTest snippet
+      cdot65.scm.snippet:
+        name: "AnsibleTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

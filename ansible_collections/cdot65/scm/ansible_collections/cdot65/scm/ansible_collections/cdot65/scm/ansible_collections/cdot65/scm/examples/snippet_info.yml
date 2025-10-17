@@ -1,0 +1,58 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM folder information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    - name: Create a snippet
+      cdot65.scm.snippet:
+        name: test
+        description: test snippet
+        scm_access_token: "{{ scm_access_token }}"
+      register: test_snippet
+
+    - name: Show environment snippet info
+      debug:
+        var: test_snippet
+
+    - name: Get all snippets
+      cdot65.scm.snippet_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_snippets
+
+    - name: Show all snippet info
+      debug:
+        var: all_snippets
+
+#    - name: Get a specific snippet by ID
+#      cdot65.scm.snippet_info:
+#        id: "123e4567-e89b-12d3-a456-426655440000"
+#        scm_access_token: "{{ scm_access_token }}"
+#      register: snippet_details
+
+    - name: Get a specific snippet by name
+      cdot65.scm.snippet_info:
+        name: "test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_snippet
+
+    - name: Show named snippet info
+      debug:
+        var: named_snippet
+
+    - name: Remove a snippet
+      cdot65.scm.snippet:
+        name: "test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

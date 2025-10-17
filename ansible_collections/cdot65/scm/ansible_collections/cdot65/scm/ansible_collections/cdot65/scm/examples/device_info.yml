@@ -1,0 +1,67 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM device operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    - name: Get all device information
+      cdot65.scm.device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_devices
+
+    - name: Display all devices
+      debug:
+        var: all_devices.devices
+      when: all_devices.devices is defined
+
+    - name: Get a specific device by display name
+      cdot65.scm.device_info:
+        name: "cypress1"  # This should match the display_name field in SCM
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_device
+      ignore_errors: yes
+
+    - name: Display message if lookup by display name succeeds
+      debug:
+        msg: "Successfully found device by display name: {{ named_device.devices[0].display_name if named_device.devices is defined and named_device.devices | length > 0 else 'Not found' }}"
+      when: named_device.devices is defined and named_device.devices | length > 0
+
+    - name: Display device info by name
+      debug:
+        var: named_device.devices
+      when: named_device.devices is defined
+
+    - name: Get a specific device by serial number
+      cdot65.scm.device_info:
+        serial_number: "007954000527505"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_device
+      ignore_errors: yes
+
+    - name: Display device info by serial
+      debug:
+        var: specific_device.devices
+      when: specific_device.devices is defined
+
+    - name: Get all VM-series firewalls
+      cdot65.scm.device_info:
+        model: "PA-VM"
+        scm_access_token: "{{ scm_access_token }}"
+      register: vm_firewalls
+      ignore_errors: yes
+
+    - name: Display VM-series firewalls
+      debug:
+        var: vm_firewalls.devices
+      when: vm_firewalls.devices is defined

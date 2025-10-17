@@ -1,0 +1,253 @@
+---
+# Example playbook for retrieving address group information in Strata Cloud Manager
+# This playbook demonstrates various ways to query address groups
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM address group information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test resources for demonstration
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "AG-Test-Folder"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "AG-Test-Snippet"
+        description: "Snippet for testing address groups"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create address objects for static groups
+    - name: Create address objects for static group
+      cdot65.scm.address:
+        name: "{{ item }}"
+        ip_netmask: "192.168.1.{{ idx }}/32"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - "test-server-1"
+        - "test-server-2"
+        - "test-server-3"
+      loop_control:
+        index_var: idx
+
+    # Create a static address group in folder
+    - name: Create a static address group in folder
+      cdot65.scm.address_group:
+        name: "static-servers-folder"
+        description: "Static server group in folder"
+        group_type: "static"
+        static_addresses:
+          - "test-server-1"
+          - "test-server-2"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create address objects in snippet
+    - name: Create address objects for snippet static group
+      cdot65.scm.address:
+        name: "{{ item }}"
+        ip_netmask: "10.0.1.{{ idx }}/32"
+        snippet: "AG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - "internal-server-1"
+        - "internal-server-2"
+      loop_control:
+        index_var: idx
+
+# Create a static address group in a snippet
+    - name: Create a static address group in snippet
+      cdot65.scm.address_group:
+        name: "static-servers-snippet"  # Fixed the name to match cleanup
+        description: "Static server group in snippet"
+        group_type: "static"
+        static_addresses:
+          - "internal-server-1"
+          - "internal-server-2"
+        snippet: "AG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a dynamic address group in folder
+    - name: Create a dynamic address group in folder
+      cdot65.scm.address_group:
+        name: "dynamic-servers-folder"
+        description: "Dynamic server group in folder"
+        group_type: "dynamic"
+        dynamic_filter: "'aws.ec2.tag.Server.web'"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+
+    # All address group queries require a container parameter (folder, snippet, or device)
+      
+    # Filter by container - folder
+    - name: Get address groups in a specific folder
+      cdot65.scm.address_group_info:
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_groups
+
+    - name: Display folder groups
+      ansible.builtin.debug:
+        var: folder_groups.address_groups
+
+    # Filter by container - snippet
+    - name: Get address groups in a specific snippet
+      cdot65.scm.address_group_info:
+        snippet: "AG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_groups
+      
+    - name: Display snippet groups
+      ansible.builtin.debug:
+        var: snippet_groups.address_groups
+
+    # Filter by type - static groups
+    - name: Get static address groups
+      cdot65.scm.address_group_info:
+        type: "static"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: static_groups
+      
+    - name: Display static groups
+      ansible.builtin.debug:
+        var: static_groups.address_groups
+
+    # Filter by type - dynamic groups
+    - name: Get dynamic address groups
+      cdot65.scm.address_group_info:
+        type: "dynamic"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: dynamic_groups
+      
+    - name: Display dynamic groups
+      ansible.builtin.debug:
+        var: dynamic_groups.address_groups
+
+    # Filter by tags
+#    - name: Get address groups with specific tag
+#      cdot65.scm.address_group_info:
+#        tag: ["Ansible"]
+#        folder: "AG-Test-Folder"
+#        scm_access_token: "{{ scm_access_token }}"
+#      register: tagged_groups
+#
+#    - name: Display tagged groups
+#      ansible.builtin.debug:
+#        var: tagged_groups.address_groups
+
+    # Get a specific group by name (requires container parameter)
+    - name: Get specific address group by name in folder
+      cdot65.scm.address_group_info:
+        name: "static-servers-folder"
+        folder: "AG-Test-Folder"  # Container parameter is required when using name
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_folder_group
+      
+    - name: Display specific folder group details
+      ansible.builtin.debug:
+        var: specific_folder_group.address_groups
+      when: specific_folder_group.address_groups | length > 0
+
+    # Get a specific group by name in snippet
+    - name: Get specific address group by name in snippet
+      cdot65.scm.address_group_info:
+        name: "static-servers-snippet"
+        snippet: "AG-Test-Snippet"  # Container parameter is required when using name
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_snippet_group
+      
+    - name: Display specific snippet group details
+      ansible.builtin.debug:
+        var: specific_snippet_group.address_groups
+      when: specific_snippet_group.address_groups | length > 0
+
+    # Filter by static group member
+    - name: Get groups containing a specific address
+      cdot65.scm.address_group_info:
+        member: "test-server-1"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: member_groups
+      
+    - name: Display groups with specific member
+      ansible.builtin.debug:
+        var: member_groups.address_groups
+
+    # Filter by dynamic filter pattern
+    - name: Get groups with specific filter pattern
+      cdot65.scm.address_group_info:
+        filter_pattern: "aws.ec2.tag.Server"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+      register: filter_groups
+      
+    - name: Display filter pattern groups
+      ansible.builtin.debug:
+        var: filter_groups.address_groups
+
+    # Cleanup
+    - name: Delete address groups from folder
+      cdot65.scm.address_group:
+        name: "{{ item }}"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "static-servers-folder"
+        - "dynamic-servers-folder"
+
+    - name: Delete address group from snippet
+      cdot65.scm.address_group:
+        name: "static-servers-snippet"
+        snippet: "AG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete address objects
+      cdot65.scm.address:
+        name: "{{ item }}"
+        folder: "AG-Test-Folder"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "test-server-1"
+        - "test-server-2"
+        - "test-server-3"
+
+    - name: Delete test folder
+      cdot65.scm.folder:
+        name: "AG-Test-Folder"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete test snippet
+      cdot65.scm.snippet:
+        name: "AG-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
