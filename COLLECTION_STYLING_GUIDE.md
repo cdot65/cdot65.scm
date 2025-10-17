@@ -72,6 +72,7 @@ Each module in `plugins/modules/` must follow this structure:
 - **DOCUMENTATION String:**
   - YAML docstring block describing the module, options, usage, and notes
   - Example (from `address.py`):
+
     ```yaml
     ---
     module: address
@@ -98,10 +99,12 @@ Each module in `plugins/modules/` must follow this structure:
       - Address objects must be associated with exactly one container (folder, snippet, or device).
       - Exactly one address type (ip_netmask, ip_range, ip_wildcard, or fqdn) must be provided.
     ```
+
 - **EXAMPLES String:**
   - Provide at least three usage scenarios (create, update, delete)
   - Use real parameters and show variable interpolation
   - Example:
+
     ```yaml
     - name: Create a folder-based IP address object
       cdot65.scm.address:
@@ -117,11 +120,13 @@ Each module in `plugins/modules/` must follow this structure:
         scm_access_token: "{{ scm_access_token }}"
         state: absent
     ```
+
 - **RETURN String:**
   - Document all returned fields, including nested dicts and sample values
 - **Argument Spec:**
   - Define all arguments, types, required/optional, mutually exclusive, etc.
   - Example:
+
     ```python
     argument_spec = dict(
         name=dict(type='str', required=False),
@@ -135,6 +140,7 @@ Each module in `plugins/modules/` must follow this structure:
     mutually_exclusive=[['folder', 'snippet', 'device']]
     required_one_of=[['ip_netmask', 'ip_range', 'ip_wildcard', 'fqdn']]
     ```
+
 - **Idempotent Logic:**
   - Ensure operations are repeatable and safe
   - Use SDK client for all API calls
@@ -142,15 +148,18 @@ Each module in `plugins/modules/` must follow this structure:
 - **Error Handling:**
   - Catch SDK exceptions and fail with informative messages
   - Example:
+
     ```python
     try:
         ...
     except (APIError, InvalidObjectError) as exc:
         module.fail_json(msg=str(exc), details=exc.details)
     ```
+
 - **Return Values:**
   - Return changed status and resource dict
   - Example:
+
     ```python
     result = dict(changed=changed, address=address_data)
     module.exit_json(**result)
@@ -166,11 +175,13 @@ Each module in `plugins/modules/` must follow this structure:
 - Always validate container arguments (folder, snippet, device) and enforce exclusivity
 - Use Pydantic models for payload validation and serialization
 - Example integration (from `address.py`):
+
   ```python
   client = ScmClient(api_url=api_url, token=scm_access_token)
   # Create or update address object
   address = client.address.create(AddressCreateModel(**params))
   ```
+
 - Catch and handle SDK exceptions, mapping them to Ansible module failures
 - Use `.model_dump(exclude_unset=True)` for API payloads
 - Place all SDK-related logic in `scm/` and keep modules focused on orchestration
@@ -204,6 +215,7 @@ Each module in `plugins/modules/` must follow this structure:
   - Show authentication, resource creation, update, and cleanup
   - Demonstrate use of variables, roles, and idempotency
   - Example (from `examples/address.yml`):
+
     ```yaml
     - name: Create a folder-based IP address object
       cdot65.scm.address:
@@ -229,6 +241,7 @@ Each module in `plugins/modules/` must follow this structure:
         scm_access_token: "{{ scm_access_token }}"
         state: absent
     ```
+
 - **User Documentation:**
   - Maintain README, Getting Started, and Troubleshooting guides in `docs/`
   - Add resource-specific documentation as needed

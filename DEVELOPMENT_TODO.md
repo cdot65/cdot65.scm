@@ -12,9 +12,18 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Address Group | ✅ | ✅ | ✅ |
 | Application | ✅ | ✅ | ✅ |
 | Application Group | ✅ | ✅ | ✅ |
+| Application Filter | ✅ | ✅ | ✅ |
+| Dynamic User Group | ✅ | ✅ | ✅ |
+| External Dynamic List | ✅ | ✅ | ✅ |
 | Folder | ✅ | ✅ | ✅ |
+| HIP Object | ✅ | ✅ | ✅ |
+| HIP Profile | ✅ | ✅ | ✅ |
+| HTTP Server Profile | ✅ | ✅ | ✅ |
 | Label | ✅ | ✅ | ✅ |
+| Service | ✅ | ✅ | ✅ |
+| Service Group | ✅ | ✅ | ✅ |
 | Snippet | ✅ | ✅ | ✅ |
+| Tag | ✅ | ✅ | ✅ |
 | Variable | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
@@ -22,55 +31,69 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 
 The following resources are supported by `pan-scm-sdk` but do not have Ansible modules yet:
 
-## Priority 1: Core Network Objects
+## Priority 1: Core Objects ✅ COMPLETED
 
 These are fundamental objects commonly used in security policies and should be prioritized.
 
-- [ ] **Service Objects** (`service.py`, `service_info.py`)
+- [x] **Service Objects** (`service.py`, `service_info.py`) ✅
   - SDK Models: `ServiceCreateModel`, `ServiceResponseModel`, `ServiceUpdateModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: Medium (similar to address objects)
+  - Status: Completed and tested
 
-- [ ] **Service Groups** (`service_group.py`, `service_group_info.py`)
+- [x] **Service Groups** (`service_group.py`, `service_group_info.py`) ✅
   - SDK Models: `ServiceGroupCreateModel`, `ServiceGroupResponseModel`, `ServiceGroupUpdateModel`
-  - Template: Use `address_group.py` as template
+  - Template: Used `address_group.py` as template
   - Complexity: Medium (similar to address groups)
+  - Status: Completed and tested
 
-- [ ] **Tags** (`tag.py`, `tag_info.py`)
+- [x] **Tags** (`tag.py`, `tag_info.py`) ✅
   - SDK Models: `TagCreateModel`, `TagResponseModel`, `TagUpdateModel`
-  - Template: Use `label.py` as template
+  - Template: Used `label.py` as template
   - Complexity: Low (similar to labels)
+  - Status: Completed and tested
 
-## Priority 2: Application Management
+## Priority 2: Application Management ✅ COMPLETED
 
-- [ ] **Application Filters** (`application_filter.py`, `application_filter_info.py`)
+- [x] **Application Filters** (`application_filter.py`, `application_filter_info.py`) ✅
   - SDK Models: `ApplicationFiltersCreateModel`, `ApplicationFiltersResponseModel`, `ApplicationFiltersUpdateModel`
-  - Template: Use `application.py` as template
+  - Template: Used `application.py` as template
   - Complexity: Medium
+  - Status: Completed
 
-## Priority 3: User and Device Management
+## Priority 3: User and Device Management ✅ COMPLETED
 
-- [ ] **Dynamic User Groups** (`dynamic_user_group.py`, `dynamic_user_group_info.py`)
+- [x] **Dynamic User Groups** (`dynamic_user_group.py`, `dynamic_user_group_info.py`) ✅
   - SDK Models: `DynamicUserGroupCreateModel`, `DynamicUserGroupResponseModel`, `DynamicUserGroupUpdateModel`
-  - Template: Use `address_group.py` as template
+  - Template: Used `address_group.py` as template
   - Complexity: Medium
+  - Status: Completed
 
-- [ ] **HIP Objects** (`hip_object.py`, `hip_object_info.py`)
+- [x] **HIP Objects** (`hip_object.py`, `hip_object_info.py`) ✅
   - SDK Models: `HIPObjectCreateModel`, `HIPObjectResponseModel`, `HIPObjectUpdateModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: Medium-High (complex nested structures)
+  - Status: Completed
 
-- [ ] **HIP Profiles** (`hip_profile.py`, `hip_profile_info.py`)
+- [x] **HIP Profiles** (`hip_profile.py`, `hip_profile_info.py`) ✅
   - SDK Models: `HIPProfileCreateModel`, `HIPProfileResponseModel`, `HIPProfileUpdateModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: High (complex nested structures)
+  - Status: Completed
 
-## Priority 4: External Resources
+## Priority 4: External Resources ✅ COMPLETED
 
-- [ ] **External Dynamic Lists** (`external_dynamic_list.py`, `external_dynamic_list_info.py`)
+- [x] **External Dynamic Lists** (`external_dynamic_list.py`, `external_dynamic_list_info.py`) ✅
   - SDK Models: `ExternalDynamicListsCreateModel`, `ExternalDynamicListsResponseModel`, `ExternalDynamicListsUpdateModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: Medium
+  - Status: Completed
+
+- [x] **HTTP Server Profiles** (`http_server_profile.py`, `http_server_profile_info.py`) ✅
+  - SDK Models: `HTTPServerProfileCreateModel`, `HTTPServerProfileResponseModel`, `HTTPServerProfileUpdateModel`
+  - Template: Used `address.py` as template
+  - Complexity: Medium
+  - Status: Completed
 
 - [ ] **Regions** (`region.py`, `region_info.py`)
   - SDK Models: `RegionCreateModel`, `RegionResponseModel`, `RegionUpdateModel`

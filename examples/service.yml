@@ -1,0 +1,138 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM service object operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our service object examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Services"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a TCP service object
+    - name: Create a TCP service object for HTTP
+      cdot65.scm.service:
+        name: "service-http"
+        description: "HTTP service"
+        protocol:
+          tcp:
+            port: "80"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: http_service
+
+    - name: Display created HTTP service object information
+      debug:
+        var: http_service.service
+
+    # Create a TCP service with timeout overrides
+    - name: Create a TCP service with timeout overrides for HTTPS
+      cdot65.scm.service:
+        name: "service-https"
+        description: "HTTPS service with custom timeouts"
+        protocol:
+          tcp:
+            port: "443"
+            override:
+              timeout: 30
+              halfclose_timeout: 15
+              timewait_timeout: 10
+        folder: "Services"
+        tag:
+          - "web"
+          - "secure"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: https_service
+
+    - name: Display created HTTPS service object information
+      debug:
+        var: https_service.service
+
+    # Create a UDP service object
+    - name: Create a UDP service object for DNS
+      cdot65.scm.service:
+        name: "service-dns"
+        description: "DNS service"
+        protocol:
+          udp:
+            port: "53"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: dns_service
+
+    - name: Display created DNS service object information
+      debug:
+        var: dns_service.service
+
+    # Create a service with multiple ports
+    - name: Create a service with multiple TCP ports
+      cdot65.scm.service:
+        name: "service-web-alt"
+        description: "Alternative web ports"
+        protocol:
+          tcp:
+            port: "8080,8443"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: alt_web_service
+
+    - name: Display created alternative web service object information
+      debug:
+        var: alt_web_service.service
+
+    # Update an existing service object
+    - name: Update the HTTP service object description
+      cdot65.scm.service:
+        name: "service-http"
+        description: "Updated HTTP service description"
+        protocol:
+          tcp:
+            port: "80"
+        folder: "Services"
+        tag:
+          - "web"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_service
+
+    - name: Display updated service object information
+      debug:
+        var: updated_service.service
+
+    # Cleanup
+    - name: Delete the service objects
+      cdot65.scm.service:
+        name: "{{ item }}"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "service-http"
+        - "service-https"
+        - "service-dns"
+        - "service-web-alt"
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Services"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
