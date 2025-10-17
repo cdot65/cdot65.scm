@@ -1,0 +1,244 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM service group information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test folder, service objects, and service groups for examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "ServiceGroup-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create service objects to use in groups
+    - name: Create HTTP service
+      cdot65.scm.service:
+        name: "test-http"
+        description: "Test HTTP service"
+        protocol:
+          tcp:
+            port: "80"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create HTTPS service
+      cdot65.scm.service:
+        name: "test-https"
+        description: "Test HTTPS service"
+        protocol:
+          tcp:
+            port: "443"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create SSH service
+      cdot65.scm.service:
+        name: "test-ssh"
+        description: "Test SSH service"
+        protocol:
+          tcp:
+            port: "22"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create DNS service
+      cdot65.scm.service:
+        name: "test-dns"
+        description: "Test DNS service"
+        protocol:
+          udp:
+            port: "53"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create service groups
+    - name: Create web services group
+      cdot65.scm.service_group:
+        name: "test-web-services"
+        description: "Test web services group"
+        members:
+          - "test-http"
+          - "test-https"
+        folder: "ServiceGroup-Test"
+        tag:
+          - "web"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: test_service_group
+
+    - name: Create admin services group
+      cdot65.scm.service_group:
+        name: "test-admin-services"
+        description: "Test admin services group"
+        members:
+          - "test-ssh"
+        folder: "ServiceGroup-Test"
+        tag:
+          - "admin"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing service groups in snippets
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "ServiceGroup-Test-Snippet"
+        description: "Snippet for service group testing"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create snippet-based service group
+      cdot65.scm.service_group:
+        name: "test-network-services"
+        description: "Test network services group"
+        members:
+          - "test-dns"
+        snippet: "ServiceGroup-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Query information examples - all queries require a container parameter
+
+    # Get service groups in a specific folder
+    - name: Get service groups in a specific folder
+      cdot65.scm.service_group_info:
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_service_groups
+
+    - name: Show service groups in folder
+      debug:
+        var: folder_service_groups.service_groups
+
+    # Get service groups in a specific snippet
+    - name: Get service groups in a specific snippet
+      cdot65.scm.service_group_info:
+        snippet: "ServiceGroup-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_service_groups
+
+    - name: Show service groups in snippet
+      debug:
+        var: snippet_service_groups.service_groups
+
+    # Get a specific service group by name (requires a container parameter)
+    - name: Get a specific service group by name in a folder
+      cdot65.scm.service_group_info:
+        name: "test-web-services"
+        folder: "ServiceGroup-Test"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_folder_service_group
+
+    - name: Show named service group in folder
+      debug:
+        var: named_folder_service_group.service_groups
+      when: named_folder_service_group.service_groups | length > 0
+
+    # Get a specific service group by name in a snippet
+    - name: Get a specific service group by name in a snippet
+      cdot65.scm.service_group_info:
+        name: "test-network-services"
+        snippet: "ServiceGroup-Test-Snippet"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_snippet_service_group
+
+    - name: Show named service group in snippet
+      debug:
+        var: named_snippet_service_group.service_groups
+      when: named_snippet_service_group.service_groups | length > 0
+
+    # Get service groups by member
+    - name: Get service groups containing test-http
+      cdot65.scm.service_group_info:
+        member: "test-http"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: member_service_groups
+
+    - name: Show service groups with specific member
+      debug:
+        var: member_service_groups.service_groups
+
+    # Get service groups by tag
+    - name: Get service groups with 'web' tag
+      cdot65.scm.service_group_info:
+        tag: ["web"]
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: tagged_service_groups
+
+    - name: Show tagged service groups
+      debug:
+        var: tagged_service_groups.service_groups
+
+    # Get service group by ID (no container parameter needed)
+    - name: Get service group by ID
+      cdot65.scm.service_group_info:
+        id: "{{ test_service_group.service_group.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: id_service_group
+      when: test_service_group.service_group is defined and test_service_group.service_group.id is defined
+
+    - name: Show service group by ID
+      debug:
+        var: id_service_group.service_groups
+      when: id_service_group is defined and id_service_group.service_groups | length > 0
+
+    # Cleanup
+    - name: Delete the test service groups in folder
+      cdot65.scm.service_group:
+        name: "{{ item }}"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "test-web-services"
+        - "test-admin-services"
+
+    - name: Delete the test service group in snippet
+      cdot65.scm.service_group:
+        name: "test-network-services"
+        snippet: "ServiceGroup-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test services
+      cdot65.scm.service:
+        name: "{{ item }}"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "test-http"
+        - "test-https"
+        - "test-ssh"
+        - "test-dns"
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "ServiceGroup-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "ServiceGroup-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
