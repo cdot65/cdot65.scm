@@ -1,0 +1,229 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM Log Forwarding Profile operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First, we create test containers to use for our examples
+    - name: Create a test folder for log forwarding profiles
+      cdot65.scm.folder:
+        name: "Log-Forwarding-Demo"
+        parent: "Texas"
+        description: "Folder for log forwarding profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: log_folder
+
+    - name: Create a test snippet for log forwarding profiles
+      cdot65.scm.snippet:
+        name: "Log-Forwarding-Snippet"
+        description: "Snippet for log forwarding profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: log_snippet
+
+    # Create example HTTP server profiles for log destinations
+    - name: Create HTTP server profile for traffic logs
+      cdot65.scm.http_server_profile:
+        name: "traffic-http-profile"
+        folder: "Log-Forwarding-Demo"
+        protocol: "HTTP"
+        server:
+          - name: "traffic-server"
+            address: "192.168.1.10"
+            protocol: "HTTP"
+            port: 8080
+            http_method: "POST"
+            uri_format: "/traffic"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: traffic_http_profile
+
+    - name: Create HTTP server profile for security logs
+      cdot65.scm.http_server_profile:
+        name: "security-http-profile"
+        folder: "Log-Forwarding-Demo"
+        protocol: "HTTPS"
+        server:
+          - name: "security-server"
+            address: "192.168.1.20"
+            protocol: "HTTPS"
+            port: 8443
+            http_method: "POST"
+            tls_version: "1.2"
+            uri_format: "/security"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: security_http_profile
+
+    # Now create different types of a log-forwarding profile
+    - name: Create a simple traffic log forwarding profile
+      cdot65.scm.log_forwarding_profile:
+        name: "traffic-log-profile"
+        description: "Profile for traffic logs"
+        match_list:
+          - name: "internal-traffic"
+            log_type: "traffic"
+            filter: "addr.src in 192.168.0.0/24"
+            send_http: ["traffic-http-profile"]
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: traffic_profile
+
+    - name: Display created traffic log profile
+      debug:
+        var: traffic_profile
+
+    - name: Create a security log forwarding profile with multiple match items
+      cdot65.scm.log_forwarding_profile:
+        name: "security-logs-profile"
+        description: "Profile for security-related logs"
+        match_list:
+          - name: "critical-threats"
+            log_type: "threat"
+            filter: "severity eq critical"
+            send_http: ["security-http-profile"]
+          - name: "malware-logs"
+            log_type: "wildfire"
+            filter: "verdict eq malware"
+            send_http: ["security-http-profile"]
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: security_profile
+
+    - name: Display created security log profile
+      debug:
+        var: security_profile
+
+    - name: Create a log forwarding profile with enhanced application logging
+      cdot65.scm.log_forwarding_profile:
+        name: "enhanced-app-logs"
+        description: "Profile with enhanced application logging"
+        enhanced_application_logging: true
+        match_list:
+          - name: "app-traffic"
+            log_type: "traffic"
+            filter: "severity eq critical"
+            send_http: ["traffic-http-profile"]
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: enhanced_profile
+
+    - name: Display created enhanced logging profile
+      debug:
+        var: enhanced_profile
+
+    - name: Create a log forwarding profile in a snippet
+      cdot65.scm.log_forwarding_profile:
+        name: "snippet-log-profile"
+        description: "Log forwarding profile in a snippet"
+        match_list:
+          - name: "url-category-logs"
+            log_type: "url"
+            filter: "category eq high-risk"
+            # send_http: ["traffic-http-profile"]
+        snippet: "Log-Forwarding-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: snippet_profile
+
+    - name: Display created snippet profile
+      debug:
+        var: snippet_profile
+
+    - name: Update existing traffic log forwarding profile
+      cdot65.scm.log_forwarding_profile:
+        name: "traffic-log-profile"
+        description: "Updated profile for traffic logs"
+        match_list:
+          - name: "updated-internal-traffic"
+            log_type: "traffic"
+            filter: "addr.src in 10.0.0.0/8"
+            send_http: ["traffic-http-profile"]
+            send_to_panorama: true
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display updated profile
+      debug:
+        var: updated_profile
+
+    # Demonstrate idempotence - this should not result in a change
+    - name: Attempt to update again with the same parameters (should be idempotent)
+      cdot65.scm.log_forwarding_profile:
+        name: "traffic-log-profile"
+        description: "Updated profile for traffic logs"
+        match_list:
+          - name: "updated-internal-traffic"
+            log_type: "traffic"
+            filter: "addr.src in 10.0.0.0/8"
+            send_http: ["traffic-http-profile"]
+            send_to_panorama: true
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: idempotent_update
+
+    - name: Display idempotence result
+      debug:
+        msg: "Changed status: {{ idempotent_update.changed }}"
+
+    # Cleanup - delete the log forwarding profiles
+    - name: Delete log forwarding profiles in folder
+      cdot65.scm.log_forwarding_profile:
+        name: "{{ item }}"
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - traffic-log-profile
+        - security-logs-profile
+        - enhanced-app-logs
+
+    - name: Delete log forwarding profile in snippet
+      cdot65.scm.log_forwarding_profile:
+        name: "snippet-log-profile"
+        snippet: "Log-Forwarding-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up HTTP server profiles
+    - name: Delete HTTP server profiles
+      cdot65.scm.http_server_profile:
+        name: "{{ item }}"
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - traffic-http-profile
+        - security-http-profile
+
+    # Clean up the containers
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Log-Forwarding-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Log-Forwarding-Demo"
+        parent: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

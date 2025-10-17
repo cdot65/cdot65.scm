@@ -399,9 +399,14 @@ tests/integration/inventory
 tmp/
 .vault_pass
 vault.yml
-ai_docs
+# ai_docs
 .ansible
 ansible_collections/
 
 # Module development workflow documentation
 MODULE_DEVELOPMENT_WORKFLOW.md
+
+# IDE and AI tools
+.claude/
+.vscode/
+.claude/settings.local.json

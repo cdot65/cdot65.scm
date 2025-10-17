@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import logging
 
+from ansible.module_utils.basic import missing_required_lib
+
 # Import Python libs
 
 HAS_SCM_SDK = False
@@ -25,8 +27,6 @@ except ImportError as e:
     BadRequestError = Exception
     NotFoundError = Exception
     SCM_SDK_IMPORT_ERROR = e
-
-from ansible.module_utils.basic import missing_required_lib
 
 
 def get_scm_client_argument_spec():

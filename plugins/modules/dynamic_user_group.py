@@ -8,90 +8,69 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 from scm.client import ScmClient
 from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
-from scm.models.objects import AddressCreateModel
+from scm.models.objects import DynamicUserGroupCreateModel
 
 DOCUMENTATION = r"""
 ---
-module: address
-short_description: Manage address objects in Strata Cloud Manager (SCM)
+module: dynamic_user_group
+short_description: Manage dynamic user group objects in Strata Cloud Manager (SCM)
 description:
-    - Create, update, or delete address objects in Strata Cloud Manager using pan-scm-sdk.
-    - Supports all address attributes and robust idempotency.
-    - Address objects must be associated with exactly one container (folder, snippet, or device).
+    - Create, update, or delete dynamic user group objects in Strata Cloud Manager using pan-scm-sdk.
+    - Supports all dynamic user group attributes and robust idempotency.
+    - Dynamic user group objects must be associated with exactly one container (folder, snippet, or device).
 version_added: "0.1.0"
 author:
     - "Calvin Remsburg (@cdot65)"
 options:
     name:
         description:
-            - Name of the address object.
+            - Name of the dynamic user group object.
             - Required for state=present and for absent if id is not provided.
             - Maximum length is 63 characters.
         type: str
         required: false
     description:
         description:
-            - Description of the address object.
+            - Description of the dynamic user group object.
         type: str
         required: false
     tag:
         description:
-            - Tags associated with the address object.
+            - Tags associated with the dynamic user group object.
         type: list
         elements: str
         required: false
-    ip_netmask:
+    filter:
         description:
-            - IP address with CIDR notation.
-            - Exactly one of ip_netmask, ip_range, ip_wildcard, or fqdn must be provided for state=present.
-            - Mutually exclusive with I(ip_range), I(ip_wildcard), and I(fqdn).
-        type: str
-        required: false
-    ip_range:
-        description:
-            - IP address range.
-            - Exactly one of ip_netmask, ip_range, ip_wildcard, or fqdn must be provided for state=present.
-            - Mutually exclusive with I(ip_netmask), I(ip_wildcard), and I(fqdn).
-        type: str
-        required: false
-    ip_wildcard:
-        description:
-            - IP wildcard mask.
-            - Exactly one of ip_netmask, ip_range, ip_wildcard, or fqdn must be provided for state=present.
-            - Mutually exclusive with I(ip_netmask), I(ip_range), and I(fqdn).
-        type: str
-        required: false
-    fqdn:
-        description:
-            - Fully qualified domain name.
-            - Exactly one of ip_netmask, ip_range, ip_wildcard, or fqdn must be provided for state=present.
-            - Mutually exclusive with I(ip_netmask), I(ip_range), and I(ip_wildcard).
+            - The tag-based filter expression for the dynamic user group.
+            - Required for state=present.
+            - Maximum length is 2047 characters.
         type: str
         required: false
     folder:
         description:
-            - The folder in which the address object is defined.
+            - The folder in which the dynamic user group object is defined.
             - Exactly one of folder, snippet, or device must be provided for state=present.
             - Mutually exclusive with I(snippet) and I(device).
         type: str
         required: false
     snippet:
         description:
-            - The snippet in which the address object is defined.
+            - The snippet in which the dynamic user group object is defined.
             - Exactly one of folder, snippet, or device must be provided for state=present.
             - Mutually exclusive with I(folder) and I(device).
         type: str
         required: false
     device:
         description:
-            - The device in which the address object is defined.
+            - The device in which the dynamic user group object is defined.
             - Exactly one of folder, snippet, or device must be provided for state=present.
             - Mutually exclusive with I(folder) and I(snippet).
         type: str
         required: false
     id:
         description:
-            - Unique identifier for the address object (UUID).
+            - Unique identifier for the dynamic user group object (UUID).
             - Used for lookup/deletion if provided.
         type: str
         required: false
@@ -100,6 +79,7 @@ options:
             - Bearer access token for authenticating API calls, provided by the auth role.
         type: str
         required: true
+        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -108,7 +88,7 @@ options:
         required: false
     state:
         description:
-            - Desired state of the address object.
+            - Desired state of the dynamic user group object.
         type: str
         choices: ['present', 'absent']
         default: present
@@ -116,122 +96,107 @@ notes:
     - Check mode is supported.
     - All operations are idempotent.
     - Uses pan-scm-sdk via unified client and bearer token from the auth role.
-    - Address objects must be associated with exactly one container (folder, snippet, or device).
-    - Exactly one address type (ip_netmask, ip_range, ip_wildcard, or fqdn) must be provided.
+    - Dynamic user group objects must be associated with exactly one container (folder, snippet, or device).
+    - Filter expression is required for creating or updating dynamic user groups.
 """
 
 EXAMPLES = r"""
-- name: Create a folder-based IP address object
-  cdot65.scm.address:
-    name: "web-server"
-    description: "Web server IP address"
-    ip_netmask: "192.168.1.100/32"
-    folder: "Network-Objects"
+- name: Create a folder-based dynamic user group
+  cdot65.scm.dynamic_user_group:
+    name: "high-risk-users"
+    description: "Users with high risk profile"
+    filter: "tag.criticality.high"
+    folder: "User-Groups"
     scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Create a snippet-based FQDN address object
-  cdot65.scm.address:
-    name: "example-site"
-    description: "Example website"
-    fqdn: "example.com"
-    snippet: "web-acl"
+- name: Create a snippet-based dynamic user group with tags
+  cdot65.scm.dynamic_user_group:
+    name: "marketing-users"
+    description: "Users from marketing department"
+    filter: "tag.department.marketing"
+    snippet: "user-acl"
     tag:
-      - "web"
+      - "marketing"
       - "external"
     scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Create a device-based IP range address object
-  cdot65.scm.address:
-    name: "dhcp-range"
-    description: "DHCP IP address range"
-    ip_range: "10.0.0.100-10.0.0.200"
+- name: Create a device-based dynamic user group with complex filter
+  cdot65.scm.dynamic_user_group:
+    name: "temporary-contractors"
+    description: "Temporary contractors with limited access"
+    filter: "tag.role.contractor and tag.status.active"
     device: "firewall-01"
     scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Update an address object's description
-  cdot65.scm.address:
-    name: "web-server"
-    description: "Updated web server description"
-    ip_netmask: "192.168.1.100/32"
-    folder: "Network-Objects"
+- name: Update a dynamic user group's filter expression
+  cdot65.scm.dynamic_user_group:
+    name: "high-risk-users"
+    description: "Users with high risk profile - updated"
+    filter: "tag.criticality.high or tag.status.compromised"
+    folder: "User-Groups"
     scm_access_token: "{{ scm_access_token }}"
     state: present
 
-- name: Delete an address object by name
-  cdot65.scm.address:
-    name: "web-server"
-    folder: "Network-Objects"
+- name: Delete a dynamic user group by name
+  cdot65.scm.dynamic_user_group:
+    name: "high-risk-users"
+    folder: "User-Groups"
     scm_access_token: "{{ scm_access_token }}"
     state: absent
 
-- name: Delete an address object by ID
-  cdot65.scm.address:
+- name: Delete a dynamic user group by ID
+  cdot65.scm.dynamic_user_group:
     id: "12345678-1234-1234-1234-123456789012"
     scm_access_token: "{{ scm_access_token }}"
     state: absent
 """
 
 RETURN = r"""
-address:
-    description: Information about the address object that was managed
+dynamic_user_group:
+    description: Information about the dynamic user group object that was managed
     returned: on success
     type: dict
     contains:
         id:
-            description: The address object ID
+            description: The dynamic user group object ID
             type: str
             returned: always
             sample: "12345678-1234-1234-1234-123456789012"
         name:
-            description: The address object name
+            description: The dynamic user group object name
             type: str
             returned: always
-            sample: "web-server"
+            sample: "high-risk-users"
         description:
-            description: The address object description
+            description: The dynamic user group object description
             type: str
             returned: when applicable
-            sample: "Web server IP address"
-        ip_netmask:
-            description: The IP address with CIDR notation
+            sample: "Users with high risk profile"
+        filter:
+            description: The tag-based filter expression
             type: str
-            returned: when applicable
-            sample: "192.168.1.100/32"
-        ip_range:
-            description: The IP address range
-            type: str
-            returned: when applicable
-            sample: "10.0.0.100-10.0.0.200"
-        ip_wildcard:
-            description: The IP wildcard mask
-            type: str
-            returned: when applicable
-            sample: "10.0.0.0/0.0.255.255"
-        fqdn:
-            description: The fully qualified domain name
-            type: str
-            returned: when applicable
-            sample: "example.com"
+            returned: always
+            sample: "tag.criticality.high"
         tag:
-            description: Tags associated with the address object
+            description: Tags associated with the dynamic user group object
             type: list
             returned: when applicable
-            sample: ["web", "external"]
+            sample: ["marketing", "external"]
         folder:
-            description: The folder containing the address object
+            description: The folder containing the dynamic user group object
             type: str
             returned: when applicable
-            sample: "Network-Objects"
+            sample: "User-Groups"
         snippet:
-            description: The snippet containing the address object
+            description: The snippet containing the dynamic user group object
             type: str
             returned: when applicable
-            sample: "web-acl"
+            sample: "user-acl"
         device:
-            description: The device containing the address object
+            description: The device containing the dynamic user group object
             type: str
             returned: when applicable
             sample: "firewall-01"
@@ -243,10 +208,7 @@ def main():
         name=dict(type="str", required=False),
         description=dict(type="str", required=False),
         tag=dict(type="list", elements="str", required=False),
-        ip_netmask=dict(type="str", required=False),
-        ip_range=dict(type="str", required=False),
-        ip_wildcard=dict(type="str", required=False),
-        fqdn=dict(type="str", required=False),
+        filter=dict(type="str", required=False),
         folder=dict(type="str", required=False),
         snippet=dict(type="str", required=False),
         device=dict(type="str", required=False),
@@ -260,12 +222,11 @@ def main():
     module = AnsibleModule(
         argument_spec=module_args,
         required_if=[
-            ["state", "present", ["name"]],
+            ["state", "present", ["name", "filter"]],  # Both name and filter required for present
             ["state", "absent", ["name", "id"], True],  # At least one of name or id required
         ],
         mutually_exclusive=[
             ["folder", "snippet", "device"],
-            ["ip_netmask", "ip_range", "ip_wildcard", "fqdn"],
         ],
         supports_check_mode=True,
     )
@@ -273,25 +234,25 @@ def main():
     # Get parameters
     params = module.params
 
-    # Custom validation for address type parameters
-    if params.get("state") == "present" and not any(
-        params.get(addr_type) for addr_type in ["ip_netmask", "ip_range", "ip_wildcard", "fqdn"]
-    ):
-        module.fail_json(msg="When state=present, one of the following is required: ip_netmask, ip_range, ip_wildcard, fqdn")
+    # Custom validation for container parameters
+    if params.get("state") == "present":
+        # For creation/update, one of the container types is required
+        if not any(params.get(container_type) for container_type in ["folder", "snippet", "device"]):
+            module.fail_json(msg="When state=present, one of the following is required: folder, snippet, device")
 
     # Initialize results
-    result = {"changed": False, "address": None}
+    result = {"changed": False, "dynamic_user_group": None}
 
     # Perform operations
     try:
         # Initialize SCM client
         client = ScmClient(access_token=params.get("scm_access_token"))
 
-        # Initialize address_exists boolean
-        address_exists = False
-        address_obj = None
+        # Initialize dynamic_user_group_exists boolean
+        dynamic_user_group_exists = False
+        dynamic_user_group_obj = None
 
-        # Fetch address by name
+        # Fetch a dynamic user group by name
         if params.get("name"):
             try:
                 # Handle different container types (folder, snippet, device)
@@ -308,63 +269,59 @@ def main():
                     container_type = "device"
                     container_name = params.get("device")
 
-                # For any container type, fetch the address object
+                # For any container type, fetch the dynamic user group object
                 if container_type and container_name:
-                    address_obj = client.address.fetch(name=params.get("name"), **{container_type: container_name})
-                    if address_obj:
-                        address_exists = True
+                    dynamic_user_group_obj = client.dynamic_user_group.fetch(
+                        name=params.get("name"), **{container_type: container_name}
+                    )
+                    if dynamic_user_group_obj:
+                        dynamic_user_group_exists = True
             except ObjectNotPresentError:
-                address_exists = False
-                address_obj = None
+                dynamic_user_group_exists = False
+                dynamic_user_group_obj = None
 
-        # Create or update or delete an address
+        # Create or update or delete a dynamic_user_group
         if params.get("state") == "present":
-            if address_exists:
+            if dynamic_user_group_exists:
                 # Determine which fields differ and need to be updated
                 update_fields = {
                     k: params[k]
                     for k in [
                         "description",
                         "tag",
-                        "ip_netmask",
-                        "ip_range",
-                        "ip_wildcard",
-                        "fqdn",
+                        "filter",
                         "folder",
                         "snippet",
                         "device",
                     ]
-                    if params[k] is not None and getattr(address_obj, k, None) != params[k]
+                    if params[k] is not None and getattr(dynamic_user_group_obj, k, None) != params[k]
                 }
 
-                # Update the address if needed
+                # Update the dynamic user group if needed
                 if update_fields:
                     if not module.check_mode:
-                        update_model = address_obj.model_copy(update=update_fields)
-                        updated = client.address.update(update_model)
-                        result["address"] = json.loads(updated.model_dump_json(exclude_unset=True))
+                        update_model = dynamic_user_group_obj.model_copy(update=update_fields)
+                        updated = client.dynamic_user_group.update(update_model)
+                        result["dynamic_user_group"] = json.loads(updated.model_dump_json(exclude_unset=True))
                     else:
-                        result["address"] = json.loads(address_obj.model_dump_json(exclude_unset=True))
+                        result["dynamic_user_group"] = json.loads(dynamic_user_group_obj.model_dump_json(exclude_unset=True))
                     result["changed"] = True
                     module.exit_json(**result)
                 else:
                     # No update needed
-                    result["address"] = json.loads(address_obj.model_dump_json(exclude_unset=True))
+                    result["dynamic_user_group"] = json.loads(dynamic_user_group_obj.model_dump_json(exclude_unset=True))
                     result["changed"] = False
                     module.exit_json(**result)
 
             else:
-                # Create payload for new address object
+                # Create a payload for a new dynamic user group object
                 create_payload = {
                     k: params[k]
                     for k in [
                         "name",
                         "description",
                         "tag",
-                        "ip_netmask",
-                        "ip_range",
-                        "ip_wildcard",
-                        "fqdn",
+                        "filter",
                         "folder",
                         "snippet",
                         "device",
@@ -372,17 +329,17 @@ def main():
                     if params.get(k) is not None
                 }
 
-                # Create an address object
+                # Create a dynamic user group object
                 if not module.check_mode:
-                    # Create an address object
-                    created = client.address.create(create_payload)
+                    # Create a dynamic user group object
+                    created = client.dynamic_user_group.create(create_payload)
 
-                    # Return the created address object
-                    result["address"] = json.loads(created.model_dump_json(exclude_unset=True))
+                    # Return the created dynamic user group object
+                    result["dynamic_user_group"] = json.loads(created.model_dump_json(exclude_unset=True))
                 else:
-                    # Simulate a created address object (minimal info)
-                    simulated = AddressCreateModel(**create_payload)
-                    result["address"] = simulated.model_dump(exclude_unset=True)
+                    # Simulate a created dynamic user group object (minimal info)
+                    simulated = DynamicUserGroupCreateModel(**create_payload)
+                    result["dynamic_user_group"] = simulated.model_dump(exclude_unset=True)
 
                 # Mark as changed
                 result["changed"] = True
@@ -390,17 +347,17 @@ def main():
                 # Exit
                 module.exit_json(**result)
 
-        # Delete an address object
+        # Delete a dynamic user group object
         elif params.get("state") == "absent":
-            if address_exists:
+            if dynamic_user_group_exists:
                 if not module.check_mode:
-                    client.address.delete(address_obj.id)
+                    client.dynamic_user_group.delete(dynamic_user_group_obj.id)
 
                 # Mark as changed
                 result["changed"] = True
 
                 # Exit
-                result["address"] = json.loads(address_obj.model_dump_json(exclude_unset=True))
+                result["dynamic_user_group"] = json.loads(dynamic_user_group_obj.model_dump_json(exclude_unset=True))
                 module.exit_json(**result)
             else:
                 # Already absent
