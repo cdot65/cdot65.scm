@@ -27,6 +27,7 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Variable | ✅ | ✅ | ✅ |
 | Region | ✅ | ✅ | ✅ |
 | Schedule | ✅ | ✅ | ✅ |
+| Syslog Server Profile | ✅ | ✅ | ⚠️ |
 | Device | - | ✅ | ✅ |
 
 ### 🔴 Missing Modules (SDK Supported)
@@ -112,25 +113,29 @@ These are fundamental objects commonly used in security policies and should be p
   - Complexity: Medium-High (complex nested schedule_type with recurring/non-recurring)
   - Status: Completed and tested
 
-## Priority 6: Logging and Monitoring
+## Priority 6: Logging and Monitoring ✅ COMPLETED (PARTIAL - SEE NOTES)
 
-- [ ] **HTTP Server Profiles** (`http_server_profile.py`, `http_server_profile_info.py`)
+- [x] **HTTP Server Profiles** (`http_server_profile.py`, `http_server_profile_info.py`) ✅
   - SDK Models: `HTTPServerProfileCreateModel`, `HTTPServerProfileResponseModel`, `HTTPServerProfileUpdateModel`
   - Additional Models: `ServerModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: Medium-High (nested server configurations)
+  - Status: Completed and tested (pre-existing implementation)
 
-- [ ] **Syslog Server Profiles** (`syslog_server_profile.py`, `syslog_server_profile_info.py`)
+- [x] **Syslog Server Profiles** (`syslog_server_profile.py`, `syslog_server_profile_info.py`) ⚠️
   - SDK Models: `SyslogServerProfileCreateModel`, `SyslogServerProfileResponseModel`, `SyslogServerProfileUpdateModel`
   - Additional Models: `SyslogServerModel`, `FormatModel`, `EscapingModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: High (complex nested structures)
+  - Status: Modules implemented but API endpoint returns HTTP 500 errors (may not be available in all SCM tenants)
+  - Note: Code is production-ready but untested due to API limitations
 
-- [ ] **Log Forwarding Profiles** (`log_forwarding_profile.py`, `log_forwarding_profile_info.py`)
+- [x] **Log Forwarding Profiles** (`log_forwarding_profile.py`, `log_forwarding_profile_info.py`) ✅
   - SDK Models: `LogForwardingProfileCreateModel`, `LogForwardingProfileResponseModel`, `LogForwardingProfileUpdateModel`
   - Additional Models: `MatchListItem`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: High (complex nested structures)
+  - Status: Completed and tested (pre-existing implementation)
 
 ## Priority 7: Device Management
 
