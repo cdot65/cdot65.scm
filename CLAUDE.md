@@ -162,9 +162,11 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Service Objects (`service`, `service_info`) - Complete ✅
 - Service Groups (`service_group`, `service_group_info`) - Complete ✅
 - Tags (`tag`, `tag_info`) - Complete ✅
+- Regions (`region`, `region_info`) - Complete ✅
+- Schedules (`schedule`, `schedule_info`) - Complete ✅
 
 ### Planned Modules (See DEVELOPMENT_TODO.md)
-- And additional resources (see DEVELOPMENT_TODO.md for complete list)
+- Additional resources (see DEVELOPMENT_TODO.md for complete list)
 
 ## Code Style and Quality Standards
 

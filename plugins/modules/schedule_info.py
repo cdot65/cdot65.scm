@@ -11,54 +11,48 @@ from scm.exceptions import APIError, InvalidObjectError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
 ---
-module: region_info
-short_description: Get information about region objects in Strata Cloud Manager (SCM)
+module: schedule_info
+short_description: Get information about schedule objects in Strata Cloud Manager (SCM)
 description:
-    - This module retrieves information about region objects in Strata Cloud Manager.
-    - It can be used to get details about a specific region by ID or name, or to list all regions.
-    - Supports filtering by address associations, folder, snippet, or device.
+    - This module retrieves information about schedule objects in Strata Cloud Manager.
+    - It can be used to get details about a specific schedule by ID or name, or to list all schedules.
+    - Supports filtering by folder, snippet, or device container.
 version_added: "0.1.0"
 author:
     - "Calvin Remsburg (@cdot65)"
 options:
     id:
         description:
-            - The ID of the region object to retrieve.
-            - If specified, the module will return information about this specific region.
+            - The ID of the schedule object to retrieve.
+            - If specified, the module will return information about this specific schedule.
             - Mutually exclusive with I(name).
+            - When using id, no container parameter is required.
         type: str
         required: false
     name:
         description:
-            - The name of the region object to retrieve.
-            - If specified, the module will search for regions with this name.
+            - The name of the schedule object to retrieve.
+            - If specified, the module will search for schedules with this name.
             - When using name, one of the container parameters (folder, snippet, device) is required.
             - Mutually exclusive with I(id).
         type: str
         required: false
-    address:
-        description:
-            - Filter regions by associated addresses.
-            - Returns regions that contain any of the specified addresses.
-        type: list
-        elements: str
-        required: false
     folder:
         description:
-            - Filter regions by folder name.
-            - Required when retrieving regions by name.
+            - Filter schedules by folder name.
+            - Required when retrieving schedules by name or listing schedules.
             - Mutually exclusive with I(snippet) and I(device).
         type: str
         required: false
     snippet:
         description:
-            - Filter regions by snippet name.
+            - Filter schedules by snippet name.
             - Mutually exclusive with I(folder) and I(device).
         type: str
         required: false
     device:
         description:
-            - Filter regions by device identifier.
+            - Filter schedules by device identifier.
             - Mutually exclusive with I(folder) and I(snippet).
         type: str
         required: false
@@ -81,98 +75,105 @@ options:
         required: false
 notes:
     - Check mode is supported but does not change behavior since this is a read-only module.
-    - Region objects must be associated with exactly one container (folder, snippet, or device).
+    - Schedule objects must be associated with exactly one container (folder, snippet, or device).
+    - When retrieving by name, a container parameter must be provided.
+    - When retrieving by ID, no container parameter is needed.
 """
 
 EXAMPLES = r"""
-- name: Get all region objects in a folder
-  cdot65.scm.region_info:
-    folder: "Network-Objects"
+- name: Get all schedule objects in a folder
+  cdot65.scm.schedule_info:
+    folder: "Security-Policies"
     scm_access_token: "{{ scm_access_token }}"
-  register: all_regions
+  register: all_schedules
 
-- name: Get a specific region by ID
-  cdot65.scm.region_info:
+- name: Get a specific schedule by ID
+  cdot65.scm.schedule_info:
     id: "12345678-1234-1234-1234-123456789012"
     scm_access_token: "{{ scm_access_token }}"
-  register: region_details
+  register: schedule_details
 
-- name: Get region with a specific name
-  cdot65.scm.region_info:
-    name: "North-America-East"
-    folder: "Network-Objects"  # container parameter is required when using name
+- name: Get schedule with a specific name
+  cdot65.scm.schedule_info:
+    name: "business-hours"
+    folder: "Security-Policies"
     scm_access_token: "{{ scm_access_token }}"
-  register: named_region
+  register: named_schedule
 
-- name: Get regions associated with specific addresses
-  cdot65.scm.region_info:
-    address:
-      - "london-office"
-      - "paris-office"
-    folder: "Network-Objects"
+- name: Get schedules in a specific snippet
+  cdot65.scm.schedule_info:
+    snippet: "security-snippet"
     scm_access_token: "{{ scm_access_token }}"
-  register: filtered_regions
+  register: snippet_schedules
 
-- name: Get regions in a specific snippet
-  cdot65.scm.region_info:
-    snippet: "global-regions"
-    scm_access_token: "{{ scm_access_token }}"
-  register: snippet_regions
-
-- name: Get regions for a specific device
-  cdot65.scm.region_info:
+- name: Get schedules for a specific device
+  cdot65.scm.schedule_info:
     device: "firewall-01"
     scm_access_token: "{{ scm_access_token }}"
-  register: device_regions
+  register: device_schedules
+
+- name: Get schedules with exact container match
+  cdot65.scm.schedule_info:
+    folder: "Security-Policies"
+    exact_match: true
+    scm_access_token: "{{ scm_access_token }}"
+  register: exact_match_schedules
 """
 
 RETURN = r"""
-regions:
-    description: List of region objects
+schedules:
+    description: List of schedule objects
     returned: always
     type: list
     elements: dict
     contains:
         id:
-            description: The region object ID
+            description: The schedule object ID
             type: str
             returned: always
             sample: "12345678-1234-1234-1234-123456789012"
         name:
-            description: The region object name
+            description: The schedule object name
             type: str
             returned: always
-            sample: "North-America-East"
-        geo_location:
-            description: Geographic location of the region
+            sample: "business-hours"
+        schedule_type:
+            description: The schedule type configuration
             type: dict
-            returned: when applicable
+            returned: always
             contains:
-                latitude:
-                    description: Latitudinal position
-                    type: float
-                    sample: 40.7128
-                longitude:
-                    description: Longitudinal position
-                    type: float
-                    sample: -74.0060
-        address:
-            description: List of addresses associated with the region
-            type: list
-            returned: when applicable
-            sample: ["london-office", "paris-office"]
+                recurring:
+                    description: Recurring schedule configuration
+                    type: dict
+                    returned: when applicable
+                    contains:
+                        daily:
+                            description: Daily time ranges
+                            type: list
+                            returned: when applicable
+                            sample: ["08:00-17:00"]
+                        weekly:
+                            description: Weekly schedule with day-specific time ranges
+                            type: dict
+                            returned: when applicable
+                            sample: {"monday": ["08:00-17:00"], "friday": ["08:00-15:00"]}
+                non_recurring:
+                    description: Non-recurring datetime ranges
+                    type: list
+                    returned: when applicable
+                    sample: ["2025/12/24@00:00-2025/12/26@23:59"]
         folder:
-            description: The folder containing the region object
+            description: The folder containing the schedule object
             type: str
             returned: when applicable
-            sample: "Network-Objects"
+            sample: "Security-Policies"
         snippet:
-            description: The snippet containing the region object
+            description: The snippet containing the schedule object
             type: str
             returned: when applicable
-            sample: "global-regions"
+            sample: "security-snippet"
         device:
-            description: The device containing the region object
+            description: The device containing the schedule object
             type: str
             returned: when applicable
             sample: "firewall-01"
@@ -184,7 +185,6 @@ def main():
     module_args = dict(
         name=dict(type="str", required=False),
         id=dict(type="str", required=False),
-        address=dict(type="list", elements="str", required=False),
         folder=dict(type="str", required=False),
         snippet=dict(type="str", required=False),
         device=dict(type="str", required=False),
@@ -206,21 +206,21 @@ def main():
     # Get parameters
     params = module.params
 
-    result = {"regions": []}
+    result = {"schedules": []}
 
     try:
         # Initialize SCM client
         client = ScmClient(access_token=params.get("scm_access_token"))
 
-        # Get region by ID if specified
+        # Get schedule by ID if specified
         if params.get("id"):
             try:
-                region_obj = client.region.get(params.get("id"))
-                if region_obj:
-                    result["regions"] = [json.loads(region_obj.model_dump_json(exclude_unset=True))]
+                schedule_obj = client.schedule.get(params.get("id"))
+                if schedule_obj:
+                    result["schedules"] = [json.loads(schedule_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:
-                module.fail_json(msg=f"Failed to retrieve region info: {e}")
-        # Fetch region by name
+                module.fail_json(msg=f"Failed to retrieve schedule info: {e}")
+        # Fetch schedule by name
         elif params.get("name"):
             try:
                 # Handle different container types (folder, snippet, device)
@@ -240,15 +240,15 @@ def main():
                 # We need a container for the fetch operation
                 if not container_type or not container_name:
                     module.fail_json(
-                        msg="When retrieving a region by name, one of 'folder', 'snippet', or 'device' parameter is required"
+                        msg="When retrieving a schedule by name, one of 'folder', 'snippet', or 'device' parameter is required"
                     )
 
-                # For any container type, fetch the region object
-                region_obj = client.region.fetch(name=params.get("name"), **{container_type: container_name})
-                if region_obj:
-                    result["regions"] = [json.loads(region_obj.model_dump_json(exclude_unset=True))]
+                # For any container type, fetch the schedule object
+                schedule_obj = client.schedule.fetch(name=params.get("name"), **{container_type: container_name})
+                if schedule_obj:
+                    result["schedules"] = [json.loads(schedule_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:
-                module.fail_json(msg=f"Failed to retrieve region info: {e}")
+                module.fail_json(msg=f"Failed to retrieve schedule info: {e}")
 
         else:
             # Prepare filter parameters for the SDK
@@ -263,35 +263,21 @@ def main():
                 filter_params["device"] = params.get("device")
             else:
                 module.fail_json(
-                    msg="At least one container parameter (folder, snippet, or device) is required for listing regions"
+                    msg="At least one container parameter (folder, snippet, or device) is required for listing schedules"
                 )
 
             # Add exact_match parameter if specified
             if params.get("exact_match"):
                 filter_params["exact_match"] = params.get("exact_match")
 
-            # List regions with container filters
-            regions = client.region.list(**filter_params)
-
-            # Apply additional client-side filtering for address
-            if params.get("address"):
-                filter_addresses = set(params.get("address"))
-                filtered_regions = []
-
-                for region in regions:
-                    # Check if region has any of the specified addresses
-                    if region.address:
-                        region_addresses = set(region.address)
-                        if filter_addresses & region_addresses:  # If there's any intersection
-                            filtered_regions.append(region)
-
-                regions = filtered_regions
+            # List schedules with container filters
+            schedules = client.schedule.list(**filter_params)
 
             # Convert to a list of dicts
-            region_dicts = [json.loads(r.model_dump_json(exclude_unset=True)) for r in regions]
+            schedule_dicts = [json.loads(s.model_dump_json(exclude_unset=True)) for s in schedules]
 
             # Add to results
-            result["regions"] = region_dicts
+            result["schedules"] = schedule_dicts
 
         module.exit_json(**result)
     except (InvalidObjectError, APIError) as e:
@@ -301,7 +287,7 @@ def main():
             details=getattr(e, "details", None),
         )
     except Exception as e:
-        module.fail_json(msg=f"Failed to retrieve region info: {e}")
+        module.fail_json(msg=f"Failed to retrieve schedule info: {e}")
 
 
 if __name__ == "__main__":

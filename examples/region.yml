@@ -23,10 +23,10 @@
       cdot65.scm.region:
         name: "us-west-region"
         folder: "Texas"
-        geographic_location:
+        geo_location:
           latitude: 37.7749
           longitude: -122.4194
-        addresses:
+        address:
           - "10.0.0.0/8"
           - "192.168.1.0/24"
         scm_access_token: "{{ scm_access_token }}"
@@ -50,10 +50,10 @@
       cdot65.scm.region:
         name: "europe-region"
         snippet: "AnsibleTest"
-        geographic_location:
+        geo_location:
           latitude: 48.8566
           longitude: 2.3522
-        addresses:
+        address:
           - "172.16.0.0/12"
         scm_access_token: "{{ scm_access_token }}"
         state: present
@@ -68,10 +68,10 @@
       cdot65.scm.region:
         name: "us-west-region"
         folder: "Texas"
-        geographic_location:
+        geo_location:
           latitude: 37.7749
           longitude: -122.4194
-        addresses:
+        address:
           - "10.0.0.0/8"
           - "192.168.1.0/24"
           - "172.31.0.0/16"  # Added address
@@ -92,38 +92,7 @@
 
     - name: Display all regions count
       ansible.builtin.debug:
-        msg: "Found {{ all_regions.total }} regions in the Texas folder"
-
-    # Filter by geographic location
-    - name: Filter regions by geographic location (US West Coast)
-      cdot65.scm.region_info:
-        folder: "Texas"
-        geographic_location:
-          latitude:
-            min: 30
-            max: 50
-          longitude:
-            min: -130
-            max: -110
-        scm_access_token: "{{ scm_access_token }}"
-      register: west_coast_regions
-
-    - name: Display west coast regions count
-      ansible.builtin.debug:
-        msg: "Found {{ west_coast_regions.total }} regions on the US West Coast"
-
-    # Filter by network address
-    - name: Filter regions by network address
-      cdot65.scm.region_info:
-        folder: "Texas"
-        addresses:
-          - "10.0.0.0/8"
-        scm_access_token: "{{ scm_access_token }}"
-      register: regions_with_10_network
-
-    - name: Display regions with specific network
-      ansible.builtin.debug:
-        msg: "Found {{ regions_with_10_network.total }} regions with 10.0.0.0/8 network"
+        msg: "Found {{ all_regions.regions | length }} regions in the Texas folder"
 
     # Get specific region by name
     - name: Get specific region by name
