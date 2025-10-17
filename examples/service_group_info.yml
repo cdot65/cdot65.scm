@@ -68,11 +68,29 @@
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
+    # Create tags for use in service groups
+    - name: Create web tag
+      cdot65.scm.tag:
+        name: "web"
+        color: "Cyan"
+        comments: "Web services tag"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create admin tag
+      cdot65.scm.tag:
+        name: "admin"
+        color: "Red"
+        comments: "Administrative services tag"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
     # Create service groups
     - name: Create web services group
       cdot65.scm.service_group:
         name: "test-web-services"
-        description: "Test web services group"
         members:
           - "test-http"
           - "test-https"
@@ -86,7 +104,6 @@
     - name: Create admin services group
       cdot65.scm.service_group:
         name: "test-admin-services"
-        description: "Test admin services group"
         members:
           - "test-ssh"
         folder: "ServiceGroup-Test"
@@ -103,12 +120,22 @@
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
+    - name: Create snippet-based DNS service
+      cdot65.scm.service:
+        name: "snippet-dns"
+        description: "DNS service in snippet"
+        protocol:
+          udp:
+            port: "53"
+        snippet: "ServiceGroup-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
     - name: Create snippet-based service group
       cdot65.scm.service_group:
         name: "test-network-services"
-        description: "Test network services group"
         members:
-          - "test-dns"
+          - "snippet-dns"
         snippet: "ServiceGroup-Test-Snippet"
         scm_access_token: "{{ scm_access_token }}"
         state: present
@@ -229,6 +256,23 @@
         - "test-https"
         - "test-ssh"
         - "test-dns"
+
+    - name: Delete the tags
+      cdot65.scm.tag:
+        name: "{{ item }}"
+        folder: "ServiceGroup-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "web"
+        - "admin"
+
+    - name: Delete the snippet-based service
+      cdot65.scm.service:
+        name: "snippet-dns"
+        snippet: "ServiceGroup-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
 
     - name: Delete the test snippet
       cdot65.scm.snippet:

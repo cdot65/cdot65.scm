@@ -68,11 +68,38 @@
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
+    # Create tags for use in service groups
+    - name: Create web tag
+      cdot65.scm.tag:
+        name: "web"
+        color: "Cyan"
+        comments: "Web services tag"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create admin tag
+      cdot65.scm.tag:
+        name: "admin"
+        color: "Red"
+        comments: "Administrative services tag"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create management tag
+      cdot65.scm.tag:
+        name: "management"
+        color: "Orange"
+        comments: "Management services tag"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
     # Create a service group with web services
     - name: Create a web services group
       cdot65.scm.service_group:
         name: "web-services"
-        description: "Web service group"
         members:
           - "service-http"
           - "service-https"
@@ -89,7 +116,6 @@
     - name: Create an admin services group with tags
       cdot65.scm.service_group:
         name: "admin-services"
-        description: "Administrative service group"
         members:
           - "service-ssh"
         folder: "Services"
@@ -108,7 +134,6 @@
     - name: Update the web services group to add DNS
       cdot65.scm.service_group:
         name: "web-services"
-        description: "Updated web service group with DNS"
         members:
           - "service-http"
           - "service-https"
@@ -146,6 +171,17 @@
         - "service-https"
         - "service-ssh"
         - "service-dns"
+
+    - name: Delete the tags
+      cdot65.scm.tag:
+        name: "{{ item }}"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "web"
+        - "admin"
+        - "management"
 
     - name: Delete the test folder
       cdot65.scm.folder:
