@@ -27,7 +27,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
 - **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
-- **Comprehensive Module Set**: 40 production-ready modules (20 resource modules + 20 info modules) with additional modules planned (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Comprehensive Module Set**: 42 production-ready modules (21 resource modules + 21 info modules) with additional modules planned (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -63,7 +63,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 40 production-ready modules (20 resource modules + 20 info modules)
+**Current Status**: 42 production-ready modules (21 resource modules + 21 info modules)
 
 **Roadmap**: Additional resource types planned ([DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md))
 
@@ -144,18 +144,26 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [schedule](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/schedule.py) | Manage schedule objects (recurring and non-recurring) | ✅ |
 | [schedule_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/schedule_info.py) | Retrieve schedule information | ✅ |
 
+### Logging & Monitoring Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [syslog_server_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/syslog_server_profile.py) | Manage syslog server profiles | ⚠️ |
+| [syslog_server_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/syslog_server_profile_info.py) | Retrieve syslog server profile information | ⚠️ |
+
+> **Note**: Syslog modules are implemented but the SCM API endpoint returns errors in some environments. HTTP Server and Log Forwarding profiles are already available.
+
 ### Additional Modules (Planned)
 
 The following modules are planned for future releases. See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed roadmap and priorities.
 
-#### Priority 6+: Advanced Features
+#### Priority 7: Advanced Features
 
 | Module Category | Status | Details |
 |-----------------|--------|---------|
-| Logging & Monitoring | 📝 | Syslog Server Profiles, Log Forwarding Profiles |
 | Device Management | 📝 | Quarantined Devices |
 
-**Total Planned Modules**: 4 additional modules (8 including info modules)
+**Total Planned Modules**: 1 additional module (2 including info module)
 
 For complete details on planned features, priorities, and estimated effort, see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md).
 

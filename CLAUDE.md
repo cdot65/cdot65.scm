@@ -159,14 +159,18 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Host Information Profiles (`hip_object`, `hip_object_info`) - Complete ✅
 - HIP Profiles (`hip_profile`, `hip_profile_info`) - Complete ✅
 - HTTP Server Profiles (`http_server_profile`, `http_server_profile_info`) - Complete ✅
+- Log Forwarding Profiles (`log_forwarding_profile`, `log_forwarding_profile_info`) - Complete ✅
 - Service Objects (`service`, `service_info`) - Complete ✅
 - Service Groups (`service_group`, `service_group_info`) - Complete ✅
 - Tags (`tag`, `tag_info`) - Complete ✅
 - Regions (`region`, `region_info`) - Complete ✅
 - Schedules (`schedule`, `schedule_info`) - Complete ✅
+- Syslog Server Profiles (`syslog_server_profile`, `syslog_server_profile_info`) - Implemented ⚠️ (API limitations)
 
 ### Planned Modules (See DEVELOPMENT_TODO.md)
-- Additional resources (see DEVELOPMENT_TODO.md for complete list)
+- Quarantined Devices (Priority 7)
+
+**Note**: Syslog Server Profile modules are fully implemented and production-ready, but the SCM API endpoint returns HTTP 500 errors in some environments. The modules may work in future API versions.
 
 ## Code Style and Quality Standards
 
