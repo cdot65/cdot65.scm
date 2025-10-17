@@ -1,3 +1,0 @@
-# Runtime requirements for ansible-test
-# These dependencies are needed for the collection to function
-pan-scm-sdk>=0.3.44

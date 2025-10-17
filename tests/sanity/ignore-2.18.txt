@@ -102,3 +102,9 @@ plugins/modules/variable_info.py import-3.10
 plugins/modules/variable_info.py import-3.11
 plugins/modules/variable_info.py import-3.12
 plugins/modules/variable_info.py import-3.13
+plugins/module_utils/client.py pylint:unsupported-binary-operation
+plugins/module_utils/client.py shebang
+tests/unit/plugins/module_utils/test_client.py shebang
+scripts/check-linting.sh shebang
+scripts/fix_utils_lints.sh shebang
+scripts/lint_and_format.sh shebang
