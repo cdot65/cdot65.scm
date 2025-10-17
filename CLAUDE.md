@@ -177,7 +177,8 @@ When developing new modules, use the existing `folder` and `folder_info` modules
   - [CLAUDE_MODELS.md](CLAUDE_MODELS.md)
 - All code generation, manual coding, and reviews must enforce these conventions for all new and existing models and modules
 - Use `ruff`, `ansible-lint`, `black`, and `isort` for code quality (see `Makefile` targets)
-- Use Python 3.10+ type hints for all SDK/service/model code; Ansible modules may omit for compatibility
+- **Minimum Python 3.11 required** - This is enforced by pan-scm-sdk dependency and for modern Python features
+- Use Python 3.11+ type hints for all SDK/service/model code; Ansible modules may omit for compatibility
 - All public functions and classes must have Google-style docstrings; Ansible modules must have full YAML docstrings with synopsis, parameters, examples, and return values
 - Ensure argument spec covers all options, types, required/optional, mutually exclusive, required_one_of, and no_log for secrets
 - Use absolute imports within `scm/`; follow Ansible import conventions in modules

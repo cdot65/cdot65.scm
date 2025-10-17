@@ -44,7 +44,8 @@ skip_list = ["no-handler"]
 
 [tool.black]
 line-length = 128
-target-version = ['py310', 'py311', 'py312', 'py313']
+# Minimum Python 3.11 required by pan-scm-sdk
+target-version = ['py311', 'py312', 'py313']
 extend-exclude = '''
 /(
   \.venv
@@ -57,7 +58,8 @@ extend-exclude = '''
 
 [tool.ruff]
 line-length = 128
-target-version = "py310"
+# Minimum Python 3.11 required by pan-scm-sdk
+target-version = "py311"
 extend-exclude = [".venv", ".tox", "build", "dist", "ansible_collections"]
 
 [tool.ruff.lint]
@@ -88,7 +90,8 @@ from_first = false
 skip_glob = ["plugins/modules/*.py", ".venv/**", ".tox/**", "build/**", "dist/**", "ansible_collections/**"]
 
 [tool.mypy]
-python_version = "3.10"
+# Minimum Python 3.11 required by pan-scm-sdk
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false

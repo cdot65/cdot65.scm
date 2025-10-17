@@ -1,0 +1,48 @@
+---
+# Collections must specify a minimum required ansible version.
+requires_ansible: '>=2.18.0'
+
+# Declare Python version support
+# This collection requires Python 3.11 or later due to pan-scm-sdk requirements
+# and modern Python feature usage (match statements, improved type hints, etc.)
+python_requires: '>=3.11'
+
+# Action groups allow for shorter playbook invocations by grouping modules together
+action_groups:
+  scm:
+    - address
+    - address_group
+    - address_info
+    - address_group_info
+    - application
+    - application_group
+    - application_info
+    - application_group_info
+    - application_filter
+    - application_filter_info
+    - auth
+    - device_info
+    - dynamic_user_group
+    - dynamic_user_group_info
+    - external_dynamic_list
+    - external_dynamic_list_info
+    - folder
+    - folder_info
+    - hip_object
+    - hip_object_info
+    - hip_profile
+    - hip_profile_info
+    - http_server_profile
+    - http_server_profile_info
+    - label
+    - label_info
+    - log_forwarding_profile
+    - log_forwarding_profile_info
+    - quarantined_devices
+    - quarantined_devices_info
+    - region
+    - region_info
+    - snippet
+    - snippet_info
+    - variable
+    - variable_info
