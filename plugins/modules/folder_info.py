@@ -45,7 +45,6 @@ options:
             - The access token for SCM authentication.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -183,10 +182,7 @@ def main():
                         module.fail_json(msg=f"Parent folder '{params.get('parent')}' not found")
 
             # List folders with filters
-            if filter_params:
-                folders = client.folder.list(**filter_params)
-            else:
-                folders = client.folder.list()
+            folders = client.folder.list(**filter_params) if filter_params else client.folder.list()
 
             # Convert to a list of dicts
             folder_dicts = [json.loads(f.model_dump_json(exclude_unset=True)) for f in folders]

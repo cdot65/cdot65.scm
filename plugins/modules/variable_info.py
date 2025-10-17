@@ -71,7 +71,6 @@ options:
             - The access token for SCM authentication.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -256,10 +255,7 @@ def main():
                 filter_params["labels"] = params.get("labels")
 
             # List variables with filters
-            if filter_params:
-                variables = client.variable.list(**filter_params)
-            else:
-                variables = client.variable.list()
+            variables = client.variable.list(**filter_params) if filter_params else client.variable.list()
 
             # Convert to a list of dicts
             variable_dicts = [json.loads(v.model_dump_json(exclude_unset=True)) for v in variables]

@@ -65,4 +65,3 @@
       debug:
         var: vm_firewalls.devices
       when: vm_firewalls.devices is defined
-

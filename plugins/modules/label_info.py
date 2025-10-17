@@ -39,7 +39,6 @@ options:
             - The access token for SCM authentication.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -142,12 +141,9 @@ def main():
             # Add more filters here if applicable to the label API
 
             # List labels with filters
-            if filter_params:
-                labels = client.label.list(**filter_params)
-            else:
-                labels = client.label.list()
+            labels = client.label.list(**filter_params) if filter_params else client.label.list()
 
-            label_dicts = [json.loads(each.model_dump_json(exclude_unset=True)) for each in labels]
+            label_dicts = [json.loads(label.model_dump_json(exclude_unset=True)) for label in labels]
             result["labels"] = label_dicts
         module.exit_json(**result)
     except (InvalidObjectError, APIError) as e:

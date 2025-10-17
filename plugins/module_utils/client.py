@@ -5,6 +5,8 @@
 
 """Strata Cloud Manager API client module utilities."""
 
+from __future__ import annotations
+
 import logging
 
 from ansible.module_utils.basic import missing_required_lib

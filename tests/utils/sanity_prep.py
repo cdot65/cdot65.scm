@@ -4,6 +4,7 @@
 # Based on amazon.aws collection structure
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -11,17 +12,21 @@ from pathlib import Path
 # Main project directory
 base_dir = Path(__file__).parent.parent.parent.absolute()
 
+# Target directory for collection installation (in project root)
+install_dir = base_dir / "ansible_collections"
+
 # Run ansible-galaxy collection install
 try:
-    env = os.environ.copy()
-    env["ANSIBLE_COLLECTIONS_PATH"] = str(base_dir)
+    # Clean up any existing installation directory
+    if install_dir.exists():
+        shutil.rmtree(install_dir)
 
+    # Build the collection
     proc = subprocess.run(
         ["ansible-galaxy", "collection", "build", "--force"],
         check=True,
         capture_output=True,
         cwd=base_dir,
-        env=env,
     )
     print(proc.stdout.decode())
 
@@ -36,13 +41,13 @@ try:
         print("Could not find built collection archive")
         sys.exit(1)
 
-    # Install the collection to a temporary directory
+    # Install the collection to the ansible_collections directory
+    # Use -p flag to specify installation path
     proc = subprocess.run(
-        ["ansible-galaxy", "collection", "install", "-f", collection_file],
+        ["ansible-galaxy", "collection", "install", "-f", "-p", str(base_dir), collection_file],
         check=True,
         capture_output=True,
         cwd=base_dir,
-        env=env,
     )
     print(proc.stdout.decode())
 except subprocess.CalledProcessError as e:

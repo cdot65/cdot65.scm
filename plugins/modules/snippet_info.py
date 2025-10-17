@@ -45,7 +45,6 @@ options:
             - The access token for SCM authentication.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -145,10 +144,7 @@ def main():
                 filter_params["labels"] = params.get("labels")
 
             # List snippets with filters
-            if filter_params:
-                snippets = client.snippet.list(**filter_params)
-            else:
-                snippets = client.snippet.list()
+            snippets = client.snippet.list(**filter_params) if filter_params else client.snippet.list()
 
             # Convert to a list of dicts
             snippet_dicts = [json.loads(s.model_dump_json(exclude_unset=True)) for s in snippets]

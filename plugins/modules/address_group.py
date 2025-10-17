@@ -62,8 +62,8 @@ options:
             - Required when group_type is 'dynamic'.
             - Mutually exclusive with I(static_addresses).
             - Format should follow SCM's dynamic address group filter syntax.
-            - Use single-quoted paths for tag matching, e.g., "'aws.ec2.tag.Name.value'".
-            - Example: "'aws.ec2.tag.Environment.prod'" or "'aws.ec2.tag.Server.web' or 'aws.ec2.tag.Server.api'"
+            - 'Use single-quoted paths for tag matching, e.g.: aws.ec2.tag.Name.value'
+            - 'Example: aws.ec2.tag.Environment.prod or aws.ec2.tag.Server.web or aws.ec2.tag.Server.api'
         type: str
         required: false
     folder:
@@ -98,7 +98,6 @@ options:
             - Bearer access token for authenticating API calls, provided by the auth role.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.

@@ -143,6 +143,7 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 
 ## Resource Modules Status
 
+### Completed Modules
 - Folder management (`folder`, `folder_info`) - Complete ✅
 - Label management (`label`, `label_info`) - Complete ✅
 - Snippet management (`snippet`, `snippet_info`) - Complete ✅
@@ -150,7 +151,7 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Variable management (`variable`, `variable_info`) - Complete ✅
 - Address Objects (`address`, `address_info`) - Complete ✅
 - Address Groups (`address_group`, `address_group_info`) - Complete ✅
-- Application (`application`, `application_info`) - Complete ✅
+- Application Objects (`application`, `application_info`) - Complete ✅
 - Application Groups (`application_group`, `application_group_info`) - Complete ✅
 - Application Filters (`application_filter`, `application_filter_info`) - Complete ✅
 - Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) - Complete ✅
@@ -158,8 +159,12 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Host Information Profiles (`hip_object`, `hip_object_info`) - Complete ✅
 - HIP Profiles (`hip_profile`, `hip_profile_info`) - Complete ✅
 - HTTP Server Profiles (`http_server_profile`, `http_server_profile_info`) - Complete ✅
-- Service Objects (`service_object`, `service_object_info`) - Planned
-- Service Groups (`service_group`, `service_group_info`) - Planned
+
+### Planned Modules (See DEVELOPMENT_TODO.md)
+- Service Objects (`service`, `service_info`) - Priority 1
+- Service Groups (`service_group`, `service_group_info`) - Priority 1
+- Tags (`tag`, `tag_info`) - Priority 1
+- And additional resources (see DEVELOPMENT_TODO.md for complete list)
 
 ## Code Style and Quality Standards
 
@@ -172,7 +177,8 @@ When developing new modules, use the existing `folder` and `folder_info` modules
   - [CLAUDE_MODELS.md](CLAUDE_MODELS.md)
 - All code generation, manual coding, and reviews must enforce these conventions for all new and existing models and modules
 - Use `ruff`, `ansible-lint`, `black`, and `isort` for code quality (see `Makefile` targets)
-- Use Python 3.10+ type hints for all SDK/service/model code; Ansible modules may omit for compatibility
+- **Minimum Python 3.11 required** - This is enforced by pan-scm-sdk dependency and for modern Python features
+- Use Python 3.11+ type hints for all SDK/service/model code; Ansible modules may omit for compatibility
 - All public functions and classes must have Google-style docstrings; Ansible modules must have full YAML docstrings with synopsis, parameters, examples, and return values
 - Ensure argument spec covers all options, types, required/optional, mutually exclusive, required_one_of, and no_log for secrets
 - Use absolute imports within `scm/`; follow Ansible import conventions in modules

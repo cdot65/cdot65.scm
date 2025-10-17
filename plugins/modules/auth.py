@@ -3,8 +3,9 @@
 # Copyright: (c) 2025, Calvin Remsburg (@cdot65) <dev@cdot.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from ansible.module_utils.basic import AnsibleModule  # type: ignore
-from ansible_collections.cdot65.scm.plugins.module_utils import client as scm_client_utils  # type: ignore # noqa
+from ansible.module_utils.basic import AnsibleModule
+
+from ansible_collections.cdot65.scm.plugins.module_utils import client as scm_client_utils  # noqa
 
 DOCUMENTATION = r"""
 ---
@@ -21,12 +22,10 @@ options:
         description: OAuth client ID for authentication. If not specified, the value of the SCM_CLIENT_ID environment variable will be used.
         type: str
         required: true
-        no_log: true
     client_secret:
         description: OAuth client secret for authentication. If not specified, the value of the SCM_CLIENT_SECRET environment variable will be used.
         type: str
         required: true
-        no_log: true
     tsg_id:
         description: Tenant Service Group ID for scope construction. If not specified, the value of the SCM_TSG_ID environment variable will be used.
         type: str

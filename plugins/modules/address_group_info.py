@@ -94,7 +94,6 @@ options:
             - The access token for SCM authentication.
         type: str
         required: true
-        no_log: true
     api_url:
         description:
             - The URL for the SCM API.
@@ -103,7 +102,7 @@ options:
 notes:
     - Check mode is supported but does not change behavior since this is a read-only module.
     - Address groups must be associated with exactly one container (folder, snippet, or device).
-    - Address groups are of two types: static (containing a list of address objects) or dynamic (defined by a filter expression).
+    - 'Address groups are of two types: static (containing a list of address objects) or dynamic (defined by a filter expression).'
 """
 
 EXAMPLES = r"""
@@ -151,7 +150,9 @@ EXAMPLES = r"""
 
 - name: Get address groups with specific tags
   cdot65.scm.address_group_info:
-    tag: ["web", "dynamic"]
+    tag:
+      - "web"
+      - "dynamic"
     scm_access_token: "{{ scm_access_token }}"
   register: tagged_address_groups
 

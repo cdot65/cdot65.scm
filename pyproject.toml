@@ -15,8 +15,8 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
-ansible-core = "^2.17.0"
-pan-scm-sdk = "^0.3.38"
+ansible-core = "^2.18.0"
+pan-scm-sdk = "^0.3.44"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
@@ -24,6 +24,7 @@ pytest-mock = "^3.14.0"
 pytest-ansible = "^25.4.0"
 pytest-xdist = "^3.6.1"
 pytest-cov = "^6.1.1"
+tox = "^4.0.0"
 flake8 = "^6.1.0"
 ruff = "^0.11.5"
 mypy = "^1.15.0"
@@ -43,11 +44,23 @@ skip_list = ["no-handler"]
 
 [tool.black]
 line-length = 128
-target-version = ['py310', 'py311', 'py312', 'py313']
+# Minimum Python 3.11 required by pan-scm-sdk
+target-version = ['py311', 'py312', 'py313']
+extend-exclude = '''
+/(
+  \.venv
+  | \.tox
+  | build
+  | dist
+  | ansible_collections
+)/
+'''
 
 [tool.ruff]
 line-length = 128
-target-version = "py310"
+# Minimum Python 3.11 required by pan-scm-sdk
+target-version = "py311"
+extend-exclude = [".venv", ".tox", "build", "dist", "ansible_collections"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "UP", "S", "BLE", "C4", "T20", "RET", "SIM", "ERA"]
@@ -57,8 +70,8 @@ ignore = [
 
 # Ignore some rules in tests files and Ansible code
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S603", "S607", "T201", "ANN", "C408"]
-"plugins/modules/*.py" = ["C408"]  # Ansible module convention uses dict() calls for module specs
+"tests/**/*.py" = ["S101", "S105", "S106", "S603", "S607", "T201", "ANN", "C408"]  # S105/S106 for test credentials
+"plugins/modules/*.py" = ["C408", "BLE001", "SIM102"]  # Ansible module conventions and intentional broad exception handling
 "plugins/module_utils/*.py" = ["C408"]  # Ansible module utils also use dict() calls for argument specs
 
 [tool.ruff.lint.pydocstyle]
@@ -67,22 +80,34 @@ convention = "google"
 [tool.isort]
 profile = "black"
 line_length = 128
-force_single_line = true
+force_single_line = false  # Allow multiple imports on one line (matches ruff)
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "ANSIBLE_CDOT65_SCM", "LOCALFOLDER"]
 known_first_party = ["pan_scm_sdk"]
 known_ansible_core = ["ansible"]
 known_ansible_cdot65_scm = ["ansible_collections.cdot65.scm"]
 from_first = false
 # Skip Ansible modules as they have specific import requirements
-skip_glob = ["plugins/modules/*.py"]
+skip_glob = ["plugins/modules/*.py", ".venv/**", ".tox/**", "build/**", "dist/**", "ansible_collections/**"]
 
 [tool.mypy]
-python_version = "3.10"
+# Minimum Python 3.11 required by pan-scm-sdk
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
+# Ignore missing imports for external dependencies without type stubs
 ignore_missing_imports = true
+# Allow untyped calls from external libraries
+allow_untyped_calls = true
+# Exclude directories
+exclude = [
+    '\.venv',
+    '\.tox',
+    'build',
+    'dist',
+    'ansible_collections',
+]
 
 # Ignore type checking for Ansible modules/collections
 [[tool.mypy.overrides]]

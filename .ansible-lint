@@ -1,0 +1,41 @@
+# Ansible-lint configuration for cdot65.scm collection
+---
+# Exclude paths that should not be linted
+exclude_paths:
+  - .ansible/
+  - .venv/
+  - .tox/
+  - collections/
+  - build/
+  - '*.tar.gz'
+  - plugins/modules/  # Exclude modules from ansible-lint due to external SDK imports
+  - tests/sanity/  # Exclude ansible-test sanity ignore files
+
+# Skip list of rules to ignore
+skip_list:
+  - schema[meta]  # Skip meta file schema checks (we don't have complex meta files)
+  - fqcn[action-core]  # Allow short names for core modules in examples/tests
+  - yaml[trailing-spaces]  # Allow trailing spaces in test files
+  - yaml[document-start]  # Allow files without --- document start
+  - yaml[indentation]  # Allow current indentation style
+  - var-naming[no-role-prefix]  # Allow scm_ prefix for collection-wide variables
+  - key-order[task]  # Allow flexible task key ordering
+  - jinja[spacing]  # Allow current jinja spacing style
+  - galaxy[no-changelog]  # Changelog will be added when ready for release
+  - galaxy[no-runtime]  # Runtime metadata not required for this collection
+  - internal-error  # Skip internal ansible-lint errors (SDK import issues)
+
+# Enable offline mode (don't check for newer versions)
+offline: true
+
+# Warn on unknown profiles
+warn_list: []
+
+# Use the collection profile
+profile: production
+
+# Enable parseable output
+parseable: true
+
+# Don't use progressive mode
+progressive: false
