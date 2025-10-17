@@ -1,0 +1,1 @@
+/Users/cdot/development/cdot65/cdot65.scm/LINTING.md
