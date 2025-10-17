@@ -221,6 +221,17 @@ def main():
     # Get parameters
     params = module.params
 
+    # Validate name parameter
+    if params.get("name"):
+        name = params.get("name")
+        if len(name) > 63:
+            module.fail_json(msg=f"Parameter 'name' exceeds maximum length of 63 characters (got {len(name)})")
+        # Validate name pattern to match SDK requirements
+        import re
+
+        if not re.match(r"^[a-zA-Z0-9_ \.-]+$", name):
+            module.fail_json(msg="Parameter 'name' contains invalid characters. Must match pattern: ^[a-zA-Z0-9_ \\.-]+$")
+
     # Initialize results
     result = {"changed": False, "service_group": None}
 
