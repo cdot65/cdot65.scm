@@ -6,7 +6,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml
+    - ../vault.yml
 
   tasks:
     # ============================================================================
@@ -30,7 +30,7 @@
           recurring:
             daily:
               - "08:00-17:00"
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: daily_schedule
@@ -52,7 +52,7 @@
                 - "02:00-06:00"
               sunday:
                 - "02:00-06:00"
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: weekly_schedule
@@ -85,7 +85,7 @@
               friday:
                 - "08:00-12:00"
                 - "13:00-15:00"
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: complex_schedule
@@ -103,7 +103,7 @@
         schedule_type:
           non_recurring:
             - "2025/12/24@00:00-2025/12/26@23:59"
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: nonrecurring_schedule
@@ -124,7 +124,7 @@
             - "2025/04/15@02:00-2025/04/15@06:00"
             - "2025/07/15@02:00-2025/07/15@06:00"
             - "2025/10/15@02:00-2025/10/15@06:00"
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: quarterly_schedule
@@ -138,7 +138,7 @@
     # ============================================================================
     - name: Get all schedules in Security-Policies folder
       cdot65.scm.schedule_info:
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
       register: all_schedules
 
@@ -149,7 +149,7 @@
     - name: Get specific schedule by name
       cdot65.scm.schedule_info:
         name: "business-hours"
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
       register: specific_schedule
 
@@ -167,7 +167,7 @@
           recurring:
             daily:
               - "08:00-18:00"
-        folder: "Security-Policies"
+        folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: updated_schedule

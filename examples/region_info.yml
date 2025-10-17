@@ -28,10 +28,10 @@
       cdot65.scm.region:
         name: "us-west-region"
         folder: "Region-Test"
-        geographic_location:
+        geo_location:
           latitude: 37.7749
           longitude: -122.4194
-        addresses:
+        address:
           - "10.0.0.0/8"
           - "172.16.0.0/12"
         scm_access_token: "{{ scm_access_token }}"
@@ -41,10 +41,10 @@
       cdot65.scm.region:
         name: "us-east-region"
         folder: "Region-Test"
-        geographic_location:
+        geo_location:
           latitude: 40.7128
           longitude: -74.0060
-        addresses:
+        address:
           - "192.168.0.0/16"
           - "10.1.0.0/16"
         scm_access_token: "{{ scm_access_token }}"
@@ -54,10 +54,10 @@
       cdot65.scm.region:
         name: "eu-central-region"
         folder: "Region-Test"
-        geographic_location:
+        geo_location:
           latitude: 52.5200
           longitude: 13.4050
-        addresses:
+        address:
           - "172.17.0.0/16"
           - "10.2.0.0/16"
         scm_access_token: "{{ scm_access_token }}"
@@ -75,10 +75,10 @@
       cdot65.scm.region:
         name: "asia-pacific-region"
         snippet: "AnsibleTest"
-        geographic_location:
+        geo_location:
           latitude: 35.6762
           longitude: 139.6503
-        addresses:
+        address:
           - "172.18.0.0/16"
         scm_access_token: "{{ scm_access_token }}"
         state: present
@@ -119,64 +119,6 @@
       ansible.builtin.debug:
         var: specific_region.regions
 
-    # Filter regions by geographic location
-    - name: Filter regions by geographic location (US)
-      cdot65.scm.region_info:
-        folder: "Region-Test"
-        geographic_location:
-          latitude:
-            min: 30
-            max: 50
-          longitude:
-            min: -130
-            max: -60
-        scm_access_token: "{{ scm_access_token }}"
-      register: us_regions
-
-    - name: Show US regions
-      ansible.builtin.debug:
-        msg: "Found {{ us_regions.total }} US regions"
-      when: us_regions.total is defined
-
-    - name: Show US region names
-      ansible.builtin.debug:
-        msg: "{{ item.name }}"
-      loop: "{{ us_regions.regions }}"
-      when: us_regions.regions is defined
-
-    # Filter regions by network addresses
-    - name: Filter regions by network addresses
-      cdot65.scm.region_info:
-        folder: "Region-Test"
-        addresses:
-          - "10.0.0.0/8"
-        scm_access_token: "{{ scm_access_token }}"
-      register: regions_with_10_network
-
-    - name: Show regions with 10.0.0.0/8 network
-      ansible.builtin.debug:
-        msg: "Region {{ item.name }} has 10.0.0.0/8 network"
-      loop: "{{ regions_with_10_network.regions }}"
-      when: regions_with_10_network.regions is defined
-
-    # Combine multiple filters
-    - name: Combine geographic and address filters
-      cdot65.scm.region_info:
-        folder: "Region-Test"
-        geographic_location:
-          latitude:
-            min: 30
-            max: 50
-        addresses:
-          - "172.16.0.0/12"
-        scm_access_token: "{{ scm_access_token }}"
-      register: filtered_regions
-
-    - name: Show filtered regions
-      ansible.builtin.debug:
-        var: filtered_regions.regions
-      when: filtered_regions.regions is defined
-
     # Test exclusion filters
     - name: Create secondary folder
       cdot65.scm.folder:
@@ -188,24 +130,11 @@
     - name: Create test region in secondary folder
       cdot65.scm.region:
         name: "dev-region"
-        addresses:
+        address:
           - "192.168.1.0/24"
         folder: "Region-Dev"
         scm_access_token: "{{ scm_access_token }}"
         state: present
-
-    - name: Get regions excluding specific folders
-      cdot65.scm.region_info:
-        folder: "Texas"
-        exclude_folders:
-          - "Region-Dev"
-        scm_access_token: "{{ scm_access_token }}"
-      register: production_regions
-
-    - name: Show regions excluding dev folder
-      ansible.builtin.debug:
-        msg: "Found {{ production_regions.total }} production regions"
-      when: production_regions.total is defined
 
     # Test exact_match parameter
     - name: Get regions with exact folder match
@@ -234,7 +163,7 @@
     - name: Delete region in snippet
       cdot65.scm.region:
         name: "asia-pacific-region"
-        snippet: "Region-Test-Snippet"
+        snippet: "AnsibleTest"
         scm_access_token: "{{ scm_access_token }}"
         state: absent
 
@@ -247,7 +176,7 @@
 
     - name: Delete the test snippet
       cdot65.scm.snippet:
-        name: "Region-Test-Snippet"
+        name: "AnsibleTest"
         scm_access_token: "{{ scm_access_token }}"
         state: absent
 
