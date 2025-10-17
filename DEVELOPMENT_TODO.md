@@ -25,6 +25,8 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Snippet | ✅ | ✅ | ✅ |
 | Tag | ✅ | ✅ | ✅ |
 | Variable | ✅ | ✅ | ✅ |
+| Region | ✅ | ✅ | ✅ |
+| Schedule | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
 ### 🔴 Missing Modules (SDK Supported)
@@ -95,18 +97,20 @@ These are fundamental objects commonly used in security policies and should be p
   - Complexity: Medium
   - Status: Completed
 
-- [ ] **Regions** (`region.py`, `region_info.py`)
+- [x] **Regions** (`region.py`, `region_info.py`) ✅
   - SDK Models: `RegionCreateModel`, `RegionResponseModel`, `RegionUpdateModel`
   - Additional Models: `GeoLocation`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: Medium (has nested GeoLocation model)
+  - Status: Completed and tested
 
-## Priority 5: Scheduling
+## Priority 5: Scheduling ✅ COMPLETED
 
-- [ ] **Schedules** (`schedule.py`, `schedule_info.py`)
+- [x] **Schedules** (`schedule.py`, `schedule_info.py`) ✅
   - SDK Models: `ScheduleCreateModel`, `ScheduleResponseModel`, `ScheduleUpdateModel`
-  - Template: Use `address.py` as template
-  - Complexity: Medium
+  - Template: Used `address.py` as template
+  - Complexity: Medium-High (complex nested schedule_type with recurring/non-recurring)
+  - Status: Completed and tested
 
 ## Priority 6: Logging and Monitoring
 
