@@ -1,4 +1,4 @@
-.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration format lint-all lint-fix run-examples run-example
+.PHONY: build install clean test lint sanity unit-test integration-test dev-setup tox-sanity tox-units tox-integration tox-test tox-flake8 tox-black tox-isort tox-ruff tox-mypy tox-ansible-lint tox-format tox-lint tox-all format lint-all lint-fix run-examples run-example
 
 COLLECTION_NAMESPACE := cdot65
 COLLECTION_NAME := scm
@@ -60,12 +60,38 @@ tox-sanity:
 	poetry run tox -e sanity
 
 tox-units:
-	poetry run tox -e py312-ansible2.14
+	poetry run tox -e ansible2.18-py313-without_constraints
 
 tox-integration:
 	poetry run tox -e integration
 
-tox: tox-sanity tox-units tox-integration
+tox-test: tox-sanity tox-units tox-integration
+
+# Tox linting and formatting
+tox-flake8:
+	poetry run tox -e flake8-lint
+
+tox-black:
+	poetry run tox -e black-format
+
+tox-isort:
+	poetry run tox -e isort-format
+
+tox-ruff:
+	poetry run tox -e ruff-format
+
+tox-mypy:
+	poetry run tox -e mypy
+
+tox-ansible-lint:
+	poetry run tox -e ansible-lint
+
+tox-format: tox-black tox-isort tox-ruff
+
+tox-lint: tox-flake8 tox-ruff tox-mypy tox-ansible-lint
+
+# Run all tox environments
+tox-all: tox-format tox-lint tox-test
 
 # Development setup
 dev-setup:

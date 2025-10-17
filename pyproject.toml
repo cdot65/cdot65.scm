@@ -14,8 +14,8 @@ package-mode = false
 
 
 [tool.poetry.dependencies]
-ansible-core = "^2.17.0"
-pan-scm-sdk = "^0.3.33"
+ansible-core = "^2.18.0"
+pan-scm-sdk = "^0.3.44"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
@@ -23,6 +23,7 @@ pytest-mock = "^3.14.0"
 pytest-ansible = "^25.4.0"
 pytest-xdist = "^3.6.1"
 pytest-cov = "^6.1.1"
+tox = "^4.0.0"
 flake8 = "^6.1.0"
 ruff = "^0.11.5"
 mypy = "^1.15.0"

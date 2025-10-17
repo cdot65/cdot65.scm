@@ -37,22 +37,22 @@ test = ["coverage", "pip", "pytest (>=7.2.0)", "pytest-instafail", "pytest-mock"
 
 [[package]]
 name = "ansible-core"
-version = "2.17.11"
+version = "2.19.3"
 description = "Radically simple IT automation"
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.11"
 groups = ["main", "dev"]
 files = [
-    {file = "ansible_core-2.17.11-py3-none-any.whl", hash = "sha256:b90cc1afb8113ba61a6dcf94540ae4e32093ff669c3247eafaf9857da140be00"},
-    {file = "ansible_core-2.17.11.tar.gz", hash = "sha256:fa3175ef425d499052fc40cf2ed60e10a43c494de02864ee15533074094e9662"},
+    {file = "ansible_core-2.19.3-py3-none-any.whl", hash = "sha256:7d312c2b76a3cea19e6dc2648b4ca4eb13233e58a58539fd80ecbb3a77881e72"},
+    {file = "ansible_core-2.19.3.tar.gz", hash = "sha256:243a69669a007be0794360bc4477f70e0128ce0091dc3af4c5cb81c6a466f573"},
 ]
 
 [package.dependencies]
 cryptography = "*"
-jinja2 = ">=3.0.0"
+jinja2 = ">=3.1.0"
 packaging = "*"
 PyYAML = ">=5.1"
-resolvelib = ">=0.5.3,<1.1.0"
+resolvelib = ">=0.5.3,<2.0.0"
 
 [[package]]
 name = "ansible-lint"
@@ -183,6 +183,18 @@ files = [
 ]
 
 [[package]]
+name = "cachetools"
+version = "6.2.1"
+description = "Extensible memoizing collections and decorators"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "cachetools-6.2.1-py3-none-any.whl", hash = "sha256:09868944b6dde876dfd44e1d47e18484541eaf12f26f29b7af91b26cc892d701"},
+    {file = "cachetools-6.2.1.tar.gz", hash = "sha256:3f391e4bd8f8bf0931169baf7456cc822705f4e2a31f840d218f445b9a854201"},
+]
+
+[[package]]
 name = "certifi"
 version = "2025.4.26"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -273,6 +285,18 @@ files = [
 
 [package.dependencies]
 pycparser = "*"
+
+[[package]]
+name = "chardet"
+version = "5.2.0"
+description = "Universal encoding detector for Python 3"
+optional = false
+python-versions = ">=3.7"
+groups = ["dev"]
+files = [
+    {file = "chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970"},
+    {file = "chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7"},
+]
 
 [[package]]
 name = "charset-normalizer"
@@ -398,7 +422,6 @@ description = "Cross-platform colored terminal text."
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 groups = ["dev"]
-markers = "sys_platform == \"win32\" or platform_system == \"Windows\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -536,6 +559,18 @@ files = [
 ]
 
 [[package]]
+name = "distlib"
+version = "0.4.0"
+description = "Distribution utilities"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "distlib-0.4.0-py2.py3-none-any.whl", hash = "sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16"},
+    {file = "distlib-0.4.0.tar.gz", hash = "sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d"},
+]
+
+[[package]]
 name = "execnet"
 version = "2.1.1"
 description = "execnet: rapid multi-Python deployment"
@@ -567,20 +602,15 @@ tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipyth
 
 [[package]]
 name = "filelock"
-version = "3.18.0"
+version = "3.20.0"
 description = "A platform independent file lock."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "filelock-3.18.0-py3-none-any.whl", hash = "sha256:c401f4f8377c4464e6db25fff06205fd89bdd83b65eb0488ed1b160f780e21de"},
-    {file = "filelock-3.18.0.tar.gz", hash = "sha256:adbc88eabb99d2fec8c9c1b229b171f18afa655400173ddc653d5d01501fb9f2"},
+    {file = "filelock-3.20.0-py3-none-any.whl", hash = "sha256:339b4732ffda5cd79b13f4e2711a31b0365ce445d95d243bb996273d072546a2"},
+    {file = "filelock-3.20.0.tar.gz", hash = "sha256:711e943b4ec6be42e1d4e6690b48dc175c822967466bb31c0c293f34334c13f4"},
 ]
-
-[package.extras]
-docs = ["furo (>=2024.8.6)", "sphinx (>=8.1.3)", "sphinx-autodoc-typehints (>=3)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.6.10)", "diff-cover (>=9.2.1)", "pytest (>=8.3.4)", "pytest-asyncio (>=0.25.2)", "pytest-cov (>=6)", "pytest-mock (>=3.14)", "pytest-timeout (>=2.3.1)", "virtualenv (>=20.28.1)"]
-typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
 name = "flake8"
@@ -1000,14 +1030,14 @@ files = [
 
 [[package]]
 name = "pan-scm-sdk"
-version = "0.3.33"
+version = "0.3.44"
 description = "Python SDK for Palo Alto Networks Strata Cloud Manager."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pan_scm_sdk-0.3.33-py3-none-any.whl", hash = "sha256:78d062d263ebaee3b63a96dee1591f1bcc8e8eb49adf5f5cecc2191f1372d371"},
-    {file = "pan_scm_sdk-0.3.33.tar.gz", hash = "sha256:2dda3372498ab8fd33926c7e1e9a7293389ae25c9d59059d7f6a3b04169878a0"},
+    {file = "pan_scm_sdk-0.3.44-py3-none-any.whl", hash = "sha256:247e8047e378a09ef76395ceeade55078a705c2266d9bc8bb82b6ba0c05b9267"},
+    {file = "pan_scm_sdk-0.3.44.tar.gz", hash = "sha256:b0a5c16742ed189079184087cb9aacb94306d376c446a176ff40353f5d2343b3"},
 ]
 
 [package.dependencies]
@@ -1065,36 +1095,36 @@ ptyprocess = ">=0.5"
 
 [[package]]
 name = "platformdirs"
-version = "4.3.8"
+version = "4.5.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "platformdirs-4.5.0-py3-none-any.whl", hash = "sha256:e578a81bb873cbb89a41fcc904c7ef523cc18284b7e3b3ccf06aca1403b7ebd3"},
+    {file = "platformdirs-4.5.0.tar.gz", hash = "sha256:70ddccdd7c99fc5942e9fc25636a8b34d04c24b335100223152c2803e4063312"},
+]
+
+[package.extras]
+docs = ["furo (>=2025.9.25)", "proselint (>=0.14)", "sphinx (>=8.2.3)", "sphinx-autodoc-typehints (>=3.2)"]
+test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=8.4.2)", "pytest-cov (>=7)", "pytest-mock (>=3.15.1)"]
+type = ["mypy (>=1.18.2)"]
+
+[[package]]
+name = "pluggy"
+version = "1.6.0"
+description = "plugin and hook calling mechanisms for python"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "platformdirs-4.3.8-py3-none-any.whl", hash = "sha256:ff7059bb7eb1179e2685604f4aaf157cfd9535242bd23742eadc3c13542139b4"},
-    {file = "platformdirs-4.3.8.tar.gz", hash = "sha256:3d512d96e16bcb959a814c9f348431070822a6496326a4be0911c40b5a74c2bc"},
-]
-
-[package.extras]
-docs = ["furo (>=2024.8.6)", "proselint (>=0.14)", "sphinx (>=8.1.3)", "sphinx-autodoc-typehints (>=3)"]
-test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=8.3.4)", "pytest-cov (>=6)", "pytest-mock (>=3.14)"]
-type = ["mypy (>=1.14.1)"]
-
-[[package]]
-name = "pluggy"
-version = "1.5.0"
-description = "plugin and hook calling mechanisms for python"
-optional = false
-python-versions = ">=3.8"
-groups = ["dev"]
-files = [
-    {file = "pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"},
-    {file = "pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"},
+    {file = "pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"},
+    {file = "pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"},
 ]
 
 [package.extras]
 dev = ["pre-commit", "tox"]
-testing = ["pytest", "pytest-benchmark"]
+testing = ["coverage", "pytest", "pytest-benchmark"]
 
 [[package]]
 name = "prompt-toolkit"
@@ -1341,6 +1371,25 @@ crypto = ["cryptography (>=3.4.0)"]
 dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx", "sphinx-rtd-theme", "zope.interface"]
 docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
+
+[[package]]
+name = "pyproject-api"
+version = "1.10.0"
+description = "API to interact with the python pyproject.toml based projects"
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "pyproject_api-1.10.0-py3-none-any.whl", hash = "sha256:8757c41a79c0f4ab71b99abed52b97ecf66bd20b04fa59da43b5840bac105a09"},
+    {file = "pyproject_api-1.10.0.tar.gz", hash = "sha256:40c6f2d82eebdc4afee61c773ed208c04c19db4c4a60d97f8d7be3ebc0bbb330"},
+]
+
+[package.dependencies]
+packaging = ">=25"
+
+[package.extras]
+docs = ["furo (>=2025.9.25)", "sphinx-autodoc-typehints (>=3.5.1)"]
+testing = ["covdefaults (>=2.3)", "pytest (>=8.4.2)", "pytest-cov (>=7)", "pytest-mock (>=3.15.1)", "setuptools (>=80.9)"]
 
 [[package]]
 name = "pytest"
@@ -1883,6 +1932,29 @@ docs = ["argparse-manpage", "cairosvg", "markdown-include", "mkdocs", "mkdocs-gi
 test = ["enrich (>=1.2.6)", "molecule (>=3.4.0)", "pytest (>=6.2.5)", "pytest-cov (>=2.12.1)", "pytest-plus (>=0.2)", "pytest-xdist (>=2.3.0)"]
 
 [[package]]
+name = "tox"
+version = "4.31.0"
+description = "tox is a generic virtualenv management and test command line tool"
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "tox-4.31.0-py3-none-any.whl", hash = "sha256:328f392e6567e46cb0f9b625679456744dde940287dd1b39117627dc4b21d5da"},
+    {file = "tox-4.31.0.tar.gz", hash = "sha256:266381ffef35615ec0d40ae4969a9e43b506017597c0413d6545a603cc8c7561"},
+]
+
+[package.dependencies]
+cachetools = ">=6.2"
+chardet = ">=5.2"
+colorama = ">=0.4.6"
+filelock = ">=3.20"
+packaging = ">=25"
+platformdirs = ">=4.5"
+pluggy = ">=1.6"
+pyproject-api = ">=1.9.1"
+virtualenv = ">=20.34"
+
+[[package]]
 name = "traitlets"
 version = "5.14.3"
 description = "Traitlets Python configuration system"
@@ -1959,6 +2031,27 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "virtualenv"
+version = "20.35.3"
+description = "Virtual Python Environment builder"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "virtualenv-20.35.3-py3-none-any.whl", hash = "sha256:63d106565078d8c8d0b206d48080f938a8b25361e19432d2c9db40d2899c810a"},
+    {file = "virtualenv-20.35.3.tar.gz", hash = "sha256:4f1a845d131133bdff10590489610c98c168ff99dc75d6c96853801f7f67af44"},
+]
+
+[package.dependencies]
+distlib = ">=0.3.7,<1"
+filelock = ">=3.12.2,<4"
+platformdirs = ">=3.9.1,<5"
+
+[package.extras]
+docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2,!=7.3)", "sphinx-argparse (>=0.4)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
+test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
+
+[[package]]
 name = "wcmatch"
 version = "10.0"
 description = "Wildcard/glob file name matcher."
@@ -2027,4 +2120,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "98426d058f0cb3541a96aa916a302fbfe513973293ca0251c51a0d2c886aaa2a"
+content-hash = "552bc1a44202306f6a755fc2327b8d05c37fe27927b658922f865cf3d7588c50"

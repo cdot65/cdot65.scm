@@ -2,8 +2,8 @@
 
 ![Banner Image](https://raw.githubusercontent.com/cdot65/pan-scm-sdk/main/docs/images/logo.svg)
 [![License](https://img.shields.io/badge/license-GPL--3.0-brightgreen.svg)](https://github.com/cdot65/cdot65.scm/blob/main/LICENSE)
-[![Python versions](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
-[![Ansible versions](https://img.shields.io/badge/ansible-2.17%2B-black.svg)](https://www.ansible.com/)
+[![Python versions](https://img.shields.io/badge/python-3.10--3.13-blue.svg)](https://www.python.org/)
+[![Ansible versions](https://img.shields.io/badge/ansible-2.18%2B-black.svg)](https://www.ansible.com/)
 
 Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) configurations.
 
@@ -34,8 +34,8 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Requirements
 
-- Python 3.11 or higher
-- Ansible Core 2.17 or higher
+- Python 3.10 or higher (Python 3.13 fully supported)
+- Ansible Core 2.18 or higher
 - pan-scm-sdk 0.3.33 or higher (installed automatically as a dependency)
 
 ## Installation
