@@ -67,6 +67,12 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | ✅ | Complete and available for use |
 | 📝 | Planned for future release |
 
+### Authentication Module
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [auth](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/auth.py) | Authenticate and obtain OAuth2 access token | ✅ |
+
 ### Core Management Modules
 
 | Module | Description | Status |
@@ -93,6 +99,25 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [application_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_info.py) | Retrieve application information | ✅ |
 | [application_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group.py) | Manage application groups | ✅ |
 | [application_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_group_info.py) | Retrieve application group information | ✅ |
+
+### Service Objects Modules (Planned)
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [service](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service.py) | Manage service objects | 📝 |
+| [service_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_info.py) | Retrieve service object information | 📝 |
+| [service_group](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group.py) | Manage service groups | 📝 |
+| [service_group_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_group_info.py) | Retrieve service group information | 📝 |
+
+### Additional Modules (Planned)
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [tag](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag.py) | Manage tags | 📝 |
+| [tag_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag_info.py) | Retrieve tag information | 📝 |
+| [application_filter](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter.py) | Manage application filters | 📝 |
+| [application_filter_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/application_filter_info.py) | Retrieve application filter information | 📝 |
+| [agent_version_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/agent_version_info.py) | Retrieve agent version information | 📝 |
 
 ### Configuration and Deployment Modules (Planned)
 
@@ -167,7 +192,27 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 The collection uses OAuth2 authentication with the SCM API. All secrets must be provided via Ansible Vault-encrypted variable files.
 
-### Authentication Example
+### Authentication Methods
+
+You can authenticate using either the `auth` module or the `auth` role:
+
+#### Option 1: Using the auth module
+
+```yaml
+- name: Get OAuth2 token
+  cdot65.scm.auth:
+    client_id: "{{ scm_client_id }}"
+    client_secret: "{{ scm_client_secret }}"
+    tsg_id: "{{ scm_tsg_id }}"
+  register: auth_result
+  no_log: true
+
+- name: Set access token fact
+  set_fact:
+    scm_access_token: "{{ auth_result.access_token }}"
+```
+
+#### Option 2: Using the auth role
 
 ```yaml
 - name: Authenticate with SCM
@@ -178,6 +223,8 @@ The collection uses OAuth2 authentication with the SCM API. All secrets must be 
   roles:
     - cdot65.scm.auth
 ```
+
+### Vault Configuration
 
 A typical `vault.yml` file should contain:
 
@@ -253,6 +300,7 @@ The collection follows consistent design patterns:
 - **Check Mode Support**: Preview changes without applying them
 
 All modules support:
+
 - Check mode
 - Detailed error messages
 - Consistent return structures
