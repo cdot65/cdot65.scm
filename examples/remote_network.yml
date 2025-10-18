@@ -1,0 +1,105 @@
+---
+# Example playbook for managing Prisma Access remote networks
+# Remote networks connect branch offices to Prisma Access via IPSec tunnels
+#
+# IMPORTANT: These examples require:
+# - Existing SPN (Service Provider Network) configured in Prisma Access
+# - IPSec tunnel(s) already created
+# - Proper Prisma Access licensing (FWAAS-AGGREGATE)
+
+- name: Remote Network Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # Setup authentication
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # Example 1: Create basic remote network with single tunnel
+    - name: Create basic remote network
+      cdot65.scm.remote_network:
+        name: "ansible-test-branch"
+        region: "us-east-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "my-spn"  # Replace with your actual SPN name
+        description: "Ansible test remote network"
+        subnets:
+          - "10.100.0.0/24"
+          - "10.100.1.0/24"
+        ipsec_tunnel: "my-ipsec-tunnel"  # Replace with your actual tunnel name
+        folder: "Remote Networks"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_network
+
+    - name: Display created network
+      ansible.builtin.debug:
+        var: basic_network
+
+    # Example 2: Create remote network with BGP
+    # Note: This example shows BGP configuration structure
+    - name: Create remote network with BGP (commented out - requires BGP setup)
+      cdot65.scm.remote_network:
+        name: "ansible-test-bgp-branch"
+        region: "us-west-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "my-spn"
+        subnets:
+          - "10.101.0.0/24"
+        ipsec_tunnel: "my-ipsec-tunnel-2"
+        protocol:
+          bgp:
+            enable: true
+            local_ip_address: "169.254.1.1"
+            peer_ip_address: "169.254.1.2"
+            peer_as: "65001"
+            peering_type: "exchange-v4-over-v4"
+        folder: "Remote Networks"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: bgp_network
+      when: false  # Set to true when BGP is configured
+
+    # Example 3: Update remote network (add subnet)
+    - name: Update remote network - add subnet
+      cdot65.scm.remote_network:
+        name: "ansible-test-branch"
+        region: "us-east-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "my-spn"
+        subnets:
+          - "10.100.0.0/24"
+          - "10.100.1.0/24"
+          - "10.100.2.0/24"  # New subnet
+        ipsec_tunnel: "my-ipsec-tunnel"
+        folder: "Remote Networks"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_network
+
+    - name: Display updated network
+      ansible.builtin.debug:
+        var: updated_network
+
+    # Example 4: Delete remote network
+    # Note: Uncomment when ready to clean up
+    - name: Delete remote network
+      cdot65.scm.remote_network:
+        id: "{{ basic_network.remote_network.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_network
+      when: basic_network.remote_network.id is defined
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_network
+      when: basic_network.remote_network.id is defined
