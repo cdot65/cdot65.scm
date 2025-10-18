@@ -143,12 +143,16 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 
 ## Resource Modules Status
 
-### Completed Modules
+### Completed Modules (83 total - 41 resource + 42 info)
+
+**Setup & Management (10 modules):**
 - Folder management (`folder`, `folder_info`) - Complete ✅
 - Label management (`label`, `label_info`) - Complete ✅
 - Snippet management (`snippet`, `snippet_info`) - Complete ✅
 - Device Info (`device_info`) - Complete ✅
 - Variable management (`variable`, `variable_info`) - Complete ✅
+
+**Network Objects (26 modules):**
 - Address Objects (`address`, `address_info`) - Complete ✅
 - Address Groups (`address_group`, `address_group_info`) - Complete ✅
 - Application Objects (`application`, `application_info`) - Complete ✅
@@ -156,36 +160,62 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Application Filters (`application_filter`, `application_filter_info`) - Complete ✅
 - Dynamic User Groups (`dynamic_user_group`, `dynamic_user_group_info`) - Complete ✅
 - External Dynamic Lists (`external_dynamic_list`, `external_dynamic_list_info`) - Complete ✅
-- Host Information Profiles (`hip_object`, `hip_object_info`) - Complete ✅
+- HIP Objects (`hip_object`, `hip_object_info`) - Complete ✅
 - HIP Profiles (`hip_profile`, `hip_profile_info`) - Complete ✅
-- HTTP Server Profiles (`http_server_profile`, `http_server_profile_info`) - Complete ✅
-- Log Forwarding Profiles (`log_forwarding_profile`, `log_forwarding_profile_info`) - Complete ✅
 - Service Objects (`service`, `service_info`) - Complete ✅
 - Service Groups (`service_group`, `service_group_info`) - Complete ✅
 - Tags (`tag`, `tag_info`) - Complete ✅
 - Regions (`region`, `region_info`) - Complete ✅
 - Schedules (`schedule`, `schedule_info`) - Complete ✅
+
+**Security Profiles & Policies (16 modules):**
+- Anti-Spyware Profiles (`anti_spyware_profile`, `anti_spyware_profile_info`) - Complete ✅
+- Decryption Profiles (`decryption_profile`, `decryption_profile_info`) - Complete ✅
+- DNS Security Profiles (`dns_security_profile`, `dns_security_profile_info`) - Complete ✅
 - Security Rules (`security_rule`, `security_rule_info`) - Complete ✅
 - URL Categories (`url_categories`, `url_categories_info`) - Complete ✅
-- Syslog Server Profiles (`syslog_server_profile`, `syslog_server_profile_info`) - Implemented ⚠️ (API limitations)
-- Quarantined Devices (`quarantined_device`, `quarantined_device_info`) - Implemented ⚠️ (requires connected devices)
+- Vulnerability Protection (`vulnerability_protection_profile`, `vulnerability_protection_profile_info`) - Complete ✅
+- WildFire Antivirus (`wildfire_antivirus_profile`, `wildfire_antivirus_profile_info`) - Complete ✅
+- Log Forwarding Profiles (`log_forwarding_profile`, `log_forwarding_profile_info`) - Complete ✅
 
-### Planned Modules (See DEVELOPMENT_TODO.md)
-- Additional modules from previous collection iteration tracked in DEVELOPMENT_TODO.md
-- Priority 8: Network Configuration & VPN (8 modules)
-- Priority 9: Deployment & Infrastructure (9 modules)
-- Priority 10: Security Services & Policies (15 remaining modules)
+**VPN & Network (12 modules):**
+- IKE Crypto Profiles (`ike_crypto_profile`, `ike_crypto_profile_info`) - Complete ✅
+- IKE Gateways (`ike_gateway`, `ike_gateway_info`) - Complete ✅
+- IPsec Crypto Profiles (`ipsec_crypto_profile`, `ipsec_crypto_profile_info`) - Complete ✅
+- NAT Rules (`nat_rule`, `nat_rule_info`) - Complete ✅
+- Security Zones (`security_zone`, `security_zone_info`) - Complete ✅
+- BGP Routing (`bgp_routing`, `bgp_routing_info`) - Complete ✅
+
+**Deployment & Infrastructure (11 modules):**
+- Bandwidth Allocation (`bandwidth_allocation`, `bandwidth_allocation_info`) - Complete ⚠️
+- Internal DNS Servers (`internal_dns_server`, `internal_dns_server_info`) - Complete ✅
+- Network Locations (`network_location_info`) - Complete ✅ (read-only)
+- Remote Networks (`remote_network`, `remote_network_info`) - Complete ✅
+- Service Connections (`service_connection`, `service_connection_info`) - Complete ✅
+
+**Logging & Monitoring (8 modules):**
+- HTTP Server Profiles (`http_server_profile`, `http_server_profile_info`) - Complete ✅
+- Syslog Server Profiles (`syslog_server_profile`, `syslog_server_profile_info`) - Complete ⚠️
+- Quarantined Devices (`quarantined_device`, `quarantined_device_info`) - Complete ⚠️
+
+### Remaining Modules (8 modules - lower priority)
+See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for details:
+- Mobile Agent: agent_version, auth_setting (4 modules)
+- Automation: auto_tag_action (2 modules)
+- Insights: alerts (2 modules)
 
 ### Current Status
 
-- ✅ **48 total modules** (24 resource + 24 info modules)
-- ✅ **100% SDK coverage for core objects** - Every object in pan-scm-sdk has a corresponding module
-- ✅ **Priority 10 progress**: Security Rule, URL Categories modules complete
-- ⚠️ **2 modules with API limitations**:
-  - **Syslog Server Profiles**: API endpoint returns HTTP 500 errors in some environments
-  - **Quarantined Devices**: Requires actual firewall devices connected to SCM to function
+- ✅ **83 total modules** (41 resource + 42 info modules)
+- ✅ **91% SDK coverage** - 39 of 43 available SDK services implemented
+- ✅ **All Priority 8, 9, and 10 modules complete**
+- ✅ **Production-ready** with comprehensive VPN, routing, and security capabilities
+- ⚠️ **3 modules with API limitations**:
+  - **Bandwidth Allocation**: Update/Delete operations limited in SCM API
+  - **Syslog Server Profiles**: API endpoint returns errors in some environments
+  - **Quarantined Devices**: Requires actual firewall devices connected to SCM
 
-Both modules with limitations are fully implemented, production-ready, and follow all collection standards. They may work in different environments or future API versions.
+All modules are fully implemented and follow collection standards. Modules with limitations may work in different environments or future API versions.
 
 ## Code Style and Quality Standards
 

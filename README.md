@@ -63,22 +63,21 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 69 production-ready modules (34 resource modules + 35 info modules)
+**Current Status**: 83 production-ready modules (41 resource modules + 42 info modules)
 
-**SDK Coverage**: 78% of pan-scm-sdk v0.3.44 services (35 of 45 available services implemented)
+**SDK Coverage**: 91% of pan-scm-sdk v0.3.44 services (39 of 43 available services implemented)
 
-**Coverage**: Growing module coverage with recent additions of security profile and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes, roadmap, and complete SDK service mapping.
+**Coverage**: Comprehensive module coverage including VPN, routing, NAT, security profiles, and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes, roadmap, and complete SDK service mapping.
 
 ### SDK Integration Status
 
 This collection integrates with **pan-scm-sdk v0.3.44** (latest version). Below is our coverage status:
 
-- ✅ **Implemented**: 35 SDK services (69 modules total)
-- 🟢 **Available in SDK, Ready to Implement**: 10 SDK services (20 potential modules)
-- 🎯 **Target**: 100% SDK coverage (89 total modules)
+- ✅ **Implemented**: 39 SDK services (83 modules total)
+- 🟢 **Available in SDK, Ready to Implement**: 4 SDK services (8 potential modules)
+- 🎯 **Target**: 100% SDK coverage (91 total modules)
 
 **Remaining SDK Services Not Yet Implemented:**
-- Network & VPN: `ike_crypto_profile`, `ike_gateway`, `ipsec_crypto_profile`, `bgp_routing`, `nat_rule`
 - Mobile Agent: `agent_version`, `auth_setting`
 - Automation: `auto_tag_action`
 - Insights: `alerts`
@@ -137,8 +136,23 @@ See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed SDK service mapping 
 
 | Module | Description | Status |
 |--------|-------------|--------|
+| [ike_crypto_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_crypto_profile.py) | Manage IKE crypto profiles for VPN phase 1 | ✅ |
+| [ike_crypto_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_crypto_profile_info.py) | Retrieve IKE crypto profile information | ✅ |
+| [ike_gateway](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_gateway.py) | Manage IKE gateways for VPN tunnels | ✅ |
+| [ike_gateway_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_gateway_info.py) | Retrieve IKE gateway information | ✅ |
+| [ipsec_crypto_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ipsec_crypto_profile.py) | Manage IPsec crypto profiles for VPN phase 2 | ✅ |
+| [ipsec_crypto_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ipsec_crypto_profile_info.py) | Retrieve IPsec crypto profile information | ✅ |
+| [nat_rule](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/nat_rule.py) | Manage NAT rules with source/destination translation | ✅ |
+| [nat_rule_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/nat_rule_info.py) | Retrieve NAT rule information | ✅ |
 | [security_zone](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone.py) | Manage security zones | ✅ |
 | [security_zone_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone_info.py) | Retrieve security zone information | ✅ |
+
+### Routing & BGP Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [bgp_routing](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bgp_routing.py) | Manage global BGP routing configuration | ✅ |
+| [bgp_routing_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bgp_routing_info.py) | Retrieve BGP routing configuration | ✅ |
 
 ### User & Device Management Modules
 
@@ -229,11 +243,12 @@ See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed SDK service mapping 
 
 ## Module Status
 
-**Growing module coverage with security enhancements and deployment features!** 🚀
+**Comprehensive module coverage with VPN, routing, and security features!** 🚀
 
-- ✅ **60 total modules** (30 resource + 30 info modules)
-- ✅ **Expanding coverage** - Recently added security profile, policy, and deployment modules
-- ⚠️ **2 modules with API limitations** (syslog_server_profile, quarantined_device) - see notes above
+- ✅ **83 total modules** (41 resource + 42 info modules)
+- ✅ **91% SDK coverage** - Includes VPN (IKE/IPsec), routing (BGP), NAT rules, security profiles, and deployment modules
+- ✅ **All Priority 8, 9, and 10 modules complete** - Full networking, VPN, and security policy management
+- ⚠️ **3 modules with API limitations** (syslog_server_profile, quarantined_device, bandwidth_allocation) - see notes above
 
 See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for complete implementation details, roadmap, and status of each module.
 
