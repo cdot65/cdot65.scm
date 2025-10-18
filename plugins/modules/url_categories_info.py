@@ -202,7 +202,7 @@ def main():
         # Get URL category by ID if specified
         if params.get("id"):
             try:
-                url_category_obj = client.url_categories.get(params.get("id"))
+                url_category_obj = client.url_category.get(params.get("id"))
                 if url_category_obj:
                     result["url_categories"] = [json.loads(url_category_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:
@@ -231,7 +231,7 @@ def main():
                     )
 
                 # For any container type, fetch the URL category object
-                url_category_obj = client.url_categories.fetch(name=params.get("name"), **{container_type: container_name})
+                url_category_obj = client.url_category.fetch(name=params.get("name"), **{container_type: container_name})
                 if url_category_obj:
                     result["url_categories"] = [json.loads(url_category_obj.model_dump_json(exclude_unset=True))]
             except ObjectNotPresentError as e:
@@ -258,7 +258,7 @@ def main():
                 filter_params["exact_match"] = params.get("exact_match")
 
             # List URL categories with container filters
-            url_categories = client.url_categories.list(**filter_params)
+            url_categories = client.url_category.list(**filter_params)
 
             # Convert to a list of dicts
             url_category_dicts = [json.loads(cat.model_dump_json(exclude_unset=True)) for cat in url_categories]

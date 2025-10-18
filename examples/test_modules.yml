@@ -1,0 +1,72 @@
+---
+# Simple test playbook to verify new modules work with vault authentication
+# This is a read-only test that lists existing resources
+
+- name: Test New Modules with Vault Authentication
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Test Security Rule Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all security rules in pre-rulebase
+      cdot65.scm.security_rule_info:
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: security_rules
+      ignore_errors: true
+
+    - name: Display security rules count
+      ansible.builtin.debug:
+        msg: "Found {{ security_rules.security_rules | default([]) | length }} security rules"
+      when: security_rules is defined and not security_rules.failed
+
+    - name: Display security rules error (if any)
+      ansible.builtin.debug:
+        var: security_rules
+      when: security_rules.failed is defined and security_rules.failed
+
+    # =========================================================================
+    # Test URL Categories Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all URL categories
+      cdot65.scm.url_categories_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: url_categories
+      ignore_errors: true
+
+    - name: Display URL categories count
+      ansible.builtin.debug:
+        msg: "Found {{ url_categories.url_categories | default([]) | length }} URL categories"
+      when: url_categories is defined and not url_categories.failed
+
+    - name: Display URL categories error (if any)
+      ansible.builtin.debug:
+        var: url_categories
+      when: url_categories.failed is defined and url_categories.failed
+
+    # =========================================================================
+    # Test Summary
+    # =========================================================================
+    - name: Display test summary
+      ansible.builtin.debug:
+        msg:
+          - "=== Module Test Summary ==="
+          - "Security Rules module: {{ 'PASS' if (security_rules is defined and not security_rules.failed) else 'FAIL' }}"
+          - "URL Categories module: {{ 'PASS' if (url_categories is defined and not url_categories.failed) else 'FAIL' }}"

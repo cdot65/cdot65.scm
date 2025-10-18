@@ -284,7 +284,7 @@ def main():
 
                 # For any container type, fetch the URL category object
                 if container_type and container_name:
-                    url_category_obj = client.url_categories.fetch(name=params.get("name"), **{container_type: container_name})
+                    url_category_obj = client.url_category.fetch(name=params.get("name"), **{container_type: container_name})
                     if url_category_obj:
                         url_category_exists = True
             except ObjectNotPresentError:
@@ -312,7 +312,7 @@ def main():
                 if update_fields:
                     if not module.check_mode:
                         update_model = url_category_obj.model_copy(update=update_fields)
-                        updated = client.url_categories.update(update_model)
+                        updated = client.url_category.update(update_model)
                         result["url_category"] = json.loads(updated.model_dump_json(exclude_unset=True))
                     else:
                         result["url_category"] = json.loads(url_category_obj.model_dump_json(exclude_unset=True))
@@ -343,7 +343,7 @@ def main():
                 # Create a URL category object
                 if not module.check_mode:
                     # Create a URL category object
-                    created = client.url_categories.create(create_payload)
+                    created = client.url_category.create(create_payload)
 
                     # Return the created URL category object
                     result["url_category"] = json.loads(created.model_dump_json(exclude_unset=True))
@@ -362,7 +362,7 @@ def main():
         elif params.get("state") == "absent":
             if url_category_exists:
                 if not module.check_mode:
-                    client.url_categories.delete(url_category_obj.id)
+                    client.url_category.delete(url_category_obj.id)
 
                 # Mark as changed
                 result["changed"] = True
