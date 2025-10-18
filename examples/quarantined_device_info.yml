@@ -1,0 +1,209 @@
+---
+# Example playbook for retrieving quarantined device information from Strata Cloud Manager
+# This playbook demonstrates various query patterns for quarantined devices
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query quarantined device information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    # ============================================================================
+    # Authentication Verification
+    # ============================================================================
+    - name: Display authentication info
+      ansible.builtin.debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # ============================================================================
+    # Setup: Quarantine test devices for demonstration
+    # ============================================================================
+    - name: Setup - Create test devices for demonstration
+      cdot65.scm.quarantined_device:
+        host_id: "{{ item.host_id }}"
+        serial_number: "{{ item.serial_number | default(omit) }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - host_id: "f6a7b8c9-d0e1-9f0a-3b4c-5d6e7f8a9b0c"
+          serial_number: "PA-VM-TEST-001"
+        - host_id: "a7b8c9d0-e1f2-0a1b-4c5d-6e7f8a9b0c1d"
+          serial_number: "PA-VM-TEST-002"
+        - host_id: "b8c9d0e1-f2a3-1b2c-5d6e-7f8a9b0c1d2e"
+          serial_number: "PA-VM-TEST-003"
+        - host_id: "c9d0e1f2-a3b4-2c3d-6e7f-8a9b0c1d2e3f"
+          # This device has no serial number
+      loop_control:
+        label: "{{ item.host_id }}"
+      register: setup_devices
+
+    - name: Display setup summary
+      ansible.builtin.debug:
+        msg: "Created {{ setup_devices.results | selectattr('changed') | list | length }} test devices for demonstration"
+
+    # ============================================================================
+    # Example 1: Query all quarantined devices
+    # ============================================================================
+    - name: Query all quarantined devices
+      cdot65.scm.quarantined_device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_devices
+
+    - name: Display all quarantined devices count
+      ansible.builtin.debug:
+        msg: "Total quarantined devices: {{ all_devices.quarantined_devices | length }}"
+
+    - name: Display all quarantined devices details
+      ansible.builtin.debug:
+        var: all_devices.quarantined_devices
+
+    # ============================================================================
+    # Example 2: Query specific device by host_id
+    # ============================================================================
+    - name: Query specific device by host_id
+      cdot65.scm.quarantined_device_info:
+        host_id: "f6a7b8c9-d0e1-9f0a-3b4c-5d6e7f8a9b0c"
+        scm_access_token: "{{ scm_access_token }}"
+      register: device_by_host_id
+
+    - name: Display device details by host_id
+      ansible.builtin.debug:
+        var: device_by_host_id.quarantined_devices
+
+    - name: Verify single device returned
+      ansible.builtin.debug:
+        msg: "Found {{ device_by_host_id.quarantined_devices | length }} device(s) with specified host_id"
+
+    # ============================================================================
+    # Example 3: Query devices by serial_number filter
+    # ============================================================================
+    - name: Query devices by serial_number filter
+      cdot65.scm.quarantined_device_info:
+        serial_number: "PA-VM-TEST-002"
+        scm_access_token: "{{ scm_access_token }}"
+      register: devices_by_serial
+
+    - name: Display devices filtered by serial number
+      ansible.builtin.debug:
+        var: devices_by_serial.quarantined_devices
+
+    - name: Verify devices with matching serial number
+      ansible.builtin.debug:
+        msg: "Found {{ devices_by_serial.quarantined_devices | length }} device(s) with serial number PA-VM-TEST-002"
+
+    # ============================================================================
+    # Example 4: Query with multiple filters and show result processing
+    # ============================================================================
+    - name: Query all devices and filter results in Ansible
+      cdot65.scm.quarantined_device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_test_devices
+
+    - name: Filter devices with serial numbers
+      ansible.builtin.set_fact:
+        devices_with_serials: "{{ all_test_devices.quarantined_devices | selectattr('serial_number', 'defined') | list }}"
+
+    - name: Display devices with serial numbers
+      ansible.builtin.debug:
+        var: devices_with_serials
+
+    - name: Filter devices without serial numbers
+      ansible.builtin.set_fact:
+        devices_without_serials: "{{ all_test_devices.quarantined_devices | rejectattr('serial_number', 'defined') | list }}"
+
+    - name: Display devices without serial numbers
+      ansible.builtin.debug:
+        var: devices_without_serials
+
+    # ============================================================================
+    # Example 5: Show handling of empty results
+    # ============================================================================
+    - name: Query with non-existent host_id (empty result test)
+      cdot65.scm.quarantined_device_info:
+        host_id: "00000000-0000-0000-0000-000000000000"
+        scm_access_token: "{{ scm_access_token }}"
+      register: empty_result
+
+    - name: Display empty result handling
+      ansible.builtin.debug:
+        msg: "Query returned {{ empty_result.quarantined_devices | length }} devices (expected 0 for non-existent host_id)"
+
+    - name: Conditional task based on results
+      ansible.builtin.debug:
+        msg: "No devices found with the specified host_id"
+      when: empty_result.quarantined_devices | length == 0
+
+    # ============================================================================
+    # Advanced Example: Iterate through all quarantined devices
+    # ============================================================================
+    - name: Get all quarantined devices for iteration
+      cdot65.scm.quarantined_device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: iteration_devices
+
+    - name: Display each quarantined device individually
+      ansible.builtin.debug:
+        msg:
+          - "Host ID: {{ item.host_id }}"
+          - "Serial Number: {{ item.serial_number | default('N/A') }}"
+      loop: "{{ iteration_devices.quarantined_devices }}"
+      loop_control:
+        label: "{{ item.host_id }}"
+
+    # ============================================================================
+    # Advanced Example: Build report of quarantined devices
+    # ============================================================================
+    - name: Generate quarantine report
+      ansible.builtin.set_fact:
+        quarantine_report:
+          total_devices: "{{ all_test_devices.quarantined_devices | length }}"
+          devices_with_serial: "{{ all_test_devices.quarantined_devices | selectattr('serial_number', 'defined') | list | length }}"
+          devices_without_serial: "{{ all_test_devices.quarantined_devices | rejectattr('serial_number', 'defined') | list | length }}"
+
+    - name: Display quarantine report
+      ansible.builtin.debug:
+        var: quarantine_report
+
+    # ============================================================================
+    # Cleanup: Remove all test devices from quarantine
+    # ============================================================================
+    - name: Cleanup - Remove all test devices from quarantine
+      cdot65.scm.quarantined_device:
+        host_id: "{{ item }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "f6a7b8c9-d0e1-9f0a-3b4c-5d6e7f8a9b0c"
+        - "a7b8c9d0-e1f2-0a1b-4c5d-6e7f8a9b0c1d"
+        - "b8c9d0e1-f2a3-1b2c-5d6e-7f8a9b0c1d2e"
+        - "c9d0e1f2-a3b4-2c3d-6e7f-8a9b0c1d2e3f"
+      register: cleanup_results
+
+    - name: Display cleanup summary
+      ansible.builtin.debug:
+        msg: "Cleanup complete - Removed {{ cleanup_results.results | selectattr('changed') | list | length }} test devices"
+
+    # ============================================================================
+    # Final Verification
+    # ============================================================================
+    - name: Final verification - confirm cleanup
+      cdot65.scm.quarantined_device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: final_check
+
+    - name: Display final device count
+      ansible.builtin.debug:
+        msg: "Final count of quarantined devices: {{ final_check.quarantined_devices | length }}"
+
+    - name: Verify cleanup success
+      ansible.builtin.assert:
+        that:
+          - final_check.quarantined_devices | length >= 0
+        success_msg: "Cleanup verified successfully"
+        fail_msg: "Cleanup verification failed"

@@ -1,0 +1,149 @@
+---
+# Example playbook for managing quarantined devices in Strata Cloud Manager
+# This playbook demonstrates adding and removing devices from quarantine
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM quarantined device operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    # ============================================================================
+    # Authentication Verification
+    # ============================================================================
+    - name: Display authentication info
+      ansible.builtin.debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # ============================================================================
+    # Example 1: Quarantine a single device by host_id only
+    # ============================================================================
+    - name: Quarantine a single device by host_id only
+      cdot65.scm.quarantined_device:
+        host_id: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: simple_quarantine
+
+    - name: Display simple quarantine result
+      ansible.builtin.debug:
+        var: simple_quarantine.quarantined_device
+
+    # ============================================================================
+    # Example 2: Quarantine a device with both host_id and serial_number
+    # ============================================================================
+    - name: Quarantine a device with both host_id and serial_number
+      cdot65.scm.quarantined_device:
+        host_id: "b2c3d4e5-f6a7-5b6c-9d0e-1f2a3b4c5d6e"
+        serial_number: "PA-VM-001234567"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: detailed_quarantine
+
+    - name: Display detailed quarantine result
+      ansible.builtin.debug:
+        var: detailed_quarantine.quarantined_device
+
+    # ============================================================================
+    # Example 3: Quarantine multiple devices using a loop
+    # ============================================================================
+    - name: Quarantine multiple devices using a loop
+      cdot65.scm.quarantined_device:
+        host_id: "{{ item.host_id }}"
+        serial_number: "{{ item.serial_number | default(omit) }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - host_id: "c3d4e5f6-a7b8-6c7d-0e1f-2a3b4c5d6e7f"
+          serial_number: "PA-VM-001234568"
+        - host_id: "d4e5f6a7-b8c9-7d8e-1f2a-3b4c5d6e7f8a"
+          serial_number: "PA-VM-001234569"
+        - host_id: "e5f6a7b8-c9d0-8e9f-2a3b-4c5d6e7f8a9b"
+      loop_control:
+        label: "{{ item.host_id }}"
+      register: bulk_quarantine
+
+    - name: Display bulk quarantine results
+      ansible.builtin.debug:
+        msg: "Quarantined {{ bulk_quarantine.results | selectattr('changed') | list | length }} devices"
+
+    # ============================================================================
+    # Verification: List all quarantined devices
+    # ============================================================================
+    - name: Verify quarantine status - list all quarantined devices
+      cdot65.scm.quarantined_device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_quarantined_devices
+
+    - name: Display all quarantined devices count
+      ansible.builtin.debug:
+        msg: "Total quarantined devices: {{ all_quarantined_devices.quarantined_devices | length }}"
+
+    - name: Display all quarantined devices details
+      ansible.builtin.debug:
+        var: all_quarantined_devices.quarantined_devices
+
+    # ============================================================================
+    # Example 4: Remove a device from quarantine
+    # ============================================================================
+    - name: Remove a device from quarantine
+      cdot65.scm.quarantined_device:
+        host_id: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: unquarantine_result
+
+    - name: Display unquarantine result
+      ansible.builtin.debug:
+        msg: "Device unquarantined: {{ unquarantine_result.changed }}"
+
+    # ============================================================================
+    # Example 5: Ensure a device is not quarantined (idempotency check)
+    # ============================================================================
+    - name: Ensure a device is not quarantined (idempotency test)
+      cdot65.scm.quarantined_device:
+        host_id: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: idempotent_check
+
+    - name: Verify idempotency (should not change)
+      ansible.builtin.debug:
+        msg: "Idempotency verified - Changed: {{ idempotent_check.changed }}"
+
+    # ============================================================================
+    # Cleanup: Remove all test devices from quarantine
+    # ============================================================================
+    - name: Remove all test devices from quarantine
+      cdot65.scm.quarantined_device:
+        host_id: "{{ item }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "b2c3d4e5-f6a7-5b6c-9d0e-1f2a3b4c5d6e"
+        - "c3d4e5f6-a7b8-6c7d-0e1f-2a3b4c5d6e7f"
+        - "d4e5f6a7-b8c9-7d8e-1f2a-3b4c5d6e7f8a"
+        - "e5f6a7b8-c9d0-8e9f-2a3b-4c5d6e7f8a9b"
+      register: cleanup_results
+
+    - name: Display cleanup summary
+      ansible.builtin.debug:
+        msg: "Removed {{ cleanup_results.results | selectattr('changed') | list | length }} devices from quarantine"
+
+    # ============================================================================
+    # Final Verification
+    # ============================================================================
+    - name: Final verification - list remaining quarantined devices
+      cdot65.scm.quarantined_device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: final_check
+
+    - name: Display final quarantined devices count
+      ansible.builtin.debug:
+        msg: "Final count of quarantined devices: {{ final_check.quarantined_devices | length }}"
