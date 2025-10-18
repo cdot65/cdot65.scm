@@ -1,0 +1,281 @@
+---
+# ============================================================================
+# Example Playbook: WildFire Antivirus Profile Information Retrieval
+# ============================================================================
+# This playbook demonstrates how to retrieve information about WildFire
+# Antivirus profiles from Palo Alto Networks Strata Cloud Manager (SCM)
+# using the cdot65.scm Ansible collection.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+#   - pan-scm-sdk Python package installed
+#
+# Usage:
+#   ansible-playbook wildfire_antivirus_profile_info.yml --vault-password-file .vault_pass
+#
+# ============================================================================
+
+- name: Retrieve WildFire Antivirus Profile Information from SCM
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Retrieve All Profiles
+    # =========================================================================
+    - name: Get all WildFire Antivirus profiles in Texas folder
+      cdot65.scm.wildfire_antivirus_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display all profiles
+      ansible.builtin.debug:
+        msg:
+          - "Found {{ all_profiles.wildfire_antivirus_profiles | length }} WildFire Antivirus profiles"
+          - "Profiles: {{ all_profiles.wildfire_antivirus_profiles | map(attribute='name') | list }}"
+
+    - name: Display detailed information for each profile
+      ansible.builtin.debug:
+        var: item
+      loop: "{{ all_profiles.wildfire_antivirus_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # =========================================================================
+    # Retrieve Specific Profile by Name
+    # =========================================================================
+    - name: Get a specific profile by name
+      cdot65.scm.wildfire_antivirus_profile_info:
+        name: "{{ all_profiles.wildfire_antivirus_profiles[0].name }}"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_profile
+      when: all_profiles.wildfire_antivirus_profiles | length > 0
+
+    - name: Display specific profile details
+      ansible.builtin.debug:
+        msg:
+          - "Profile Name: {{ specific_profile.wildfire_antivirus_profiles[0].name }}"
+          - "Description: {{ specific_profile.wildfire_antivirus_profiles[0].description | default('N/A') }}"
+          - "Folder: {{ specific_profile.wildfire_antivirus_profiles[0].folder }}"
+          - "Packet Capture: {{ specific_profile.wildfire_antivirus_profiles[0].packet_capture | default(false) }}"
+          - "Number of Rules: {{ specific_profile.wildfire_antivirus_profiles[0].rules | length }}"
+      when:
+        - specific_profile is defined
+        - specific_profile.wildfire_antivirus_profiles | length > 0
+
+    # =========================================================================
+    # Analyze Profile Configurations
+    # =========================================================================
+    - name: Analyze profiles with packet capture enabled
+      ansible.builtin.set_fact:
+        packet_capture_profiles: >-
+          {{
+            all_profiles.wildfire_antivirus_profiles |
+            selectattr('packet_capture', 'defined') |
+            selectattr('packet_capture', 'equalto', true) |
+            map(attribute='name') |
+            list
+          }}
+
+    - name: Display profiles with packet capture
+      ansible.builtin.debug:
+        msg:
+          - "Profiles with Packet Capture enabled:"
+          - "{{ packet_capture_profiles }}"
+      when: packet_capture_profiles | length > 0
+
+    # =========================================================================
+    # Analyze Analysis Type Usage
+    # =========================================================================
+    - name: Analyze analysis type distribution
+      ansible.builtin.set_fact:
+        analysis_stats: |
+          {% set public_count = 0 %}
+          {% set private_count = 0 %}
+          {% for profile in all_profiles.wildfire_antivirus_profiles %}
+            {% for rule in profile.rules %}
+              {% if rule.analysis is defined %}
+                {% if rule.analysis == 'public-cloud' %}
+                  {% set public_count = public_count + 1 %}
+                {% elif rule.analysis == 'private-cloud' %}
+                  {% set private_count = private_count + 1 %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          {{ {'public_cloud': public_count, 'private_cloud': private_count} }}
+
+    - name: Display analysis type distribution
+      ansible.builtin.debug:
+        msg:
+          - "Analysis Type Distribution:"
+          - "  Public Cloud Rules: {{ (analysis_stats | from_yaml).public_cloud }}"
+          - "  Private Cloud Rules: {{ (analysis_stats | from_yaml).private_cloud }}"
+
+    # =========================================================================
+    # Analyze MLAV Exceptions
+    # =========================================================================
+    - name: Find profiles with MLAV exceptions
+      ansible.builtin.set_fact:
+        mlav_profiles: >-
+          {{
+            all_profiles.wildfire_antivirus_profiles |
+            selectattr('mlav_exception', 'defined') |
+            map(attribute='name') |
+            list
+          }}
+
+    - name: Display profiles with MLAV exceptions
+      ansible.builtin.debug:
+        msg:
+          - "Profiles with MLAV Exceptions:"
+          - "{{ mlav_profiles }}"
+      when: mlav_profiles | length > 0
+
+    # =========================================================================
+    # Analyze Threat Exceptions
+    # =========================================================================
+    - name: Find profiles with threat exceptions
+      ansible.builtin.set_fact:
+        threat_exception_profiles: >-
+          {{
+            all_profiles.wildfire_antivirus_profiles |
+            selectattr('threat_exception', 'defined') |
+            map(attribute='name') |
+            list
+          }}
+
+    - name: Display profiles with threat exceptions
+      ansible.builtin.debug:
+        msg:
+          - "Profiles with Threat Exceptions:"
+          - "{{ threat_exception_profiles }}"
+      when: threat_exception_profiles | length > 0
+
+    # =========================================================================
+    # Analyze Rule Direction Usage
+    # =========================================================================
+    - name: Analyze direction usage across rules
+      ansible.builtin.set_fact:
+        direction_stats: |
+          {% set directions = {'both': 0, 'download': 0, 'upload': 0} %}
+          {% for profile in all_profiles.wildfire_antivirus_profiles %}
+            {% for rule in profile.rules %}
+              {% if rule.direction is defined %}
+                {% if rule.direction in directions %}
+                  {% set _ = directions.update({rule.direction: directions[rule.direction] + 1}) %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          {{ directions }}
+
+    - name: Display direction statistics
+      ansible.builtin.debug:
+        msg:
+          - "Rule Direction Distribution:"
+          - "  Both: {{ (direction_stats | from_yaml).both }} rules"
+          - "  Download only: {{ (direction_stats | from_yaml).download }} rules"
+          - "  Upload only: {{ (direction_stats | from_yaml).upload }} rules"
+
+    # =========================================================================
+    # Profile Statistics
+    # =========================================================================
+    - name: Calculate profile statistics
+      ansible.builtin.set_fact:
+        profile_stats: "{{ profile_stats | default([]) + [item | combine({'rule_count': item.rules | length})] }}"
+      loop: "{{ all_profiles.wildfire_antivirus_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Display profile statistics
+      ansible.builtin.debug:
+        msg:
+          - "Profile: {{ item.name }}"
+          - "  Rules: {{ item.rule_count }}"
+          - "  Packet Capture: {{ item.packet_capture | default(false) }}"
+          - "  MLAV Exceptions: {{ 'Yes' if item.mlav_exception is defined else 'No' }}"
+          - "  Threat Exceptions: {{ 'Yes' if item.threat_exception is defined else 'No' }}"
+      loop: "{{ profile_stats }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # =========================================================================
+    # Export Profile Configuration
+    # =========================================================================
+    - name: Export profile configurations to JSON
+      ansible.builtin.copy:
+        content: "{{ all_profiles.wildfire_antivirus_profiles | to_nice_json }}"
+        dest: "/tmp/wildfire_antivirus_profiles_export.json"
+        mode: "0644"
+      when: all_profiles.wildfire_antivirus_profiles | length > 0
+
+    - name: Display export location
+      ansible.builtin.debug:
+        msg: "Profile configurations exported to /tmp/wildfire_antivirus_profiles_export.json"
+      when: all_profiles.wildfire_antivirus_profiles | length > 0
+
+    # =========================================================================
+    # Generate Profile Report
+    # =========================================================================
+    - name: Generate profile summary report
+      ansible.builtin.set_fact:
+        profile_report:
+          total_profiles: "{{ all_profiles.wildfire_antivirus_profiles | length }}"
+          profiles: "{{ all_profiles.wildfire_antivirus_profiles | map(attribute='name') | list }}"
+          total_rules: >-
+            {{
+              all_profiles.wildfire_antivirus_profiles |
+              map(attribute='rules') |
+              map('default', []) |
+              map('length') |
+              list |
+              sum
+            }}
+          packet_capture_count: "{{ packet_capture_profiles | default([]) | length }}"
+          mlav_exception_count: "{{ mlav_profiles | default([]) | length }}"
+          threat_exception_count: "{{ threat_exception_profiles | default([]) | length }}"
+
+    - name: Display profile summary report
+      ansible.builtin.debug:
+        msg:
+          - "=== WildFire Antivirus Profile Summary ==="
+          - "Total Profiles: {{ profile_report.total_profiles }}"
+          - "Total Rules Across All Profiles: {{ profile_report.total_rules }}"
+          - "Profiles with Packet Capture: {{ profile_report.packet_capture_count }}"
+          - "Profiles with MLAV Exceptions: {{ profile_report.mlav_exception_count }}"
+          - "Profiles with Threat Exceptions: {{ profile_report.threat_exception_count }}"
+          - "Profile Names:"
+          - "{{ profile_report.profiles | to_nice_yaml }}"
+
+    # =========================================================================
+    # Retrieve by ID (if available)
+    # =========================================================================
+    - name: Get profile by ID
+      cdot65.scm.wildfire_antivirus_profile_info:
+        id: "{{ all_profiles.wildfire_antivirus_profiles[0].id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: profile_by_id
+      when: all_profiles.wildfire_antivirus_profiles | length > 0
+
+    - name: Display profile retrieved by ID
+      ansible.builtin.debug:
+        msg:
+          - "Retrieved profile by ID: {{ profile_by_id.wildfire_antivirus_profiles[0].name }}"
+          - "ID: {{ profile_by_id.wildfire_antivirus_profiles[0].id }}"
+      when:
+        - profile_by_id is defined
+        - profile_by_id.wildfire_antivirus_profiles | length > 0

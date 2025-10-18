@@ -1,0 +1,287 @@
+---
+# ============================================================================
+# Example Playbook: WildFire Antivirus Profile Management
+# ============================================================================
+# This playbook demonstrates how to manage WildFire Antivirus profiles in
+# Palo Alto Networks Strata Cloud Manager (SCM) using the cdot65.scm Ansible
+# collection.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+#   - pan-scm-sdk Python package installed
+#
+# Usage:
+#   ansible-playbook wildfire_antivirus_profile.yml --vault-password-file .vault_pass
+#
+# ============================================================================
+
+- name: Manage WildFire Antivirus Profiles in SCM
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Create Basic WildFire Profile
+    # =========================================================================
+    - name: Create a basic WildFire Antivirus profile
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "Example-Basic-WildFire"
+        description: "Basic WildFire antivirus profile for demonstration"
+        packet_capture: false
+        rules:
+          - name: "rule1"
+            direction: "both"
+            analysis: "public-cloud"
+            application:
+              - "any"
+            file_type:
+              - "any"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_profile
+
+    - name: Display basic profile creation result
+      ansible.builtin.debug:
+        var: basic_profile
+
+    # =========================================================================
+    # Create Advanced Profile with Multiple Rules
+    # =========================================================================
+    - name: Create advanced WildFire profile with directional rules
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "Example-Advanced-WildFire"
+        description: "Advanced WildFire with directional rules"
+        packet_capture: true
+        rules:
+          - name: "download-rule"
+            direction: "download"
+            analysis: "public-cloud"
+            application:
+              - "web-browsing"
+              - "ssl"
+            file_type:
+              - "pe"
+              - "pdf"
+              - "apk"
+          - name: "upload-rule"
+            direction: "upload"
+            analysis: "public-cloud"
+            application:
+              - "ftp"
+              - "smb"
+            file_type:
+              - "any"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: advanced_profile
+
+    - name: Display advanced profile creation result
+      ansible.builtin.debug:
+        var: advanced_profile
+
+    # =========================================================================
+    # Create Profile with MLAV Exceptions
+    # =========================================================================
+    - name: Create profile with MLAV exceptions
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "Example-MLAV-Exceptions"
+        description: "Profile with Machine Learning Antivirus exceptions"
+        packet_capture: false
+        rules:
+          - name: "scan-all"
+            direction: "both"
+            analysis: "public-cloud"
+            application:
+              - "any"
+            file_type:
+              - "any"
+        mlav_exception:
+          - name: "trusted-enterprise-app"
+            description: "Trusted enterprise application"
+            filename: "enterprise_tool.exe"
+          - name: "internal-dev-tool"
+            description: "Internal development tool"
+            filename: "dev_utility.dll"
+          - name: "vendor-software"
+            description: "Approved vendor software"
+            filename: "vendor_app.msi"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: mlav_profile
+
+    - name: Display MLAV profile creation result
+      ansible.builtin.debug:
+        var: mlav_profile
+
+    # =========================================================================
+    # Create Profile with Threat Exceptions
+    # =========================================================================
+    - name: Create profile with threat exceptions
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "Example-Threat-Exceptions"
+        description: "Profile with threat exceptions for known false positives"
+        packet_capture: false
+        rules:
+          - name: "default-rule"
+            direction: "both"
+            analysis: "public-cloud"
+            application:
+              - "any"
+            file_type:
+              - "any"
+        threat_exception:
+          - name: "known-false-positive-signature"
+            notes: "Known false positive from vendor software - approved by security team"
+          - name: "internal-test-file"
+            notes: "Internal testing file - safe to exclude"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: threat_profile
+
+    - name: Display threat exception profile creation result
+      ansible.builtin.debug:
+        var: threat_profile
+
+    # =========================================================================
+    # Create Profile for Specific File Types
+    # =========================================================================
+    - name: Create profile targeting specific file types
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "Example-Targeted-File-Types"
+        description: "Profile targeting high-risk file types"
+        packet_capture: true
+        rules:
+          - name: "executables-and-scripts"
+            direction: "both"
+            analysis: "public-cloud"
+            application:
+              - "web-browsing"
+              - "ssl"
+              - "smtp"
+            file_type:
+              - "pe"
+              - "script"
+              - "jar"
+              - "apk"
+          - name: "documents-with-macros"
+            direction: "download"
+            analysis: "public-cloud"
+            application:
+              - "web-browsing"
+              - "ssl"
+            file_type:
+              - "office"
+              - "pdf"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: targeted_profile
+
+    - name: Display targeted file types profile creation result
+      ansible.builtin.debug:
+        var: targeted_profile
+
+    # =========================================================================
+    # Create Private Cloud Analysis Profile
+    # =========================================================================
+    - name: Create profile with private cloud analysis
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "Example-Private-Cloud"
+        description: "Profile using private cloud analysis"
+        packet_capture: false
+        rules:
+          - name: "private-analysis"
+            direction: "both"
+            analysis: "private-cloud"
+            application:
+              - "any"
+            file_type:
+              - "any"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: private_cloud_profile
+
+    - name: Display private cloud profile creation result
+      ansible.builtin.debug:
+        var: private_cloud_profile
+
+    # =========================================================================
+    # Update Existing Profile
+    # =========================================================================
+    - name: Update basic profile with packet capture enabled
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "Example-Basic-WildFire"
+        description: "Updated basic WildFire profile with packet capture"
+        packet_capture: true
+        rules:
+          - name: "rule1"
+            direction: "both"
+            analysis: "public-cloud"
+            application:
+              - "any"
+            file_type:
+              - "any"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display profile update result
+      ansible.builtin.debug:
+        var: updated_profile
+
+    # =========================================================================
+    # Cleanup (Optional)
+    # =========================================================================
+    - name: Delete example profiles (cleanup)
+      cdot65.scm.wildfire_antivirus_profile:
+        name: "{{ item }}"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "Example-Basic-WildFire"
+        - "Example-Advanced-WildFire"
+        - "Example-MLAV-Exceptions"
+        - "Example-Threat-Exceptions"
+        - "Example-Targeted-File-Types"
+        - "Example-Private-Cloud"
+      register: cleanup_results
+      when: cleanup_profiles | default(false) | bool
+
+    - name: Display cleanup results
+      ansible.builtin.debug:
+        var: cleanup_results
+      when: cleanup_profiles | default(false) | bool
+
+    # =========================================================================
+    # Summary
+    # =========================================================================
+    - name: Display summary
+      ansible.builtin.debug:
+        msg:
+          - "=== WildFire Antivirus Profile Management Summary ==="
+          - "Basic Profile: {{ 'Created/Updated' if basic_profile.changed else 'No changes' }}"
+          - "Advanced Profile: {{ 'Created/Updated' if advanced_profile.changed else 'No changes' }}"
+          - "MLAV Exceptions Profile: {{ 'Created/Updated' if mlav_profile.changed else 'No changes' }}"
+          - "Threat Exceptions Profile: {{ 'Created/Updated' if threat_profile.changed else 'No changes' }}"
+          - "Targeted File Types Profile: {{ 'Created/Updated' if targeted_profile.changed else 'No changes' }}"
+          - "Private Cloud Profile: {{ 'Created/Updated' if private_cloud_profile.changed else 'No changes' }}"
+          - "Updated Profile: {{ 'Updated' if updated_profile.changed else 'No changes' }}"
+          - "To cleanup test profiles, run with: -e cleanup_profiles=true"

@@ -32,9 +32,12 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Log Forwarding Profile | ✅ | ✅ | ✅ |
 | Security Rule | ✅ | ✅ | ✅ |
 | URL Categories | ✅ | ✅ | ✅ |
+| Anti-Spyware Profile | ✅ | ✅ | ✅ |
+| Vulnerability Protection Profile | ✅ | ✅ | ✅ |
+| WildFire Antivirus Profile | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
-**Total Current**: 48 modules (24 resource + 24 info modules)
+**Total Current**: 54 modules (27 resource + 27 info modules)
 
 ### 🔴 Missing Modules (From Previous Collection)
 
@@ -126,11 +129,12 @@ The following modules exist in the previous iteration but need to be ported to t
   - Note: Core functionality - HIGHEST PRIORITY - **COMPLETE!**
 
 ### Security Profiles
-- [ ] **Anti-Spyware Profile** (`anti_spyware_profile.py`, `anti_spyware_profile_info.py`)
+- [x] **Anti-Spyware Profile** (`anti_spyware_profile.py`, `anti_spyware_profile_info.py`) ✅
   - Description: Manage anti-spyware profiles
   - Complexity: High
-  - Template: Use profile modules as template
-  - Status: In previous collection, needs porting
+  - Template: Used profile modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Short Term priority - **COMPLETE!**
 
 - [ ] **Decryption Profile** (`decryption_profile.py`, `decryption_profile_info.py`)
   - Description: Manage decryption profiles
@@ -163,17 +167,19 @@ The following modules exist in the previous iteration but need to be ported to t
   - Status: Completed and committed to feature/priority-8-10-modules branch
   - Note: Short Term priority #1 - **COMPLETE!**
 
-- [ ] **Vulnerability Protection Profile** (`vulnerability_protection_profile.py`, `vulnerability_protection_profile_info.py`)
+- [x] **Vulnerability Protection Profile** (`vulnerability_protection_profile.py`, `vulnerability_protection_profile_info.py`) ✅
   - Description: Manage vulnerability protection profiles
   - Complexity: High
-  - Template: Use profile modules as template
-  - Status: In previous collection, needs porting
+  - Template: Used profile modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Short Term priority #3 - **COMPLETE!**
 
-- [ ] **WildFire Antivirus Profiles** (`wildfire_antivirus_profiles.py`, `wildfire_antivirus_profiles_info.py`)
+- [x] **WildFire Antivirus Profile** (`wildfire_antivirus_profile.py`, `wildfire_antivirus_profile_info.py`) ✅
   - Description: Manage WildFire antivirus profiles
   - Complexity: Medium-High
-  - Template: Use profile modules as template
-  - Status: In previous collection, needs porting
+  - Template: Used profile modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Short Term priority #4 - **COMPLETE!**
 
 ## Summary of Remaining Work
 
@@ -183,14 +189,14 @@ The following modules exist in the previous iteration but need to be ported to t
 |----------|-----------------|--------------|-------|
 | Network Configuration & VPN | 6 | 2 | 8 |
 | Deployment & Infrastructure | 5 | 4 | 9 |
-| Security Services & Policies | 7 | 7 | 14 |
-| **Total Remaining** | **18** | **13** | **31** |
-| **Completed from Priority 10** | **2** | **2** | **4** |
+| Security Services & Policies | 4 | 4 | 8 |
+| **Total Remaining** | **15** | **10** | **25** |
+| **Completed from Priority 10** | **5** | **5** | **10** |
 
 ### When Complete
 
-- **Current**: 48 modules (24 resource + 24 info)
-- **Remaining to add**: 31 modules (18 resource + 13 info)
+- **Current**: 54 modules (27 resource + 27 info)
+- **Remaining to add**: 25 modules (15 resource + 10 info)
 - **After adding previous collection**: 79 modules (42 resource + 37 info)
 
 ### Estimated Effort
@@ -207,6 +213,9 @@ The following modules exist in the previous iteration but need to be ported to t
 
 1. ✅ **Security Rule** - Core functionality, most important - **DONE!**
 2. ✅ **URL Categories** - Common use case - **DONE!**
+3. ✅ **Anti-Spyware Profile** - Security essential - **DONE!**
+4. ✅ **Vulnerability Protection Profile** - Security essential - **DONE!**
+5. ✅ **WildFire Antivirus Profile** - Security essential - **DONE!**
 
 ### Immediate (Next Sprint)
 
@@ -215,9 +224,7 @@ The following modules exist in the previous iteration but need to be ported to t
 
 ### Short Term
 
-1. **Anti-Spyware Profile** - Security essential
-2. **Vulnerability Protection Profile** - Security essential
-3. **WildFire Antivirus Profiles** - Security essential
+1. **Decryption Profile** - Advanced security capability
 
 ### Medium Term
 

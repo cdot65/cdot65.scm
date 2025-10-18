@@ -27,7 +27,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
 - **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
-- **Comprehensive Module Set**: 44 production-ready modules (22 resource modules + 22 info modules) - all current SDK objects covered (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Comprehensive Module Set**: 54 production-ready modules (27 resource modules + 27 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -63,9 +63,9 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 44 production-ready modules (22 resource modules + 22 info modules)
+**Current Status**: 54 production-ready modules (27 resource modules + 27 info modules)
 
-**Coverage**: All available SDK objects now have Ansible modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes.
+**Coverage**: Growing module coverage with recent additions of security profile modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes and roadmap.
 
 ### Module Status Legend
 
@@ -162,15 +162,35 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 > **Note**: Quarantined device modules are implemented but require actual firewall devices connected to SCM to function. The API returns errors without connected devices.
 
-## Module Implementation Complete!
+### Security Policy Modules
 
-**All SDK-supported objects now have Ansible modules!** 🎉
+| Module | Description | Status |
+|--------|-------------|--------|
+| [security_rule](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_rule.py) | Manage security rules | ✅ |
+| [security_rule_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_rule_info.py) | Retrieve security rule information | ✅ |
+| [url_categories](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/url_categories.py) | Manage custom URL categories | ✅ |
+| [url_categories_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/url_categories_info.py) | Retrieve URL category information | ✅ |
 
-- ✅ **44 total modules** (22 resource + 22 info modules)
-- ✅ **100% SDK coverage** - Every object in pan-scm-sdk has a corresponding Ansible module
+### Security Profile Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [anti_spyware_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/anti_spyware_profile.py) | Manage Anti-Spyware security profiles | ✅ |
+| [anti_spyware_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/anti_spyware_profile_info.py) | Retrieve Anti-Spyware profile information | ✅ |
+| [vulnerability_protection_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/vulnerability_protection_profile.py) | Manage Vulnerability Protection profiles | ✅ |
+| [vulnerability_protection_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/vulnerability_protection_profile_info.py) | Retrieve Vulnerability Protection profile information | ✅ |
+| [wildfire_antivirus_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile.py) | Manage WildFire Antivirus profiles | ✅ |
+| [wildfire_antivirus_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile_info.py) | Retrieve WildFire Antivirus profile information | ✅ |
+
+## Module Status
+
+**Growing module coverage with security enhancements!** 🚀
+
+- ✅ **54 total modules** (27 resource + 27 info modules)
+- ✅ **Expanding coverage** - Recently added security profile and policy modules
 - ⚠️ **2 modules with API limitations** (syslog_server_profile, quarantined_device) - see notes above
 
-See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for complete implementation details and status of each module.
+See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for complete implementation details, roadmap, and status of each module.
 
 For complete details on planned features, priorities, and estimated effort, see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md).
 
