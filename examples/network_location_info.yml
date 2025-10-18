@@ -1,0 +1,67 @@
+---
+# Example playbook for retrieving network location information from Strata Cloud Manager
+# Network locations are read-only resources representing geographic locations
+# Useful for SD-WAN and policy-based routing configurations
+
+- name: Network Location Info Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # Setup authentication
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # List all network locations
+    - name: List all network locations
+      cdot65.scm.network_location_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_locations
+
+    - name: Display total number of locations
+      ansible.builtin.debug:
+        msg: "Found {{ all_locations.locations | length }} network locations"
+
+    - name: Display first 5 locations
+      ansible.builtin.debug:
+        var: all_locations.locations[:5]
+
+    # Filter by continent
+    - name: Get locations in North America
+      cdot65.scm.network_location_info:
+        continent: "North America"
+        scm_access_token: "{{ scm_access_token }}"
+      register: na_locations
+
+    - name: Display North America locations
+      ansible.builtin.debug:
+        msg: "Found {{ na_locations.locations | length }} locations in North America"
+
+    # Filter by specific value
+    - name: Get specific location by value
+      cdot65.scm.network_location_info:
+        value: "us-west-1"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_location
+
+    - name: Display specific location details
+      ansible.builtin.debug:
+        var: specific_location.locations
+
+    # Filter by region
+    - name: Get locations in US West region
+      cdot65.scm.network_location_info:
+        region: "us-west"
+        scm_access_token: "{{ scm_access_token }}"
+      register: region_locations
+
+    - name: Display region locations
+      ansible.builtin.debug:
+        var: region_locations.locations

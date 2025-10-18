@@ -6,9 +6,9 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 
 **SDK Version**: 0.3.44 (Latest)
 **Total SDK Services**: 45
-**Implemented Modules**: 32 resource types (64 modules with info modules)
-**Remaining to Implement**: 13 SDK services (26 modules with info modules)
-**Coverage**: 71% of available SDK services
+**Implemented Modules**: 33 resource types (65 modules total)
+**Remaining to Implement**: 12 SDK services (24 potential modules)
+**Coverage**: 73% of available SDK services
 
 ### SDK Services Not Yet in Collection
 
@@ -23,7 +23,6 @@ The following services are available in pan-scm-sdk v0.3.44 but not yet implemen
 - `nat_rule` - NAT rules
 
 **Deployment & Infrastructure (Priority 9):**
-- `network_location` - Network locations
 - `remote_network` - Remote networks
 - `service_connection` - Service connections
 
@@ -75,12 +74,14 @@ The following services are available in pan-scm-sdk v0.3.44 but not yet implemen
 | Internal DNS Server | ✅ | ✅ | ✅ |
 | Security Zone | ✅ | ✅ | ✅ |
 | Bandwidth Allocation | ✅ | ✅ | ⚠️ |
+| Network Location | - | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
-**Total Current**: 64 modules (32 resource + 32 info modules)
+**Total Current**: 65 modules (33 types: 32 resource + 33 info modules)
 
 **Notes:**
 - ⚠️ Bandwidth Allocation: Update/Delete operations have API limitations in SCM v0.3.44. Create and Read operations work correctly.
+- Network Location: Read-only resource (info module only, no CRUD operations available)
 
 ### 🔴 Missing Modules (From Previous Collection)
 
