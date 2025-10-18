@@ -36,9 +36,10 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Vulnerability Protection Profile | ✅ | ✅ | ✅ |
 | WildFire Antivirus Profile | ✅ | ✅ | ✅ |
 | Decryption Profile | ✅ | ✅ | ✅ |
+| DNS Security Profile | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
-**Total Current**: 56 modules (28 resource + 28 info modules)
+**Total Current**: 58 modules (29 resource + 29 info modules)
 
 ### 🔴 Missing Modules (From Previous Collection)
 
@@ -144,11 +145,12 @@ The following modules exist in the previous iteration but need to be ported to t
   - Status: Completed and committed to feature/priority-8-10-modules branch
   - Note: Short Term priority - **COMPLETE!**
 
-- [ ] **DNS Security Profile** (`dns_security_profile.py`, `dns_security_profile_info.py`)
+- [x] **DNS Security Profile** (`dns_security_profile.py`, `dns_security_profile_info.py`) ✅
   - Description: Manage DNS security profiles
   - Complexity: Medium-High
-  - Template: Use profile modules as template
-  - Status: In previous collection, needs porting
+  - Template: Used profile modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Short Term priority - **COMPLETE!**
 
 - [ ] **DNS Server Profiles** (`dns_server_profiles.py`, `dns_server_profiles_info.py`)
   - Description: Manage DNS server profiles
@@ -191,14 +193,14 @@ The following modules exist in the previous iteration but need to be ported to t
 |----------|-----------------|--------------|-------|
 | Network Configuration & VPN | 6 | 2 | 8 |
 | Deployment & Infrastructure | 5 | 4 | 9 |
-| Security Services & Policies | 4 | 4 | 8 |
-| **Total Remaining** | **15** | **10** | **25** |
-| **Completed from Priority 10** | **6** | **6** | **12** |
+| Security Services & Policies | 3 | 3 | 6 |
+| **Total Remaining** | **14** | **9** | **23** |
+| **Completed from Priority 10** | **7** | **7** | **14** |
 
 ### When Complete
 
-- **Current**: 56 modules (28 resource + 28 info)
-- **Remaining to add**: 25 modules (15 resource + 10 info)
+- **Current**: 58 modules (29 resource + 29 info)
+- **Remaining to add**: 23 modules (14 resource + 9 info)
 - **After adding previous collection**: 79 modules (42 resource + 37 info)
 
 ### Estimated Effort
@@ -219,6 +221,7 @@ The following modules exist in the previous iteration but need to be ported to t
 4. ✅ **Vulnerability Protection Profile** - Security essential - **DONE!**
 5. ✅ **WildFire Antivirus Profile** - Security essential - **DONE!**
 6. ✅ **Decryption Profile** - Advanced security capability - **DONE!**
+7. ✅ **DNS Security Profile** - DNS protection - **DONE!**
 
 ### Immediate (Next Sprint)
 

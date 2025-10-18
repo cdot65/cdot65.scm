@@ -63,7 +63,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 56 production-ready modules (28 resource modules + 28 info modules)
+**Current Status**: 58 production-ready modules (29 resource modules + 29 info modules)
 
 **Coverage**: Growing module coverage with recent additions of security profile modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes and roadmap.
 
@@ -183,12 +183,14 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [wildfire_antivirus_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile_info.py) | Retrieve WildFire Antivirus profile information | ✅ |
 | [decryption_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile.py) | Manage Decryption profiles | ✅ |
 | [decryption_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile_info.py) | Retrieve Decryption profile information | ✅ |
+| [dns_security_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dns_security_profile.py) | Manage DNS Security profiles | ✅ |
+| [dns_security_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dns_security_profile_info.py) | Retrieve DNS Security profile information | ✅ |
 
 ## Module Status
 
 **Growing module coverage with security enhancements!** 🚀
 
-- ✅ **56 total modules** (27 resource + 27 info modules)
+- ✅ **58 total modules** (29 resource + 29 info modules)
 - ✅ **Expanding coverage** - Recently added security profile and policy modules
 - ⚠️ **2 modules with API limitations** (syslog_server_profile, quarantined_device) - see notes above
 
