@@ -35,9 +35,10 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Anti-Spyware Profile | ✅ | ✅ | ✅ |
 | Vulnerability Protection Profile | ✅ | ✅ | ✅ |
 | WildFire Antivirus Profile | ✅ | ✅ | ✅ |
+| Decryption Profile | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
-**Total Current**: 54 modules (27 resource + 27 info modules)
+**Total Current**: 56 modules (28 resource + 28 info modules)
 
 ### 🔴 Missing Modules (From Previous Collection)
 
@@ -136,11 +137,12 @@ The following modules exist in the previous iteration but need to be ported to t
   - Status: Completed and committed to feature/priority-8-10-modules branch
   - Note: Short Term priority - **COMPLETE!**
 
-- [ ] **Decryption Profile** (`decryption_profile.py`, `decryption_profile_info.py`)
+- [x] **Decryption Profile** (`decryption_profile.py`, `decryption_profile_info.py`) ✅
   - Description: Manage decryption profiles
   - Complexity: High
-  - Template: Use profile modules as template
-  - Status: In previous collection, needs porting
+  - Template: Used profile modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Short Term priority - **COMPLETE!**
 
 - [ ] **DNS Security Profile** (`dns_security_profile.py`, `dns_security_profile_info.py`)
   - Description: Manage DNS security profiles
@@ -191,11 +193,11 @@ The following modules exist in the previous iteration but need to be ported to t
 | Deployment & Infrastructure | 5 | 4 | 9 |
 | Security Services & Policies | 4 | 4 | 8 |
 | **Total Remaining** | **15** | **10** | **25** |
-| **Completed from Priority 10** | **5** | **5** | **10** |
+| **Completed from Priority 10** | **6** | **6** | **12** |
 
 ### When Complete
 
-- **Current**: 54 modules (27 resource + 27 info)
+- **Current**: 56 modules (28 resource + 28 info)
 - **Remaining to add**: 25 modules (15 resource + 10 info)
 - **After adding previous collection**: 79 modules (42 resource + 37 info)
 
@@ -216,6 +218,7 @@ The following modules exist in the previous iteration but need to be ported to t
 3. ✅ **Anti-Spyware Profile** - Security essential - **DONE!**
 4. ✅ **Vulnerability Protection Profile** - Security essential - **DONE!**
 5. ✅ **WildFire Antivirus Profile** - Security essential - **DONE!**
+6. ✅ **Decryption Profile** - Advanced security capability - **DONE!**
 
 ### Immediate (Next Sprint)
 
@@ -224,7 +227,7 @@ The following modules exist in the previous iteration but need to be ported to t
 
 ### Short Term
 
-1. **Decryption Profile** - Advanced security capability
+(All Short Term priorities complete!)
 
 ### Medium Term
 
@@ -268,3 +271,4 @@ For each new module:
 - Previous collection used `provider` parameter; current collection uses `scm_access_token`
 - Need to verify SDK support for all modules before implementation
 - Some modules in previous collection may need significant refactoring for new architecture
+

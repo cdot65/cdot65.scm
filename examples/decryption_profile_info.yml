@@ -1,0 +1,21 @@
+---
+- name: Retrieve Decryption Profile Information from SCM
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    - name: Get all Decryption profiles in Texas folder
+      cdot65.scm.decryption_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display profiles found
+      ansible.builtin.debug:
+        msg: "Found {{ all_profiles.decryption_profiles | length }} Decryption profiles"

@@ -27,7 +27,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
 - **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
-- **Comprehensive Module Set**: 54 production-ready modules (27 resource modules + 27 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Comprehensive Module Set**: 56 production-ready modules (28 resource modules + 28 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -63,7 +63,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 54 production-ready modules (27 resource modules + 27 info modules)
+**Current Status**: 56 production-ready modules (28 resource modules + 28 info modules)
 
 **Coverage**: Growing module coverage with recent additions of security profile modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes and roadmap.
 
@@ -181,12 +181,14 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [vulnerability_protection_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/vulnerability_protection_profile_info.py) | Retrieve Vulnerability Protection profile information | ✅ |
 | [wildfire_antivirus_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile.py) | Manage WildFire Antivirus profiles | ✅ |
 | [wildfire_antivirus_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile_info.py) | Retrieve WildFire Antivirus profile information | ✅ |
+| [decryption_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile.py) | Manage Decryption profiles | ✅ |
+| [decryption_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile_info.py) | Retrieve Decryption profile information | ✅ |
 
 ## Module Status
 
 **Growing module coverage with security enhancements!** 🚀
 
-- ✅ **54 total modules** (27 resource + 27 info modules)
+- ✅ **56 total modules** (27 resource + 27 info modules)
 - ✅ **Expanding coverage** - Recently added security profile and policy modules
 - ⚠️ **2 modules with API limitations** (syslog_server_profile, quarantined_device) - see notes above
 
