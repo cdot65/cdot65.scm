@@ -37,9 +37,10 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | WildFire Antivirus Profile | ✅ | ✅ | ✅ |
 | Decryption Profile | ✅ | ✅ | ✅ |
 | DNS Security Profile | ✅ | ✅ | ✅ |
+| Internal DNS Server | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
-**Total Current**: 58 modules (29 resource + 29 info modules)
+**Total Current**: 60 modules (30 resource + 30 info modules)
 
 ### 🔴 Missing Modules (From Previous Collection)
 
@@ -95,11 +96,12 @@ The following modules exist in the previous iteration but need to be ported to t
   - Template: Use `address.py` as template
   - Status: In previous collection, needs porting
 
-- [ ] **Internal DNS Servers** (`internal_dns_servers.py`, `internal_dns_servers_info.py`)
+- [x] **Internal DNS Servers** (`internal_dns_server.py`, `internal_dns_server_info.py`) ✅
   - Description: Manage internal DNS servers
   - Complexity: Low-Medium
-  - Template: Use server profile modules as template
-  - Status: In previous collection, needs porting
+  - Template: Used server profile modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Priority 9 module - **COMPLETE!**
 
 - [ ] **Remote Networks** (`remote_networks.py`, `remote_networks_info.py`)
   - Description: Manage remote networks
@@ -192,15 +194,16 @@ The following modules exist in the previous iteration but need to be ported to t
 | Category | Resource Modules | Info Modules | Total |
 |----------|-----------------|--------------|-------|
 | Network Configuration & VPN | 6 | 2 | 8 |
-| Deployment & Infrastructure | 5 | 4 | 9 |
+| Deployment & Infrastructure | 4 | 3 | 7 |
 | Security Services & Policies | 3 | 3 | 6 |
-| **Total Remaining** | **14** | **9** | **23** |
+| **Total Remaining** | **13** | **8** | **21** |
 | **Completed from Priority 10** | **7** | **7** | **14** |
+| **Completed from Priority 9** | **1** | **1** | **2** |
 
 ### When Complete
 
-- **Current**: 58 modules (29 resource + 29 info)
-- **Remaining to add**: 23 modules (14 resource + 9 info)
+- **Current**: 60 modules (30 resource + 30 info)
+- **Remaining to add**: 21 modules (13 resource + 8 info)
 - **After adding previous collection**: 79 modules (42 resource + 37 info)
 
 ### Estimated Effort

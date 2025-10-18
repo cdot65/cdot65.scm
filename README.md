@@ -27,7 +27,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
 - **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
-- **Comprehensive Module Set**: 56 production-ready modules (28 resource modules + 28 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Comprehensive Module Set**: 60 production-ready modules (30 resource modules + 30 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -63,9 +63,9 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 58 production-ready modules (29 resource modules + 29 info modules)
+**Current Status**: 60 production-ready modules (30 resource modules + 30 info modules)
 
-**Coverage**: Growing module coverage with recent additions of security profile modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes and roadmap.
+**Coverage**: Growing module coverage with recent additions of security profile and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes and roadmap.
 
 ### Module Status Legend
 
@@ -153,6 +153,13 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 > **Note**: Syslog modules are implemented but the SCM API endpoint returns errors in some environments. HTTP Server and Log Forwarding profiles are fully functional.
 
+### Deployment & Infrastructure Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [internal_dns_server](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_server.py) | Manage internal DNS server objects | ✅ |
+| [internal_dns_server_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_server_info.py) | Retrieve internal DNS server information | ✅ |
+
 ### Device Management Modules
 
 | Module | Description | Status |
@@ -188,10 +195,10 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Module Status
 
-**Growing module coverage with security enhancements!** 🚀
+**Growing module coverage with security enhancements and deployment features!** 🚀
 
-- ✅ **58 total modules** (29 resource + 29 info modules)
-- ✅ **Expanding coverage** - Recently added security profile and policy modules
+- ✅ **60 total modules** (30 resource + 30 info modules)
+- ✅ **Expanding coverage** - Recently added security profile, policy, and deployment modules
 - ⚠️ **2 modules with API limitations** (syslog_server_profile, quarantined_device) - see notes above
 
 See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for complete implementation details, roadmap, and status of each module.
