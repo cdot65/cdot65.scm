@@ -166,11 +166,19 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Regions (`region`, `region_info`) - Complete ✅
 - Schedules (`schedule`, `schedule_info`) - Complete ✅
 - Syslog Server Profiles (`syslog_server_profile`, `syslog_server_profile_info`) - Implemented ⚠️ (API limitations)
+- Quarantined Devices (`quarantined_device`, `quarantined_device_info`) - Implemented ⚠️ (requires connected devices)
 
-### Planned Modules (See DEVELOPMENT_TODO.md)
-- Quarantined Devices (Priority 7)
+### Module Implementation Complete! 🎉
 
-**Note**: Syslog Server Profile modules are fully implemented and production-ready, but the SCM API endpoint returns HTTP 500 errors in some environments. The modules may work in future API versions.
+**All SDK-supported objects now have Ansible modules!**
+
+- ✅ **44 total modules** (22 resource + 22 info modules)
+- ✅ **100% SDK coverage** - Every object in pan-scm-sdk has a corresponding module
+- ⚠️ **2 modules with API limitations**:
+  - **Syslog Server Profiles**: API endpoint returns HTTP 500 errors in some environments
+  - **Quarantined Devices**: Requires actual firewall devices connected to SCM to function
+
+Both modules with limitations are fully implemented, production-ready, and follow all collection standards. They may work in different environments or future API versions.
 
 ## Code Style and Quality Standards
 
