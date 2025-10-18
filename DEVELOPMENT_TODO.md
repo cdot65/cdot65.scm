@@ -158,13 +158,15 @@ The following modules exist in the previous iteration but need to be ported to t
   - Description: Manage DNS server profiles
   - Complexity: Medium
   - Template: Use `http_server_profile.py` as template
-  - Status: In previous collection, needs porting
+  - Status: ❌ **NOT AVAILABLE IN CURRENT SDK** - Does not exist in pan-scm-sdk
+  - Note: May have existed in previous collection but not in current SDK version
 
 - [ ] **Security Profiles Group** (`security_profiles_group.py`, `security_profiles_group_info.py`)
   - Description: Manage security profile groups
   - Complexity: Medium
   - Template: Use group modules as template
-  - Status: In previous collection, needs porting
+  - Status: ❌ **NOT AVAILABLE IN CURRENT SDK** - Does not exist in pan-scm-sdk
+  - Note: May have existed in previous collection but not in current SDK version
 
 - [x] **URL Categories** (`url_categories.py`, `url_categories_info.py`) ✅
   - Description: Manage custom URL categories
@@ -228,8 +230,10 @@ The following modules exist in the previous iteration but need to be ported to t
 
 ### Immediate (Next Sprint)
 
-1. **DNS Server Profiles** - Commonly used, medium complexity (Note: Needs SDK verification)
-2. **Security Profiles Group** - Ties together other profiles (Note: Needs SDK verification)
+1. ~~**DNS Server Profiles**~~ - ❌ NOT AVAILABLE IN SDK (verified - does not exist in current pan-scm-sdk)
+2. ~~**Security Profiles Group**~~ - ❌ NOT AVAILABLE IN SDK (verified - does not exist in current pan-scm-sdk)
+
+**Note**: All Priority 10 (Security) modules that exist in the current SDK have been completed! Moving to other priorities.
 
 ### Short Term
 
