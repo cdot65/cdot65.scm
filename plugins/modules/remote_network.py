@@ -3,6 +3,8 @@
 # Copyright 2025 Palo Alto Networks
 # Licensed under the Apache License, Version 2.0
 
+from contextlib import suppress
+
 DOCUMENTATION = r"""
 ---
 module: remote_network
@@ -406,11 +408,8 @@ def main():
         # Check if exists by name
         existing = None
         if params.get("id"):
-            try:
+            with suppress(ObjectNotPresentError):
                 existing = client.remote_network.get(params["id"])
-            except ObjectNotPresentError:  # noqa: SIM105
-                # Network not found, will create
-                pass
         else:
             # Try to find by name
             container_type = next((c for c in ["folder", "snippet", "device"] if params.get(c)), None)

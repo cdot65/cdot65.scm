@@ -5,10 +5,9 @@
 
 import json
 
+from ansible.module_utils.basic import AnsibleModule
 from scm.client import Scm as ScmClient
 from scm.exceptions import APIError, ObjectNotPresentError
-
-from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = r"""
 ---

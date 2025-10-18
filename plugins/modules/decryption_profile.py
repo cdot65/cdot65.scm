@@ -5,11 +5,10 @@
 
 import json
 
+from ansible.module_utils.basic import AnsibleModule
 from scm.client import Scm as ScmClient
 from scm.exceptions import APIError, ObjectNotPresentError
 from scm.models.security import DecryptionProfileCreateModel
-
-from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = r"""
 ---
@@ -272,7 +271,6 @@ def main():
         except APIError as e:
             module.fail_json(msg=f"Failed to fetch profile by name: {e!s}")
 
-    # STATE: ABSENT
     if state == "absent":
         if existing_profile:
             if not module.check_mode:
@@ -288,7 +286,6 @@ def main():
             result["msg"] = f"Decryption profile '{profile_name or profile_id}' not found, nothing to delete"
         module.exit_json(**result)
 
-    # STATE: PRESENT
     if not container_type:
         module.fail_json(msg="One of 'folder', 'snippet', or 'device' is required when state=present")
 

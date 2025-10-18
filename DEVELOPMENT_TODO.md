@@ -102,29 +102,32 @@ The following modules exist in the previous iteration but need to be ported to t
   - Status: Available in SDK, ready to implement
 
 ### VPN & Crypto
-- [ ] **IKE Crypto Profile** (`ike_crypto_profile.py`, `ike_crypto_profile_info.py`) 🟢 SDK Available
+- [x] **IKE Crypto Profile** (`ike_crypto_profile.py`, `ike_crypto_profile_info.py`) ✅
   - Description: Manage IKE crypto profiles
   - Complexity: Medium-High
   - SDK Service: `ike_crypto_profile`
   - SDK Module: `scm.config.network.ike_crypto_profile.IKECryptoProfile`
-  - Template: Use existing profile modules as template
-  - Status: Available in SDK, ready to implement
+  - Template: Used existing profile modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Priority 8 module - **COMPLETE!**
 
-- [ ] **IKE Gateway** (`ike_gateway.py`, `ike_gateway_info.py`) 🟢 SDK Available
+- [x] **IKE Gateway** (`ike_gateway.py`, `ike_gateway_info.py`) ✅
   - Description: Manage IKE gateways
   - Complexity: High (complex VPN configuration)
   - SDK Service: `ike_gateway`
   - SDK Module: `scm.config.network.ike_gateway.IKEGateway`
-  - Template: Use existing modules as template
-  - Status: Available in SDK, ready to implement
+  - Template: Used existing modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Priority 8 module - **COMPLETE!**
 
-- [ ] **IPsec Crypto Profile** (`ipsec_crypto_profile.py`, `ipsec_crypto_profile_info.py`) 🟢 SDK Available
+- [x] **IPsec Crypto Profile** (`ipsec_crypto_profile.py`, `ipsec_crypto_profile_info.py`) ✅
   - Description: Manage IPsec crypto profiles
   - Complexity: Medium-High
   - SDK Service: `ipsec_crypto_profile`
   - SDK Module: `scm.config.network.ipsec_crypto_profile.IPsecCryptoProfile`
-  - Template: Use `ike_crypto_profile.py` as template
-  - Status: Available in SDK, ready to implement
+  - Template: Used `ike_crypto_profile.py` as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Priority 8 module - **COMPLETE!**
 
 - [ ] **IPsec Tunnel** (`ipsec_tunnel.py`, `ipsec_tunnel_info.py`) ❌ NOT IN SDK
   - Description: Manage IPsec tunnels
@@ -133,21 +136,23 @@ The following modules exist in the previous iteration but need to be ported to t
   - Status: Not available in current SDK
 
 ### Routing
-- [ ] **BGP Routing** (`bgp_routing.py`, `bgp_routing_info.py`) 🟢 SDK Available
+- [x] **BGP Routing** (`bgp_routing.py`, `bgp_routing_info.py`) ✅
   - Description: Manage BGP routing configuration
   - Complexity: Very High (complex routing protocols)
   - SDK Service: `bgp_routing`
   - SDK Module: `scm.config.deployment.bgp_routing.BGPRouting`
-  - Template: Use existing modules as template
-  - Status: Available in SDK, ready to implement
+  - Template: Used existing modules as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Singleton object with special handling - Priority 8 module - **COMPLETE!**
 
-- [ ] **NAT Rule** (`nat_rule.py`, `nat_rule_info.py`) 🟢 SDK Available
+- [x] **NAT Rule** (`nat_rule.py`, `nat_rule_info.py`) ✅
   - Description: Manage NAT rules
   - Complexity: High (complex NAT policy)
   - SDK Service: `nat_rule`
   - SDK Module: `scm.config.network.nat_rules.NatRule`
-  - Template: Use `security_rule.py` as template
-  - Status: Available in SDK, ready to implement
+  - Template: Used `security_rule.py` as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Supports position parameter for pre/post rulebase - Priority 8 module - **COMPLETE!**
 
 ## Priority 9: Deployment & Infrastructure
 

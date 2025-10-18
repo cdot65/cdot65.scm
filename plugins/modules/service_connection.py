@@ -1,8 +1,9 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 # Copyright 2025 Palo Alto Networks
 # Licensed under the Apache License, Version 2.0
+
+from contextlib import suppress
 
 DOCUMENTATION = r"""
 ---
@@ -345,11 +346,8 @@ def main():
         # Check if exists
         existing = None
         if params.get("id"):
-            try:
+            with suppress(ObjectNotPresentError):
                 existing = client.service_connection.get(params["id"])
-            except ObjectNotPresentError:  # noqa: SIM105
-                # Connection not found, will create
-                pass
         else:
             # Try to find by name in folder
             try:

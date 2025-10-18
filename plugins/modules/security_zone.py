@@ -211,7 +211,6 @@ def main():
     lookup_params = {container_type: container_name}
 
     try:
-        # STATE: absent
         if state == "absent":
             try:
                 existing_zone = client.security_zone.fetch(name=zone_name, **lookup_params)
@@ -223,7 +222,6 @@ def main():
                 result["msg"] = f"Security zone '{zone_name}' not found (already absent)"
             module.exit_json(**result)
 
-        # STATE: present
         zone_data = {"name": zone_name, container_type: container_name}
 
         if params.get("network"):
