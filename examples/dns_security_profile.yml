@@ -67,7 +67,7 @@
     # =========================================================================
     - name: Create a comprehensive DNS Security profile
       cdot65.scm.dns_security_profile:
-        name: "Example-Comprehensive-DNS-Security"
+        name: "Example-Comprehensive-DNS"
         description: "Comprehensive DNS security with multiple categories"
         botnet_domains:
           dns_security_categories:
@@ -97,34 +97,6 @@
     - name: Display comprehensive DNS Security profile
       ansible.builtin.debug:
         var: comprehensive_profile
-
-    # =========================================================================
-    # Create DNS Security Profile with Custom Lists
-    # =========================================================================
-    - name: Create DNS Security profile with custom lists
-      cdot65.scm.dns_security_profile:
-        name: "Example-Custom-List-DNS-Security"
-        description: "DNS security with custom domain lists"
-        botnet_domains:
-          dns_security_categories:
-            - name: "pan-dns-sec-malware"
-              action: "sinkhole"
-              log_level: "high"
-          lists:
-            - name: "custom-malicious-domains"
-              action:
-                block: {}
-          sinkhole:
-            ipv4_address: "pan-sinkhole-default-ip"
-            ipv6_address: "::1"
-        folder: "Texas"
-        scm_access_token: "{{ scm_access_token }}"
-        state: present
-      register: custom_list_profile
-
-    - name: Display custom list DNS Security profile
-      ansible.builtin.debug:
-        var: custom_list_profile
 
     # =========================================================================
     # Create DNS Security Profile with Whitelist
@@ -185,14 +157,6 @@
     # =========================================================================
     # Delete DNS Security Profiles
     # =========================================================================
-    - name: Delete custom list DNS Security profile
-      cdot65.scm.dns_security_profile:
-        name: "Example-Custom-List-DNS-Security"
-        folder: "Texas"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-      register: deleted_custom_list
-
     - name: Delete whitelist DNS Security profile
       cdot65.scm.dns_security_profile:
         name: "Example-Whitelist-DNS-Security"
@@ -203,7 +167,7 @@
 
     - name: Delete comprehensive DNS Security profile
       cdot65.scm.dns_security_profile:
-        name: "Example-Comprehensive-DNS-Security"
+        name: "Example-Comprehensive-DNS"
         folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: absent
@@ -220,7 +184,6 @@
     - name: Display deletion results
       ansible.builtin.debug:
         msg:
-          - "Custom List profile deleted: {{ deleted_custom_list.changed }}"
           - "Whitelist profile deleted: {{ deleted_whitelist.changed }}"
           - "Comprehensive profile deleted: {{ deleted_comprehensive.changed }}"
           - "Basic profile deleted: {{ deleted_basic.changed }}"

@@ -1,0 +1,122 @@
+[
+    {
+        "domain_name": [
+            "example.com",
+            "internal.example.com"
+        ],
+        "id": "47b3df77-e5b7-4333-a82a-c4c830758d23",
+        "name": "Test_DNS_Server_20250327052857",
+        "primary": "192.168.1.10",
+        "secondary": "192.168.1.11"
+    },
+    {
+        "domain_name": [
+            "example.com",
+            "internal.example.com"
+        ],
+        "id": "6ddd24e2-9777-4dea-b5d9-bf25ca5cd696",
+        "name": "Test_DNS_Server_20250327053040",
+        "primary": "192.168.1.10",
+        "secondary": "192.168.1.11"
+    },
+    {
+        "domain_name": [
+            "example.com",
+            "test.example.com"
+        ],
+        "id": "735033fc-2afa-4394-8883-44815ee7e458",
+        "name": "Test_DNS_Server_20250327053207",
+        "primary": "192.168.1.10",
+        "secondary": "192.168.1.11"
+    },
+    {
+        "domain_name": [
+            "example.com",
+            "test.example.com"
+        ],
+        "id": "10636e0d-4f5a-4f83-8977-0f2408ec0529",
+        "name": "DNS1_20250327053318",
+        "primary": "192.168.1.10",
+        "secondary": "192.168.1.11"
+    },
+    {
+        "domain_name": [
+            "example.org",
+            "test.example.org"
+        ],
+        "id": "77b0e8b6-7e6a-4319-a9a1-ca3f0e4123d1",
+        "name": "DNS2_20250327053318",
+        "primary": "192.168.2.10",
+        "secondary": "192.168.2.11"
+    },
+    {
+        "domain_name": [
+            "example.net",
+            "test.example.net"
+        ],
+        "id": "8d5587aa-a7f5-4644-bb4e-81def3595663",
+        "name": "DNS3_20250327053318",
+        "primary": "192.168.3.10",
+        "secondary": "192.168.3.11"
+    },
+    {
+        "domain_name": [
+            "example.com",
+            "test.example.com"
+        ],
+        "id": "cfe5863d-522c-4af3-99c7-a4ca75b519b5",
+        "name": "DNS1_20250327053405",
+        "primary": "192.168.1.10",
+        "secondary": "192.168.1.11"
+    },
+    {
+        "domain_name": [
+            "example.org",
+            "test.example.org"
+        ],
+        "id": "b912ed9e-4205-4d25-b91c-90722fab1468",
+        "name": "DNS2_20250327053405",
+        "primary": "192.168.2.10",
+        "secondary": "192.168.2.11"
+    },
+    {
+        "domain_name": [
+            "example.net",
+            "test.example.net"
+        ],
+        "id": "6c2b9a94-4940-4717-82f3-d396e49ddcaa",
+        "name": "DNS3_20250327053405",
+        "primary": "192.168.3.10",
+        "secondary": "192.168.3.11"
+    },
+    {
+        "domain_name": [
+            "example.com",
+            "test.example.com"
+        ],
+        "id": "bbd58da1-b195-4435-92b6-65ba3d7328b5",
+        "name": "DNS1_20250327053446",
+        "primary": "192.168.1.10",
+        "secondary": "192.168.1.11"
+    },
+    {
+        "domain_name": [
+            "example.org",
+            "test.example.org"
+        ],
+        "id": "6691668b-9175-49c8-9ca5-7bdca96d4298",
+        "name": "DNS2_20250327053446",
+        "primary": "192.168.2.10",
+        "secondary": "192.168.2.11"
+    },
+    {
+        "domain_name": [
+            "example.net",
+            "test.example.net"
+        ],
+        "id": "634e636a-6956-4262-ab38-356708f64d90",
+        "name": "DNS3_20250327053446",
+        "primary": "192.168.3.10",
+        "secondary": "192.168.3.11"
+    }
+]

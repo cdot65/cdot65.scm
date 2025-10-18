@@ -163,6 +163,7 @@ from ansible.module_utils.basic import AnsibleModule
 try:
     from scm.client import Scm as ScmClient
     from scm.exceptions import APIError, ObjectNotPresentError
+    from scm.models.deployment import InternalDnsServersUpdateModel
 
     HAS_SCM_SDK = True
 except ImportError:
@@ -269,7 +270,8 @@ def main():
 
             if needs_update:
                 server_data["id"] = str(existing_server.id)
-                updated_server = client.internal_dns_server.update(server_data)
+                update_model = InternalDnsServersUpdateModel(**server_data)
+                updated_server = client.internal_dns_server.update(update_model)
                 result["changed"] = True
                 result["msg"] = f"Internal DNS server '{server_name}' updated successfully"
                 result["server"] = {
