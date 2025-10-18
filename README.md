@@ -27,7 +27,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
 - **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
-- **Comprehensive Module Set**: 67 production-ready modules (33 resource modules + 34 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Comprehensive Module Set**: 69 production-ready modules (34 resource modules + 35 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -63,9 +63,9 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 67 production-ready modules (33 resource modules + 34 info modules)
+**Current Status**: 69 production-ready modules (34 resource modules + 35 info modules)
 
-**SDK Coverage**: 76% of pan-scm-sdk v0.3.44 services (34 of 45 available services implemented)
+**SDK Coverage**: 78% of pan-scm-sdk v0.3.44 services (35 of 45 available services implemented)
 
 **Coverage**: Growing module coverage with recent additions of security profile and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes, roadmap, and complete SDK service mapping.
 
@@ -73,13 +73,12 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 This collection integrates with **pan-scm-sdk v0.3.44** (latest version). Below is our coverage status:
 
-- ✅ **Implemented**: 34 SDK services (67 modules total)
-- 🟢 **Available in SDK, Ready to Implement**: 11 SDK services (22 potential modules)
+- ✅ **Implemented**: 35 SDK services (69 modules total)
+- 🟢 **Available in SDK, Ready to Implement**: 10 SDK services (20 potential modules)
 - 🎯 **Target**: 100% SDK coverage (89 total modules)
 
 **Remaining SDK Services Not Yet Implemented:**
 - Network & VPN: `ike_crypto_profile`, `ike_gateway`, `ipsec_crypto_profile`, `bgp_routing`, `nat_rule`
-- Deployment: `service_connection`
 - Mobile Agent: `agent_version`, `auth_setting`
 - Automation: `auto_tag_action`
 - Insights: `alerts`
@@ -190,8 +189,10 @@ See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed SDK service mapping 
 | [network_location_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/network_location_info.py) | Retrieve network location information (read-only) | ✅ |
 | [remote_network](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/remote_network.py) | Manage Prisma Access remote networks | ✅ |
 | [remote_network_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/remote_network_info.py) | Retrieve remote network information | ✅ |
+| [service_connection](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_connection.py) | Manage Prisma Access service connections | ✅ |
+| [service_connection_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_connection_info.py) | Retrieve service connection information | ✅ |
 
-> **Note**: Bandwidth allocation modules have API limitations in SCM v0.3.44. Create and Read operations work correctly; Update/Delete operations require the SCM UI. Network locations are read-only resources. Remote networks require Prisma Access infrastructure (SPN, IPSec tunnels).
+> **Note**: Bandwidth allocation modules have API limitations in SCM v0.3.44. Network locations are read-only resources. Remote networks and service connections require Prisma Access infrastructure (SPN, IPSec tunnels).
 
 ### Device Management Modules
 

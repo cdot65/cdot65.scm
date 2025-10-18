@@ -6,9 +6,9 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 
 **SDK Version**: 0.3.44 (Latest)
 **Total SDK Services**: 45
-**Implemented Modules**: 34 resource types (67 modules total)
-**Remaining to Implement**: 11 SDK services (22 potential modules)
-**Coverage**: 76% of available SDK services
+**Implemented Modules**: 35 resource types (69 modules total)
+**Remaining to Implement**: 10 SDK services (20 potential modules)
+**Coverage**: 78% of available SDK services
 
 ### SDK Services Not Yet in Collection
 
@@ -23,7 +23,7 @@ The following services are available in pan-scm-sdk v0.3.44 but not yet implemen
 - `nat_rule` - NAT rules
 
 **Deployment & Infrastructure (Priority 9):**
-- `service_connection` - Service connections
+- ✅ All Priority 9 modules completed!
 
 **Mobile Agent & Other:**
 - `agent_version` - Mobile agent versions
@@ -75,14 +75,16 @@ The following services are available in pan-scm-sdk v0.3.44 but not yet implemen
 | Bandwidth Allocation | ✅ | ✅ | ⚠️ |
 | Network Location | - | ✅ | ✅ |
 | Remote Network | ✅ | ✅ | ✅ |
+| Service Connection | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
-**Total Current**: 67 modules (34 types: 33 resource + 34 info modules)
+**Total Current**: 69 modules (35 types: 34 resource + 35 info modules)
 
 **Notes:**
 - ⚠️ Bandwidth Allocation: Update/Delete operations have API limitations in SCM v0.3.44. Create and Read operations work correctly.
 - Network Location: Read-only resource (info module only, no CRUD operations available)
 - Remote Network: Prisma Access feature for branch office connectivity via IPSec tunnels
+- Service Connection: Prisma Access connections to cloud service providers
 
 ### 🔴 Missing Modules (From Previous Collection)
 
