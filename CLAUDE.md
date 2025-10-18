@@ -165,15 +165,21 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Tags (`tag`, `tag_info`) - Complete ✅
 - Regions (`region`, `region_info`) - Complete ✅
 - Schedules (`schedule`, `schedule_info`) - Complete ✅
+- Security Rules (`security_rule`, `security_rule_info`) - Complete ✅
 - Syslog Server Profiles (`syslog_server_profile`, `syslog_server_profile_info`) - Implemented ⚠️ (API limitations)
 - Quarantined Devices (`quarantined_device`, `quarantined_device_info`) - Implemented ⚠️ (requires connected devices)
 
-### Module Implementation Complete! 🎉
+### Planned Modules (See DEVELOPMENT_TODO.md)
+- Additional modules from previous collection iteration tracked in DEVELOPMENT_TODO.md
+- Priority 8: Network Configuration & VPN (8 modules)
+- Priority 9: Deployment & Infrastructure (9 modules)
+- Priority 10: Security Services & Policies (17 remaining modules)
 
-**All SDK-supported objects now have Ansible modules!**
+### Current Status
 
-- ✅ **44 total modules** (22 resource + 22 info modules)
-- ✅ **100% SDK coverage** - Every object in pan-scm-sdk has a corresponding module
+- ✅ **46 total modules** (23 resource + 23 info modules)
+- ✅ **100% SDK coverage for core objects** - Every object in pan-scm-sdk has a corresponding module
+- ✅ **Security Rule module** - First module from Priority 10 implementation
 - ⚠️ **2 modules with API limitations**:
   - **Syslog Server Profiles**: API endpoint returns HTTP 500 errors in some environments
   - **Quarantined Devices**: Requires actual firewall devices connected to SCM to function
