@@ -62,6 +62,26 @@
       when: url_categories.failed is defined and url_categories.failed
 
     # =========================================================================
+    # Test Anti-Spyware Profile Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all Anti-Spyware profiles
+      cdot65.scm.anti_spyware_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: anti_spyware_profiles
+      ignore_errors: true
+
+    - name: Display Anti-Spyware profiles count
+      ansible.builtin.debug:
+        msg: "Found {{ anti_spyware_profiles.anti_spyware_profiles | default([]) | length }} Anti-Spyware profiles"
+      when: anti_spyware_profiles is defined and not anti_spyware_profiles.failed
+
+    - name: Display Anti-Spyware profiles error (if any)
+      ansible.builtin.debug:
+        var: anti_spyware_profiles
+      when: anti_spyware_profiles.failed is defined and anti_spyware_profiles.failed
+
+    # =========================================================================
     # Test Summary
     # =========================================================================
     - name: Display test summary
@@ -70,3 +90,4 @@
           - "=== Module Test Summary ==="
           - "Security Rules module: {{ 'PASS' if (security_rules is defined and not security_rules.failed) else 'FAIL' }}"
           - "URL Categories module: {{ 'PASS' if (url_categories is defined and not url_categories.failed) else 'FAIL' }}"
+          - "Anti-Spyware Profiles module: {{ 'PASS' if (anti_spyware_profiles is defined and not anti_spyware_profiles.failed) else 'FAIL' }}"
