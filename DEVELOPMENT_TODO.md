@@ -31,9 +31,10 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Quarantined Device | ✅ | ✅ | ⚠️ |
 | Log Forwarding Profile | ✅ | ✅ | ✅ |
 | Security Rule | ✅ | ✅ | ✅ |
+| URL Categories | ✅ | ✅ | ✅ |
 | Device | - | ✅ | ✅ |
 
-**Total Current**: 46 modules (23 resource + 23 info modules)
+**Total Current**: 48 modules (24 resource + 24 info modules)
 
 ### 🔴 Missing Modules (From Previous Collection)
 
@@ -155,11 +156,12 @@ The following modules exist in the previous iteration but need to be ported to t
   - Template: Use group modules as template
   - Status: In previous collection, needs porting
 
-- [ ] **URL Categories** (`url_categories.py`, `url_categories_info.py`)
-  - Description: Manage URL categories
+- [x] **URL Categories** (`url_categories.py`, `url_categories_info.py`) ✅
+  - Description: Manage custom URL categories
   - Complexity: Medium
-  - Template: Use `tag.py` as template
-  - Status: In previous collection, needs porting
+  - Template: Used `tag.py` as template
+  - Status: Completed and committed to feature/priority-8-10-modules branch
+  - Note: Short Term priority #1 - **COMPLETE!**
 
 - [ ] **Vulnerability Protection Profile** (`vulnerability_protection_profile.py`, `vulnerability_protection_profile_info.py`)
   - Description: Manage vulnerability protection profiles
@@ -181,41 +183,41 @@ The following modules exist in the previous iteration but need to be ported to t
 |----------|-----------------|--------------|-------|
 | Network Configuration & VPN | 6 | 2 | 8 |
 | Deployment & Infrastructure | 5 | 4 | 9 |
-| Security Services & Policies | 8 | 8 | 16 |
-| **Total Remaining** | **19** | **14** | **33** |
-| **Completed from Priority 10** | **1** | **1** | **2** |
+| Security Services & Policies | 7 | 7 | 14 |
+| **Total Remaining** | **18** | **13** | **31** |
+| **Completed from Priority 10** | **2** | **2** | **4** |
 
 ### When Complete
 
-- **Current**: 46 modules (23 resource + 23 info)
-- **Remaining to add**: 33 modules (19 resource + 14 info)
+- **Current**: 48 modules (24 resource + 24 info)
+- **Remaining to add**: 31 modules (18 resource + 13 info)
 - **After adding previous collection**: 79 modules (42 resource + 37 info)
 
 ### Estimated Effort
 
 - **Priority 8** (Network Configuration & VPN): ~24-32 hours
 - **Priority 9** (Deployment & Infrastructure): ~18-24 hours
-- **Priority 10** (Security Services & Policies): ~32-44 hours (reduced by 4 hours for completed Security Rule)
+- **Priority 10** (Security Services & Policies): ~28-40 hours (reduced by 8 hours for completed modules)
 
-**Total Remaining Effort**: 74-100 hours
+**Total Remaining Effort**: 70-96 hours
 
 ## Implementation Priorities
 
 ### Completed
 
 1. ✅ **Security Rule** - Core functionality, most important - **DONE!**
+2. ✅ **URL Categories** - Common use case - **DONE!**
 
 ### Immediate (Next Sprint)
 
-1. **DNS Server Profiles** - Commonly used, medium complexity
-2. **Security Profiles Group** - Ties together other profiles
+1. **DNS Server Profiles** - Commonly used, medium complexity (Note: Needs SDK verification)
+2. **Security Profiles Group** - Ties together other profiles (Note: Needs SDK verification)
 
 ### Short Term
 
-1. **URL Categories** - Common use case
-2. **Anti-Spyware Profile** - Security essential
-3. **Vulnerability Protection Profile** - Security essential
-4. **WildFire Antivirus Profiles** - Security essential
+1. **Anti-Spyware Profile** - Security essential
+2. **Vulnerability Protection Profile** - Security essential
+3. **WildFire Antivirus Profiles** - Security essential
 
 ### Medium Term
 

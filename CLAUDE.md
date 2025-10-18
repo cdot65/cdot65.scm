@@ -166,6 +166,7 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Regions (`region`, `region_info`) - Complete ✅
 - Schedules (`schedule`, `schedule_info`) - Complete ✅
 - Security Rules (`security_rule`, `security_rule_info`) - Complete ✅
+- URL Categories (`url_categories`, `url_categories_info`) - Complete ✅
 - Syslog Server Profiles (`syslog_server_profile`, `syslog_server_profile_info`) - Implemented ⚠️ (API limitations)
 - Quarantined Devices (`quarantined_device`, `quarantined_device_info`) - Implemented ⚠️ (requires connected devices)
 
@@ -173,13 +174,13 @@ When developing new modules, use the existing `folder` and `folder_info` modules
 - Additional modules from previous collection iteration tracked in DEVELOPMENT_TODO.md
 - Priority 8: Network Configuration & VPN (8 modules)
 - Priority 9: Deployment & Infrastructure (9 modules)
-- Priority 10: Security Services & Policies (17 remaining modules)
+- Priority 10: Security Services & Policies (15 remaining modules)
 
 ### Current Status
 
-- ✅ **46 total modules** (23 resource + 23 info modules)
+- ✅ **48 total modules** (24 resource + 24 info modules)
 - ✅ **100% SDK coverage for core objects** - Every object in pan-scm-sdk has a corresponding module
-- ✅ **Security Rule module** - First module from Priority 10 implementation
+- ✅ **Priority 10 progress**: Security Rule, URL Categories modules complete
 - ⚠️ **2 modules with API limitations**:
   - **Syslog Server Profiles**: API endpoint returns HTTP 500 errors in some environments
   - **Quarantined Devices**: Requires actual firewall devices connected to SCM to function
