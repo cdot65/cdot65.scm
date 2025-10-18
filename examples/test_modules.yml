@@ -82,6 +82,26 @@
       when: anti_spyware_profiles.failed is defined and anti_spyware_profiles.failed
 
     # =========================================================================
+    # Test Vulnerability Protection Profile Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all Vulnerability Protection profiles
+      cdot65.scm.vulnerability_protection_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: vulnerability_protection_profiles
+      ignore_errors: true
+
+    - name: Display Vulnerability Protection profiles count
+      ansible.builtin.debug:
+        msg: "Found {{ vulnerability_protection_profiles.vulnerability_protection_profiles | default([]) | length }} Vulnerability Protection profiles"
+      when: vulnerability_protection_profiles is defined and not vulnerability_protection_profiles.failed
+
+    - name: Display Vulnerability Protection profiles error (if any)
+      ansible.builtin.debug:
+        var: vulnerability_protection_profiles
+      when: vulnerability_protection_profiles.failed is defined and vulnerability_protection_profiles.failed
+
+    # =========================================================================
     # Test Summary
     # =========================================================================
     - name: Display test summary
@@ -91,3 +111,4 @@
           - "Security Rules module: {{ 'PASS' if (security_rules is defined and not security_rules.failed) else 'FAIL' }}"
           - "URL Categories module: {{ 'PASS' if (url_categories is defined and not url_categories.failed) else 'FAIL' }}"
           - "Anti-Spyware Profiles module: {{ 'PASS' if (anti_spyware_profiles is defined and not anti_spyware_profiles.failed) else 'FAIL' }}"
+          - "Vulnerability Protection Profiles module: {{ 'PASS' if (vulnerability_protection_profiles is defined and not vulnerability_protection_profiles.failed) else 'FAIL' }}"
