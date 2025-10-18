@@ -1,0 +1,209 @@
+---
+# Example playbook for managing custom URL categories in Strata Cloud Manager (SCM)
+# This playbook demonstrates creating, updating, and deleting URL categories
+
+- name: URL Categories Management Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Create URL Categories
+    # =========================================================================
+    - name: Create blocked sites URL category
+      cdot65.scm.url_categories:
+        name: "blocked-sites"
+        description: "Sites to block for security"
+        type: "URL List"
+        list:
+          - "*.badsite.com"
+          - "malicious.example.com"
+          - "phishing-site.org"
+          - "*.gambling-site.net"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: blocked_sites
+
+    - name: Display created blocked sites category
+      ansible.builtin.debug:
+        var: blocked_sites
+
+    - name: Create high-risk category match
+      cdot65.scm.url_categories:
+        name: "high-risk-categories"
+        description: "High risk built-in categories"
+        type: "Category Match"
+        list:
+          - "gambling"
+          - "adult"
+          - "malware"
+          - "phishing"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: high_risk
+
+    - name: Display created high-risk category
+      ansible.builtin.debug:
+        var: high_risk
+
+    - name: Create social media URL category
+      cdot65.scm.url_categories:
+        name: "social-media-custom"
+        description: "Custom social media sites list"
+        type: "URL List"
+        list:
+          - "*.facebook.com"
+          - "*.twitter.com"
+          - "*.instagram.com"
+          - "*.linkedin.com"
+          - "*.tiktok.com"
+          - "*.snapchat.com"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: social_media
+
+    - name: Display created social media category
+      ansible.builtin.debug:
+        var: social_media
+
+    - name: Create corporate allowed sites
+      cdot65.scm.url_categories:
+        name: "corporate-allowed"
+        description: "Corporate approved external sites"
+        type: "URL List"
+        list:
+          - "*.company.com"
+          - "*.partner-site.com"
+          - "trusted-vendor.net"
+          - "*.cloud-provider.com"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: corporate_allowed
+
+    - name: Display created corporate allowed category
+      ansible.builtin.debug:
+        var: corporate_allowed
+
+    - name: Create streaming services category
+      cdot65.scm.url_categories:
+        name: "streaming-services"
+        description: "Video streaming services"
+        type: "URL List"
+        list:
+          - "*.netflix.com"
+          - "*.hulu.com"
+          - "*.disneyplus.com"
+          - "*.youtube.com"
+          - "*.twitch.tv"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: streaming
+
+    - name: Display created streaming category
+      ansible.builtin.debug:
+        var: streaming
+
+    # =========================================================================
+    # Update URL Category
+    # =========================================================================
+    - name: Update blocked sites list with additional URLs
+      cdot65.scm.url_categories:
+        name: "blocked-sites"
+        description: "Updated sites to block for security"
+        type: "URL List"
+        list:
+          - "*.badsite.com"
+          - "malicious.example.com"
+          - "phishing-site.org"
+          - "*.gambling-site.net"
+          - "new-threat.com"
+          - "*.suspicious-domain.org"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_blocked
+
+    - name: Display updated blocked sites category
+      ansible.builtin.debug:
+        var: updated_blocked
+
+    # =========================================================================
+    # Delete URL Categories (cleanup)
+    # =========================================================================
+    - name: Delete blocked sites category
+      cdot65.scm.url_categories:
+        name: "blocked-sites"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_blocked
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_blocked
+
+    - name: Delete high-risk category
+      cdot65.scm.url_categories:
+        name: "high-risk-categories"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_high_risk
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_high_risk
+
+    - name: Delete social media category
+      cdot65.scm.url_categories:
+        name: "social-media-custom"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_social
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_social
+
+    - name: Delete corporate allowed category
+      cdot65.scm.url_categories:
+        name: "corporate-allowed"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_corporate
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_corporate
+
+    - name: Delete streaming services category
+      cdot65.scm.url_categories:
+        name: "streaming-services"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_streaming
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_streaming
