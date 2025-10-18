@@ -28,6 +28,7 @@ Priority list for implementing remaining `pan-scm-sdk` object resources in the `
 | Region | ✅ | ✅ | ✅ |
 | Schedule | ✅ | ✅ | ✅ |
 | Syslog Server Profile | ✅ | ✅ | ⚠️ |
+| Quarantined Device | ✅ | ✅ | ⚠️ |
 | Device | - | ✅ | ✅ |
 
 ### 🔴 Missing Modules (SDK Supported)
@@ -137,14 +138,16 @@ These are fundamental objects commonly used in security policies and should be p
   - Complexity: High (complex nested structures)
   - Status: Completed and tested (pre-existing implementation)
 
-## Priority 7: Device Management
+## Priority 7: Device Management ✅ COMPLETED (WITH API LIMITATIONS)
 
-- [ ] **Quarantined Devices** (`quarantined_device.py`, `quarantined_device_info.py`)
+- [x] **Quarantined Devices** (`quarantined_device.py`, `quarantined_device_info.py`) ⚠️
   - SDK Models: `QuarantinedDevicesCreateModel`, `QuarantinedDevicesResponseModel`
   - Additional Models: `QuarantinedDevicesListParamsModel`
-  - Template: Use `address.py` as template
+  - Template: Used `address.py` as template
   - Complexity: Medium
-  - Note: May be read-only or have special handling
+  - Status: Modules implemented but API requires connected firewalls to function
+  - Note: API returns HTTP 400 errors without actual firewall devices connected to SCM
+  - Special characteristics: No update operation (binary quarantine state), delete by host_id instead of ID
 
 ## Implementation Guidelines
 
