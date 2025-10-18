@@ -39,7 +39,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 - **Python 3.11 or higher** (Python 3.13 fully supported)
   - This is a hard requirement enforced by the pan-scm-sdk dependency
 - Ansible Core 2.18 or higher
-- pan-scm-sdk 0.3.33 or higher (installed automatically as a dependency)
+- pan-scm-sdk 0.3.44 or higher (installed automatically as a dependency)
 
 ## Installation
 
@@ -65,7 +65,26 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 **Current Status**: 60 production-ready modules (30 resource modules + 30 info modules)
 
-**Coverage**: Growing module coverage with recent additions of security profile and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes and roadmap.
+**SDK Coverage**: 67% of pan-scm-sdk v0.3.44 services (30 of 45 available services implemented)
+
+**Coverage**: Growing module coverage with recent additions of security profile and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes, roadmap, and complete SDK service mapping.
+
+### SDK Integration Status
+
+This collection integrates with **pan-scm-sdk v0.3.44** (latest version). Below is our coverage status:
+
+- ✅ **Implemented**: 30 SDK services (60 modules with info variants)
+- 🟢 **Available in SDK, Ready to Implement**: 15 SDK services (30 potential modules)
+- 🎯 **Target**: 100% SDK coverage (90 total modules)
+
+**Remaining SDK Services Not Yet Implemented:**
+- Network & VPN: `security_zone`, `ike_crypto_profile`, `ike_gateway`, `ipsec_crypto_profile`, `bgp_routing`, `nat_rule`
+- Deployment: `bandwidth_allocation`, `network_location`, `remote_network`, `service_connection`
+- Mobile Agent: `agent_version`, `auth_setting`
+- Automation: `auto_tag_action`
+- Insights: `alerts`
+
+See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed SDK service mapping and implementation priorities.
 
 ### Module Status Legend
 

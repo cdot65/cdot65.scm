@@ -2,6 +2,42 @@
 
 Priority list for implementing remaining `pan-scm-sdk` object resources in the `cdot65.scm` Ansible collection.
 
+## SDK Coverage Status
+
+**SDK Version**: 0.3.44 (Latest)
+**Total SDK Services**: 45
+**Implemented Modules**: 30 resource types (60 modules with info modules)
+**Remaining to Implement**: 15 SDK services (30 modules with info modules)
+**Coverage**: 67% of available SDK services
+
+### SDK Services Not Yet in Collection
+
+The following services are available in pan-scm-sdk v0.3.44 but not yet implemented as Ansible modules:
+
+**Network & VPN (Priority 8):**
+- `ike_crypto_profile` - IKE crypto profiles
+- `ike_gateway` - IKE gateways
+- `ipsec_crypto_profile` - IPsec crypto profiles
+- `security_zone` - Security zones
+- `bgp_routing` - BGP routing configuration
+- `nat_rule` - NAT rules
+
+**Deployment & Infrastructure (Priority 9):**
+- `bandwidth_allocation` - Bandwidth allocations
+- `network_location` - Network locations
+- `remote_network` - Remote networks
+- `service_connection` - Service connections
+
+**Mobile Agent & Other:**
+- `agent_version` - Mobile agent versions
+- `auth_setting` - Authentication settings
+- `auto_tag_action` - Auto tag actions
+- `alerts` - Prisma Insights alerts
+
+**Not Available in SDK:**
+- ❌ `dns_server_profiles` - Does not exist in current SDK
+- ❌ `security_profiles_group` - Does not exist in current SDK
+
 ## Current Implementation Status
 
 ### ✅ Completed Modules (Current Collection)
@@ -49,77 +85,104 @@ The following modules exist in the previous iteration but need to be ported to t
 ## Priority 8: Network Configuration & VPN
 
 ### Security Zones
-- [ ] **Security Zone** (`security_zone.py`)
+- [ ] **Security Zone** (`security_zone.py`, `security_zone_info.py`) 🟢 SDK Available
   - Description: Manage security zones
   - Complexity: Medium
+  - SDK Service: `security_zone`
+  - SDK Module: `scm.config.network.security_zone.SecurityZone`
   - Template: Use `address.py` as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
 ### VPN & Crypto
-- [ ] **IKE Crypto Profile** (`ike_crypto_profile.py`, `ike_crypto_profile_info.py`)
+- [ ] **IKE Crypto Profile** (`ike_crypto_profile.py`, `ike_crypto_profile_info.py`) 🟢 SDK Available
   - Description: Manage IKE crypto profiles
   - Complexity: Medium-High
+  - SDK Service: `ike_crypto_profile`
+  - SDK Module: `scm.config.network.ike_crypto_profile.IKECryptoProfile`
   - Template: Use existing profile modules as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
-- [ ] **IKE Gateway** (`ike_gateway.py`)
+- [ ] **IKE Gateway** (`ike_gateway.py`, `ike_gateway_info.py`) 🟢 SDK Available
   - Description: Manage IKE gateways
   - Complexity: High (complex VPN configuration)
+  - SDK Service: `ike_gateway`
+  - SDK Module: `scm.config.network.ike_gateway.IKEGateway`
   - Template: Use existing modules as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
-- [ ] **IPsec Crypto Profile** (`ipsec_crypto_profile.py`)
+- [ ] **IPsec Crypto Profile** (`ipsec_crypto_profile.py`, `ipsec_crypto_profile_info.py`) 🟢 SDK Available
   - Description: Manage IPsec crypto profiles
   - Complexity: Medium-High
+  - SDK Service: `ipsec_crypto_profile`
+  - SDK Module: `scm.config.network.ipsec_crypto_profile.IPsecCryptoProfile`
   - Template: Use `ike_crypto_profile.py` as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
-- [ ] **IPsec Tunnel** (`ipsec_tunnel.py`)
+- [ ] **IPsec Tunnel** (`ipsec_tunnel.py`, `ipsec_tunnel_info.py`) ❌ NOT IN SDK
   - Description: Manage IPsec tunnels
   - Complexity: High (complex tunnel configuration)
   - Template: Use `ike_gateway.py` as template
-  - Status: In previous collection, needs porting
+  - Status: Not available in current SDK
 
 ### Routing
-- [ ] **BGP Routing** (`bgp_routing.py`, `bgp_routing_info.py`)
+- [ ] **BGP Routing** (`bgp_routing.py`, `bgp_routing_info.py`) 🟢 SDK Available
   - Description: Manage BGP routing configuration
   - Complexity: Very High (complex routing protocols)
+  - SDK Service: `bgp_routing`
+  - SDK Module: `scm.config.deployment.bgp_routing.BGPRouting`
   - Template: Use existing modules as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
+
+- [ ] **NAT Rule** (`nat_rule.py`, `nat_rule_info.py`) 🟢 SDK Available
+  - Description: Manage NAT rules
+  - Complexity: High (complex NAT policy)
+  - SDK Service: `nat_rule`
+  - SDK Module: `scm.config.network.nat_rules.NatRule`
+  - Template: Use `security_rule.py` as template
+  - Status: Available in SDK, ready to implement
 
 ## Priority 9: Deployment & Infrastructure
 
 ### Bandwidth & Network Management
-- [ ] **Bandwidth Allocations** (`bandwidth_allocations.py`, `bandwidth_allocations_info.py`)
+- [ ] **Bandwidth Allocations** (`bandwidth_allocation.py`, `bandwidth_allocation_info.py`) 🟢 SDK Available
   - Description: Manage bandwidth allocations
   - Complexity: Medium
+  - SDK Service: `bandwidth_allocation`
+  - SDK Module: `scm.config.deployment.bandwidth_allocations.BandwidthAllocations`
   - Template: Use `address.py` as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
 - [x] **Internal DNS Servers** (`internal_dns_server.py`, `internal_dns_server_info.py`) ✅
   - Description: Manage internal DNS servers
   - Complexity: Low-Medium
+  - SDK Service: `internal_dns_server`
   - Template: Used server profile modules as template
   - Status: Completed and committed to feature/priority-8-10-modules branch
   - Note: Priority 9 module - **COMPLETE!**
 
-- [ ] **Remote Networks** (`remote_networks.py`, `remote_networks_info.py`)
+- [ ] **Remote Networks** (`remote_network.py`, `remote_network_info.py`) 🟢 SDK Available
   - Description: Manage remote networks
   - Complexity: Medium-High
+  - SDK Service: `remote_network`
+  - SDK Module: `scm.config.deployment.remote_networks.RemoteNetworks`
   - Template: Use existing network modules as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
-- [ ] **Network Locations** (`network_locations.py`)
+- [ ] **Network Locations** (`network_location.py`, `network_location_info.py`) 🟢 SDK Available
   - Description: Manage network locations
   - Complexity: Medium
+  - SDK Service: `network_location`
+  - SDK Module: `scm.config.deployment.network_locations.NetworkLocations`
   - Template: Use `region.py` as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
-- [ ] **Service Connections** (`service_connections.py`, `service_connections_info.py`)
+- [ ] **Service Connections** (`service_connection.py`, `service_connection_info.py`) 🟢 SDK Available
   - Description: Manage service connections
   - Complexity: Medium-High
+  - SDK Service: `service_connection`
+  - SDK Module: `scm.config.deployment.service_connections.ServiceConnection`
   - Template: Use existing connection modules as template
-  - Status: In previous collection, needs porting
+  - Status: Available in SDK, ready to implement
 
 ## Priority 10: Security Services & Policies
 
@@ -189,24 +252,74 @@ The following modules exist in the previous iteration but need to be ported to t
   - Status: Completed and committed to feature/priority-8-10-modules branch
   - Note: Short Term priority #4 - **COMPLETE!**
 
+## Additional SDK Services (Not in Original TODO)
+
+The following services are available in pan-scm-sdk v0.3.44 but were not in the original previous collection TODO:
+
+### Mobile Agent Management
+- [ ] **Agent Version** (`agent_version.py`, `agent_version_info.py`) 🟢 SDK Available
+  - Description: Manage mobile agent versions
+  - Complexity: Low
+  - SDK Service: `agent_version`
+  - SDK Module: `scm.config.mobile_agent.agent_versions.AgentVersions`
+  - Template: Use simple resource module as template
+  - Status: Available in SDK, ready to implement
+
+- [ ] **Auth Setting** (`auth_setting.py`, `auth_setting_info.py`) 🟢 SDK Available
+  - Description: Manage authentication settings for mobile agents
+  - Complexity: Medium
+  - SDK Service: `auth_setting`
+  - SDK Module: `scm.config.mobile_agent.auth_settings.AuthSettings`
+  - Template: Use profile modules as template
+  - Status: Available in SDK, ready to implement
+
+### Object Automation
+- [ ] **Auto Tag Action** (`auto_tag_action.py`, `auto_tag_action_info.py`) 🟢 SDK Available
+  - Description: Manage automatic tagging actions
+  - Complexity: Medium
+  - SDK Service: `auto_tag_action`
+  - SDK Module: `scm.config.objects.auto_tag_actions.AutoTagActions`
+  - Template: Use `tag.py` as template
+  - Status: Available in SDK, ready to implement
+
+### Prisma Insights
+- [ ] **Alerts** (`alerts.py`, `alerts_info.py`) 🟢 SDK Available
+  - Description: Manage Prisma Insights alerts
+  - Complexity: Medium
+  - SDK Service: `alerts`
+  - SDK Module: `scm.insights.alerts.Alerts`
+  - Template: Use existing modules as template
+  - Status: Available in SDK, ready to implement
+  - Note: Insights API, different endpoint structure
+
 ## Summary of Remaining Work
 
 ### Module Count to Add
 
-| Category | Resource Modules | Info Modules | Total |
-|----------|-----------------|--------------|-------|
-| Network Configuration & VPN | 6 | 2 | 8 |
-| Deployment & Infrastructure | 4 | 3 | 7 |
-| Security Services & Policies | 3 | 3 | 6 |
-| **Total Remaining** | **13** | **8** | **21** |
-| **Completed from Priority 10** | **7** | **7** | **14** |
-| **Completed from Priority 9** | **1** | **1** | **2** |
+| Category | Resource Modules | Info Modules | Total | SDK Available |
+|----------|-----------------|--------------|-------|---------------|
+| Network Configuration & VPN | 6 | 6 | 12 | 10 🟢 / 2 ❌ |
+| Deployment & Infrastructure | 4 | 4 | 8 | 8 🟢 |
+| Security Services & Policies | 0 | 0 | 0 | All Complete ✅ |
+| Mobile Agent & Automation | 3 | 3 | 6 | 6 🟢 |
+| Prisma Insights | 1 | 1 | 2 | 2 🟢 |
+| **Total Remaining (SDK Available)** | **14** | **14** | **28** | **26 🟢 / 2 ❌** |
+| **Completed from Priority 10** | **7** | **7** | **14** | **14 ✅** |
+| **Completed from Priority 9** | **1** | **1** | **2** | **2 ✅** |
 
-### When Complete
+### Current vs Target Status
+
+- **Current Implementation**: 60 modules (30 resource + 30 info) = **67% SDK coverage**
+- **SDK Available Services**: 45 total
+- **Remaining SDK Services to Implement**: 15 (can create 30 modules)
+- **Not in SDK**: 2 services (dns_server_profiles, security_profiles_group)
+- **Target (100% SDK Coverage)**: 90 modules (45 resource + 45 info modules)
+
+### When All SDK Services Are Complete
 
 - **Current**: 60 modules (30 resource + 30 info)
-- **Remaining to add**: 21 modules (13 resource + 8 info)
-- **After adding previous collection**: 79 modules (42 resource + 37 info)
+- **Remaining to implement from SDK**: 30 modules (15 resource + 15 info)
+- **After 100% SDK coverage**: 90 modules (45 resource + 45 info modules)
 
 ### Estimated Effort
 
