@@ -27,7 +27,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
 - **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
-- **Comprehensive Module Set**: 60 production-ready modules (30 resource modules + 30 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Comprehensive Module Set**: 64 production-ready modules (32 resource modules + 32 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -63,9 +63,9 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 60 production-ready modules (30 resource modules + 30 info modules)
+**Current Status**: 64 production-ready modules (32 resource modules + 32 info modules)
 
-**SDK Coverage**: 67% of pan-scm-sdk v0.3.44 services (30 of 45 available services implemented)
+**SDK Coverage**: 71% of pan-scm-sdk v0.3.44 services (32 of 45 available services implemented)
 
 **Coverage**: Growing module coverage with recent additions of security profile and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes, roadmap, and complete SDK service mapping.
 
@@ -73,13 +73,13 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 This collection integrates with **pan-scm-sdk v0.3.44** (latest version). Below is our coverage status:
 
-- ✅ **Implemented**: 30 SDK services (60 modules with info variants)
-- 🟢 **Available in SDK, Ready to Implement**: 15 SDK services (30 potential modules)
+- ✅ **Implemented**: 32 SDK services (64 modules with info variants)
+- 🟢 **Available in SDK, Ready to Implement**: 13 SDK services (26 potential modules)
 - 🎯 **Target**: 100% SDK coverage (90 total modules)
 
 **Remaining SDK Services Not Yet Implemented:**
-- Network & VPN: `security_zone`, `ike_crypto_profile`, `ike_gateway`, `ipsec_crypto_profile`, `bgp_routing`, `nat_rule`
-- Deployment: `bandwidth_allocation`, `network_location`, `remote_network`, `service_connection`
+- Network & VPN: `ike_crypto_profile`, `ike_gateway`, `ipsec_crypto_profile`, `bgp_routing`, `nat_rule`
+- Deployment: `network_location`, `remote_network`, `service_connection`
 - Mobile Agent: `agent_version`, `auth_setting`
 - Automation: `auto_tag_action`
 - Insights: `alerts`
@@ -134,6 +134,13 @@ See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed SDK service mapping 
 | [tag](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag.py) | Manage tags | ✅ |
 | [tag_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag_info.py) | Retrieve tag information | ✅ |
 
+### Network & VPN Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [security_zone](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone.py) | Manage security zones | ✅ |
+| [security_zone_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone_info.py) | Retrieve security zone information | ✅ |
+
 ### User & Device Management Modules
 
 | Module | Description | Status |
@@ -176,8 +183,12 @@ See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed SDK service mapping 
 
 | Module | Description | Status |
 |--------|-------------|--------|
+| [bandwidth_allocation](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bandwidth_allocation.py) | Manage bandwidth allocation for SD-WAN | ⚠️ |
+| [bandwidth_allocation_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bandwidth_allocation_info.py) | Retrieve bandwidth allocation information | ✅ |
 | [internal_dns_server](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_server.py) | Manage internal DNS server objects | ✅ |
 | [internal_dns_server_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_server_info.py) | Retrieve internal DNS server information | ✅ |
+
+> **Note**: Bandwidth allocation modules have API limitations in SCM v0.3.44. Create and Read operations work correctly; Update/Delete operations require the SCM UI.
 
 ### Device Management Modules
 
