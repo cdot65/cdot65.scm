@@ -1,0 +1,245 @@
+---
+# ============================================================================
+# Example Playbook: Anti-Spyware Profile Management
+# ============================================================================
+# This playbook demonstrates how to manage Anti-Spyware profiles in Palo Alto
+# Networks Strata Cloud Manager (SCM) using the cdot65.scm Ansible collection.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+#   - pan-scm-sdk Python package installed
+#
+# Usage:
+#   ansible-playbook anti_spyware_profile.yml --vault-password-file .vault_pass
+#
+# ============================================================================
+
+- name: Manage Anti-Spyware Profiles in SCM
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Create Basic Anti-Spyware Profile
+    # =========================================================================
+    - name: Create a basic Anti-Spyware profile
+      cdot65.scm.anti_spyware_profile:
+        name: "Example-Basic-Anti-Spyware"
+        description: "Basic anti-spyware profile for demonstration"
+        rules:
+          - name: "block-critical-high-medium"
+            severity:
+              - "critical"
+              - "high"
+              - "medium"
+            category: "any"
+            action:
+              reset_both: {}
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_profile
+
+    - name: Display basic profile creation result
+      ansible.builtin.debug:
+        var: basic_profile
+
+    # =========================================================================
+    # Create Advanced Anti-Spyware Profile
+    # =========================================================================
+    - name: Create advanced Anti-Spyware profile with multiple rules
+      cdot65.scm.anti_spyware_profile:
+        name: "Example-Advanced-Anti-Spyware"
+        description: "Advanced anti-spyware with granular control"
+        rules:
+          - name: "block-critical-high"
+            severity:
+              - "critical"
+              - "high"
+            category: "spyware"
+            packet_capture: "single-packet"
+            action:
+              reset_both: {}
+          - name: "alert-medium-low"
+            severity:
+              - "medium"
+              - "low"
+            category: "any"
+            packet_capture: "disable"
+            action:
+              alert: {}
+        cloud_inline_analysis: true
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: advanced_profile
+
+    - name: Display advanced profile creation result
+      ansible.builtin.debug:
+        var: advanced_profile
+
+    # =========================================================================
+    # Create Profile with MICA Engine Configuration
+    # =========================================================================
+    - name: Create profile with MICA engine spyware protection
+      cdot65.scm.anti_spyware_profile:
+        name: "Example-MICA-Anti-Spyware"
+        description: "Profile with MICA engine configuration"
+        rules:
+          - name: "block-all-critical"
+            severity:
+              - "critical"
+            category: "any"
+            action:
+              reset_both: {}
+        cloud_inline_analysis: true
+        mica_engine_spyware_enabled:
+          - name: "HTTP Command and Control detector"
+            inline_policy_action: "alert"
+          - name: "HTTP2 Command and Control detector"
+            inline_policy_action: "reset-both"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: mica_profile
+
+    - name: Display MICA profile creation result
+      ansible.builtin.debug:
+        var: mica_profile
+
+    # =========================================================================
+    # Create Profile with Inline Exceptions
+    # =========================================================================
+    - name: Create profile with inline exceptions
+      cdot65.scm.anti_spyware_profile:
+        name: "Example-Exceptions-Anti-Spyware"
+        description: "Profile with inline exception IPs"
+        rules:
+          - name: "block-critical-with-exceptions"
+            severity:
+              - "critical"
+              - "high"
+            category: "any"
+            action:
+              reset_both: {}
+        cloud_inline_analysis: false
+        inline_exception_ip_address:
+          - "10.0.0.100"
+          - "192.168.1.50"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: exceptions_profile
+
+    - name: Display exceptions profile creation result
+      ansible.builtin.debug:
+        var: exceptions_profile
+
+    # =========================================================================
+    # Create Strict Protection Profile
+    # =========================================================================
+    - name: Create strict protection profile
+      cdot65.scm.anti_spyware_profile:
+        name: "Example-Strict-Anti-Spyware"
+        description: "Strict anti-spyware - block all threats"
+        rules:
+          - name: "block-all-severities"
+            severity:
+              - "critical"
+              - "high"
+              - "medium"
+              - "low"
+              - "informational"
+            category: "any"
+            packet_capture: "extended-capture"
+            action:
+              drop: {}
+        cloud_inline_analysis: true
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: strict_profile
+
+    - name: Display strict profile creation result
+      ansible.builtin.debug:
+        var: strict_profile
+
+    # =========================================================================
+    # Update Existing Profile
+    # =========================================================================
+    - name: Update basic profile with additional rule
+      cdot65.scm.anti_spyware_profile:
+        name: "Example-Basic-Anti-Spyware"
+        description: "Updated basic anti-spyware profile"
+        rules:
+          - name: "block-critical-high-medium"
+            severity:
+              - "critical"
+              - "high"
+              - "medium"
+            category: "any"
+            action:
+              reset_both: {}
+          - name: "alert-low"
+            severity:
+              - "low"
+            category: "any"
+            action:
+              alert: {}
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display profile update result
+      ansible.builtin.debug:
+        var: updated_profile
+
+    # =========================================================================
+    # Cleanup (Optional)
+    # =========================================================================
+    - name: Delete example profiles (cleanup)
+      cdot65.scm.anti_spyware_profile:
+        name: "{{ item }}"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "Example-Basic-Anti-Spyware"
+        - "Example-Advanced-Anti-Spyware"
+        - "Example-MICA-Anti-Spyware"
+        - "Example-Exceptions-Anti-Spyware"
+        - "Example-Strict-Anti-Spyware"
+      register: cleanup_results
+      when: cleanup_profiles | default(false) | bool
+
+    - name: Display cleanup results
+      ansible.builtin.debug:
+        var: cleanup_results
+      when: cleanup_profiles | default(false) | bool
+
+    # =========================================================================
+    # Summary
+    # =========================================================================
+    - name: Display summary
+      ansible.builtin.debug:
+        msg:
+          - "=== Anti-Spyware Profile Management Summary ==="
+          - "Basic Profile: {{ 'Created/Updated' if basic_profile.changed else 'No changes' }}"
+          - "Advanced Profile: {{ 'Created/Updated' if advanced_profile.changed else 'No changes' }}"
+          - "MICA Profile: {{ 'Created/Updated' if mica_profile.changed else 'No changes' }}"
+          - "Exceptions Profile: {{ 'Created/Updated' if exceptions_profile.changed else 'No changes' }}"
+          - "Strict Profile: {{ 'Created/Updated' if strict_profile.changed else 'No changes' }}"
+          - "Updated Profile: {{ 'Updated' if updated_profile.changed else 'No changes' }}"
+          - "To cleanup test profiles, run with: -e cleanup_profiles=true"
