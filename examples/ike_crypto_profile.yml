@@ -19,7 +19,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml
+    - ../vault.yml
 
   tasks:
     # =========================================================================
@@ -44,7 +44,7 @@
         dh_group:
           - "group14"
           - "group19"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: basic_profile
@@ -64,7 +64,7 @@
           - "group20"
         lifetime:
           hours: 8
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: lifetime_profile
@@ -83,7 +83,7 @@
         lifetime:
           hours: 24
         authentication_multiple: 3
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: reauth_profile
@@ -102,7 +102,7 @@
           - "group19"
         lifetime:
           days: 1
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: strong_profile
@@ -112,7 +112,7 @@
     # =========================================================================
     - name: Get all IKE crypto profiles in folder
       cdot65.scm.ike_crypto_profile_info:
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
       register: all_profiles
 
@@ -133,7 +133,7 @@
     - name: Get specific IKE crypto profile by name
       cdot65.scm.ike_crypto_profile_info:
         name: "ike-crypto-basic"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
       register: specific_profile
 
@@ -143,6 +143,7 @@
 
     # =========================================================================
     # Update IKE Crypto Profile
+    # NOTE: Folder cannot be changed in an update - must match original folder
     # =========================================================================
     - name: Update IKE crypto profile algorithms
       cdot65.scm.ike_crypto_profile:
@@ -155,7 +156,7 @@
           - "group20"
         lifetime:
           hours: 12
-        folder: "Shared"
+        folder: "Service Connections"  # Must match original folder
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: updated_profile
@@ -170,7 +171,7 @@
     # - name: Delete IKE crypto profile by name
     #   cdot65.scm.ike_crypto_profile:
     #     name: "{{ item }}"
-    #     folder: "Shared"
+    #     folder: "Service Connection"
     #     scm_access_token: "{{ scm_access_token }}"
     #     state: absent
     #   loop:

@@ -19,7 +19,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml
+    - ../vault.yml
 
   tasks:
     # =========================================================================
@@ -45,7 +45,7 @@
           authentication:
             - "sha256"
             - "sha384"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: basic_profile
@@ -62,7 +62,7 @@
             - "aes-128-gcm"
           authentication:
             - "sha512"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -79,7 +79,7 @@
             - "aes-256-cbc"
           authentication:
             - "sha256"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -96,7 +96,7 @@
           authentication:
             - "sha256"
             - "sha384"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -105,7 +105,7 @@
     # =========================================================================
     - name: Get all IPsec crypto profiles
       cdot65.scm.ipsec_crypto_profile_info:
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
       register: all_profiles
 
@@ -116,7 +116,7 @@
     - name: Get specific IPsec crypto profile
       cdot65.scm.ipsec_crypto_profile_info:
         name: "ipsec-crypto-basic"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
       register: specific_profile
 
@@ -138,7 +138,7 @@
             - "aes-256-gcm"
           authentication:
             - "sha512"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: updated_profile
@@ -149,7 +149,7 @@
     # - name: Delete IPsec crypto profiles
     #   cdot65.scm.ipsec_crypto_profile:
     #     name: "{{ item }}"
-    #     folder: "Shared"
+    #     folder: "Service Connection"
     #     scm_access_token: "{{ scm_access_token }}"
     #     state: absent
     #   loop:

@@ -20,7 +20,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml
+    - ../vault.yml
 
   tasks:
     # =========================================================================
@@ -45,7 +45,7 @@
           version: "ikev2-preferred"
           ikev2:
             ike_crypto_profile: "ike-crypto-default"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: gateway_a
@@ -62,7 +62,7 @@
           version: "ikev2"
           ikev2:
             ike_crypto_profile: "ike-crypto-strong"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -81,7 +81,7 @@
         protocol_common:
           nat_traversal:
             enable: true
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -106,7 +106,7 @@
           version: "ikev2"
           ikev2:
             ike_crypto_profile: "ike-crypto-default"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -115,7 +115,7 @@
     # =========================================================================
     - name: Get all IKE gateways
       cdot65.scm.ike_gateway_info:
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
       register: all_gateways
 
@@ -126,7 +126,7 @@
     - name: Get specific IKE gateway
       cdot65.scm.ike_gateway_info:
         name: "ike-gateway-site-a"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
       register: specific_gateway
 
@@ -149,7 +149,7 @@
           version: "ikev2"
           ikev2:
             ike_crypto_profile: "ike-crypto-strong"
-        folder: "Shared"
+        folder: "Service Connections"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -159,7 +159,7 @@
     # - name: Delete IKE gateways
     #   cdot65.scm.ike_gateway:
     #     name: "{{ item }}"
-    #     folder: "Shared"
+    #     folder: "Service Connection"
     #     scm_access_token: "{{ scm_access_token }}"
     #     state: absent
     #   loop:

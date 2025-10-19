@@ -1,4 +1,4 @@
-.PHONY: help build install clean all test lint sanity unit-test integration-test sanity-local unit-test-local integration-test-local test-local test-integration dev-setup tox-sanity tox-units tox-integration tox-test tox-flake8 tox-black tox-isort tox-ruff tox-mypy tox-ansible-lint tox-format tox-lint tox-all format lint-all lint-fix lint-check flake8 mypy ruff-check quality run-examples run-examples-continue run-examples-verbose run-example shell playbook docker-build docker-test docker-lint docs-serve docs-stop
+.PHONY: help build install clean all test lint sanity unit-test integration-test sanity-local unit-test-local integration-test-local test-local test-integration dev-setup tox-sanity tox-units tox-integration tox-test tox-flake8 tox-black tox-isort tox-ruff tox-mypy tox-ansible-lint tox-format tox-lint tox-all format lint-all lint-fix lint-check flake8 mypy ruff-check quality run-examples run-examples-continue run-examples-verbose run-examples-quiet run-example shell playbook docker-build docker-test docker-lint docs-serve docs-stop
 
 COLLECTION_NAMESPACE := cdot65
 COLLECTION_NAME := scm
@@ -23,6 +23,7 @@ help:
 	@echo "  make run-examples           Run all example playbooks (stop on first error)"
 	@echo "  make run-examples-continue  Run all example playbooks (continue on errors)"
 	@echo "  make run-examples-verbose   Run all example playbooks with detailed output"
+	@echo "  make run-examples-quiet     Run all example playbooks (errors only, clean output)"
 	@echo "  make run-example EXAMPLE=<name>  Run a specific example (e.g., EXAMPLE=folder)"
 	@echo "\nDocker/Compose Dev:"
 	@echo "  make shell         Start a shell in the ansible dev container"
@@ -185,6 +186,32 @@ run-examples-verbose:
 	@echo "========================================"
 	@echo "All example playbooks executed successfully!"
 	@echo "========================================"
+
+# Run all example playbooks quietly (only show errors)
+run-examples-quiet:
+	@echo "Running all example playbooks (quiet mode - errors only)..."
+	@failed=0; \
+	total=0; \
+	for playbook in examples/*.yml; do \
+		total=$$((total + 1)); \
+		printf "Running: $$playbook ... "; \
+		if output=$$(poetry run ansible-playbook --vault-pass-file .vault_pass $$playbook 2>&1); then \
+			echo "✓"; \
+		else \
+			echo "✗ FAILED"; \
+			echo "$$output"; \
+			echo ""; \
+			failed=$$((failed + 1)); \
+		fi; \
+	done; \
+	echo ""; \
+	echo "Results: $$((total - failed))/$$total passed"; \
+	if [ $$failed -gt 0 ]; then \
+		echo "$$failed playbook(s) failed"; \
+		exit 1; \
+	else \
+		echo "All playbooks executed successfully!"; \
+	fi
 
 # Run a specific example playbook
 # Usage: make run-example EXAMPLE=application_info

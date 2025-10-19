@@ -20,7 +20,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml
+    - ../vault.yml
 
   tasks:
     # =========================================================================
@@ -120,7 +120,29 @@
 
     # =========================================================================
     # Create Profile with Inline Exceptions
+    # NOTE: Inline exceptions require existing Address objects in SCM
+    # First, create the required Address objects
     # =========================================================================
+    - name: Create Address object for exception IP 10.0.0.100
+      cdot65.scm.address:
+        name: "Exception-IP-10.0.0.100"
+        description: "Exception IP for anti-spyware profile demo"
+        ip_netmask: "10.0.0.100/32"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: exception_addr1
+
+    - name: Create Address object for exception IP 192.168.1.50
+      cdot65.scm.address:
+        name: "Exception-IP-192.168.1.50"
+        description: "Exception IP for anti-spyware profile demo"
+        ip_netmask: "192.168.1.50/32"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: exception_addr2
+
     - name: Create profile with inline exceptions
       cdot65.scm.anti_spyware_profile:
         name: "Example-Exceptions-Anti-Spyware"
@@ -135,8 +157,8 @@
               reset_both: {}
         cloud_inline_analysis: false
         inline_exception_ip_address:
-          - "10.0.0.100"
-          - "192.168.1.50"
+          - "Exception-IP-10.0.0.100"
+          - "Exception-IP-192.168.1.50"
         folder: "Texas"
         scm_access_token: "{{ scm_access_token }}"
         state: present
@@ -222,6 +244,18 @@
         - "Example-Exceptions-Anti-Spyware"
         - "Example-Strict-Anti-Spyware"
       register: cleanup_results
+      when: cleanup_profiles | default(false) | bool
+
+    - name: Delete exception Address objects (cleanup)
+      cdot65.scm.address:
+        name: "{{ item }}"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "Exception-IP-10.0.0.100"
+        - "Exception-IP-192.168.1.50"
+      register: cleanup_addresses
       when: cleanup_profiles | default(false) | bool
 
     - name: Display cleanup results

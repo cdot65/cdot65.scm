@@ -6,20 +6,28 @@
 #   This playbook demonstrates how to manage NAT rules in Strata Cloud Manager
 #   (SCM) using the cdot65.scm Ansible collection.
 #
+#   This playbook creates its own folder (NAT-Examples) for demonstration
+#   purposes, making it self-contained and easy to clean up.
+#
 # Usage:
-#   ansible-playbook -i inventory.yml nat_rule.yml
+#   # Run playbook (creates folder and NAT rules)
+#   ansible-playbook nat_rule.yml
+#
+#   # Run playbook with cleanup (deletes all created resources)
+#   ansible-playbook nat_rule.yml -e cleanup_nat_resources=true
 #
 # Prerequisites:
 #   - Ansible 2.14 or higher
 #   - cdot65.scm collection installed
 #   - Valid SCM credentials in vault.yml
+#   - Parent folder "Texas" must exist in SCM
 # =============================================================================
 
 - name: NAT Rule Management
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml
+    - ../vault.yml
 
   tasks:
     # =========================================================================
@@ -28,6 +36,21 @@
     - name: Authenticate with SCM and get access token
       ansible.builtin.include_role:
         name: cdot65.scm.auth
+
+    # =========================================================================
+    # Create Folder for NAT Rules
+    # =========================================================================
+    - name: Create folder for NAT rule examples
+      cdot65.scm.folder:
+        name: "NAT-Examples"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: nat_folder
+
+    - name: Display folder creation result
+      ansible.builtin.debug:
+        msg: "NAT Examples folder: {{ 'Created' if nat_folder.changed else 'Already exists' }}"
 
     # =========================================================================
     # Create Source NAT Rules
@@ -51,7 +74,7 @@
             translated_address:
               - "203.0.113.10"
               - "203.0.113.11"
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: snat_rule
@@ -74,7 +97,7 @@
           dynamic_ip_and_port:
             interface_address:
               interface: "ethernet1/1"
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -98,7 +121,7 @@
         destination_translation:
           translated_address: "10.1.1.10"
           translated_port: 80
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -119,7 +142,7 @@
         destination_translation:
           translated_address: "10.1.1.20"
           translated_port: 22
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -144,7 +167,7 @@
           static_ip:
             translated_address: "203.0.113.50"
             bi_directional: true
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -172,7 +195,7 @@
           dynamic_ip_and_port:
             translated_address:
               - "203.0.113.100"
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -181,7 +204,7 @@
     # =========================================================================
     - name: Get all pre-NAT rules
       cdot65.scm.nat_rule_info:
-        folder: "Shared"
+        folder: "NAT-Examples"
         position: "pre"
         scm_access_token: "{{ scm_access_token }}"
       register: pre_nat_rules
@@ -193,7 +216,7 @@
     - name: Get specific NAT rule
       cdot65.scm.nat_rule_info:
         name: "SNAT-Internet-Access"
-        folder: "Shared"
+        folder: "NAT-Examples"
         position: "pre"
         scm_access_token: "{{ scm_access_token }}"
       register: specific_rule
@@ -204,7 +227,7 @@
 
     - name: Get NAT rules filtered by tag
       cdot65.scm.nat_rule_info:
-        folder: "Shared"
+        folder: "NAT-Examples"
         position: "pre"
         tag:
           - "Production"
@@ -234,7 +257,7 @@
               - "203.0.113.10"
               - "203.0.113.11"
               - "203.0.113.12"
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
@@ -259,24 +282,41 @@
         destination_translation:
           translated_address: "10.1.1.20"
           translated_port: 22
-        folder: "Shared"
+        folder: "NAT-Examples"
         scm_access_token: "{{ scm_access_token }}"
         state: present
 
     # =========================================================================
     # Cleanup (Optional)
+    # To clean up all resources, run with: -e cleanup_nat_resources=true
     # =========================================================================
-    # - name: Delete NAT rules
-    #   cdot65.scm.nat_rule:
-    #     name: "{{ item }}"
-    #     folder: "Shared"
-    #     position: "pre"
-    #     scm_access_token: "{{ scm_access_token }}"
-    #     state: absent
-    #   loop:
-    #     - "SNAT-Internet-Access"
-    #     - "SNAT-Interface"
-    #     - "DNAT-Web-Server"
-    #     - "DNAT-SSH-Server"
-    #     - "Static-NAT-Server"
-    #     - "SNAT-Production"
+    - name: Delete NAT rules
+      cdot65.scm.nat_rule:
+        name: "{{ item }}"
+        folder: "NAT-Examples"
+        position: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "SNAT-Internet-Access"
+        - "SNAT-Interface"
+        - "DNAT-Web-Server"
+        - "DNAT-SSH-Server"
+        - "Static-NAT-Server"
+        - "SNAT-Production"
+      when: cleanup_nat_resources | default(false) | bool
+      register: cleanup_rules
+
+    - name: Delete NAT-Examples folder
+      cdot65.scm.folder:
+        name: "NAT-Examples"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      when: cleanup_nat_resources | default(false) | bool
+      register: cleanup_folder
+
+    - name: Display cleanup results
+      ansible.builtin.debug:
+        msg: "Cleanup completed - {{ cleanup_rules.results | length }} rules and folder deleted"
+      when: cleanup_nat_resources | default(false) | bool
