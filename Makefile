@@ -1,4 +1,4 @@
-.PHONY: help build install clean all test lint sanity unit-test integration-test sanity-local unit-test-local integration-test-local test-local test-integration dev-setup tox-sanity tox-units tox-integration tox-test tox-flake8 tox-black tox-isort tox-ruff tox-mypy tox-ansible-lint tox-format tox-lint tox-all format lint-all lint-fix lint-check flake8 mypy ruff-check quality run-examples run-example shell playbook docker-build docker-test docker-lint docs-serve docs-stop
+.PHONY: help build install clean all test lint sanity unit-test integration-test sanity-local unit-test-local integration-test-local test-local test-integration dev-setup tox-sanity tox-units tox-integration tox-test tox-flake8 tox-black tox-isort tox-ruff tox-mypy tox-ansible-lint tox-format tox-lint tox-all format lint-all lint-fix lint-check flake8 mypy ruff-check quality run-examples run-examples-continue run-examples-verbose run-example shell playbook docker-build docker-test docker-lint docs-serve docs-stop
 
 COLLECTION_NAMESPACE := cdot65
 COLLECTION_NAME := scm
@@ -19,6 +19,11 @@ help:
 	@echo "  make mypy          Run mypy type checks"
 	@echo "  make ruff-check    Run ruff checks"
 	@echo "  make quality       Run all code quality checks"
+	@echo "\nExample Playbooks:"
+	@echo "  make run-examples           Run all example playbooks (stop on first error)"
+	@echo "  make run-examples-continue  Run all example playbooks (continue on errors)"
+	@echo "  make run-examples-verbose   Run all example playbooks with detailed output"
+	@echo "  make run-example EXAMPLE=<name>  Run a specific example (e.g., EXAMPLE=folder)"
 	@echo "\nDocker/Compose Dev:"
 	@echo "  make shell         Start a shell in the ansible dev container"
 	@echo "  make playbook      Build & install the collection, then run a playbook: make playbook PLAYBOOK=examples/your_playbook.yml"
@@ -147,7 +152,7 @@ dev-setup:
 	poetry run python -m pip install -r test-requirements.txt
 
 # --- Example playbook runs ---
-# Run all example playbooks
+# Run all example playbooks (stop on first error)
 run-examples:
 	@echo "Running all example playbooks..."
 	@for playbook in examples/*.yml; do \
@@ -155,6 +160,31 @@ run-examples:
 		poetry run ansible-playbook --vault-pass-file .vault_pass $$playbook || exit 1; \
 	done
 	@echo "\nAll example playbooks executed successfully!"
+
+# Run all example playbooks (continue on errors)
+run-examples-continue:
+	@echo "Running all example playbooks (continuing on errors)..."
+	@for playbook in examples/*.yml; do \
+		echo "\n=== Running $$playbook ==="; \
+		poetry run ansible-playbook --vault-pass-file .vault_pass $$playbook || echo "WARNING: $$playbook failed, continuing..."; \
+	done
+	@echo "\nAll example playbooks completed!"
+
+# Run all example playbooks with verbose output
+run-examples-verbose:
+	@echo "========================================"
+	@echo "Running all example playbooks"
+	@echo "========================================"
+	@for playbook in examples/*.yml; do \
+		echo "\n========================================"; \
+		echo "Running: $$playbook"; \
+		echo "========================================"; \
+		poetry run ansible-playbook --vault-pass-file .vault_pass $$playbook || exit 1; \
+		echo ""; \
+	done
+	@echo "========================================"
+	@echo "All example playbooks executed successfully!"
+	@echo "========================================"
 
 # Run a specific example playbook
 # Usage: make run-example EXAMPLE=application_info

@@ -10,10 +10,12 @@ exclude_paths:
   - '*.tar.gz'
   - plugins/modules/  # Exclude modules from ansible-lint due to external SDK imports
   - tests/sanity/  # Exclude ansible-test sanity ignore files
+  - examples/  # Exclude examples - they use SDK-based modules that ansible-lint can't resolve
 
 # Skip list of rules to ignore
 skip_list:
   - schema[meta]  # Skip meta file schema checks (we don't have complex meta files)
+  - schema[meta-runtime]  # Skip runtime.yml schema checks (python_requires not in schema)
   - fqcn[action-core]  # Allow short names for core modules in examples/tests
   - yaml[trailing-spaces]  # Allow trailing spaces in test files
   - yaml[document-start]  # Allow files without --- document start

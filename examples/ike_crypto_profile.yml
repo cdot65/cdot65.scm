@@ -28,10 +28,6 @@
     - name: Authenticate with SCM and get access token
       ansible.builtin.include_role:
         name: cdot65.scm.auth
-      vars:
-        scm_client_id: "{{ scm_client_id }}"
-        scm_client_secret: "{{ scm_client_secret }}"
-        scm_tsg_id: "{{ scm_tsg_id }}"
 
     # =========================================================================
     # Create IKE Crypto Profiles

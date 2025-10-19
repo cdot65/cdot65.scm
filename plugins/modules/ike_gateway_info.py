@@ -135,7 +135,7 @@ def main():
                     gateway = client.ike_gateway.fetch(name=params["name"], **{container_type: container_value})
                 result["ike_gateway"] = json.loads(gateway.model_dump_json(exclude_unset=True))
             except ObjectNotPresentError:
-                module.fail_json(msg=f"IKE gateway not found")
+                module.fail_json(msg="IKE gateway not found")
             except (APIError, InvalidObjectError) as e:
                 module.fail_json(msg=f"API error: {e}")
         else:

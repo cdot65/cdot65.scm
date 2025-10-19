@@ -239,11 +239,19 @@ def main():
         if existing_zone:
             # Update if needed
             needs_update = False
-            if params.get("network") and params["network"] != (existing_zone.network.model_dump() if existing_zone.network else None):
+            if params.get("network") and params["network"] != (
+                existing_zone.network.model_dump() if existing_zone.network else None
+            ):
                 needs_update = True
-            if params.get("enable_user_identification") is not None and params["enable_user_identification"] != existing_zone.enable_user_identification:
+            if (
+                params.get("enable_user_identification") is not None
+                and params["enable_user_identification"] != existing_zone.enable_user_identification
+            ):
                 needs_update = True
-            if params.get("enable_device_identification") is not None and params["enable_device_identification"] != existing_zone.enable_device_identification:
+            if (
+                params.get("enable_device_identification") is not None
+                and params["enable_device_identification"] != existing_zone.enable_device_identification
+            ):
                 needs_update = True
 
             if needs_update:

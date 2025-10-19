@@ -246,7 +246,9 @@ def main():
                 if profile_id:
                     module.fail_json(msg=f"IPsec crypto profile with ID '{profile_id}' not found")
                 else:
-                    module.fail_json(msg=f"IPsec crypto profile with name '{profile_name}' not found in the specified container")
+                    module.fail_json(
+                        msg=f"IPsec crypto profile with name '{profile_name}' not found in the specified container"
+                    )
             except (APIError, InvalidObjectError) as e:
                 module.fail_json(
                     msg="API error: " + str(e),
