@@ -1,0 +1,169 @@
+---
+# =============================================================================
+# IKE Gateway Management Examples
+# =============================================================================
+# Description:
+#   This playbook demonstrates how to manage IKE gateways in Strata Cloud
+#   Manager (SCM) using the cdot65.scm Ansible collection.
+#
+# Usage:
+#   ansible-playbook -i inventory.yml ike_gateway.yml
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+#   - IKE crypto profiles already created
+# =============================================================================
+
+- name: IKE Gateway Management
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM and get access token
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Create IKE Gateways with Pre-Shared Key
+    # =========================================================================
+    - name: Create IKE gateway with PSK and static IP
+      cdot65.scm.ike_gateway:
+        name: "ike-gateway-site-a"
+        authentication:
+          pre_shared_key:
+            key: "mysecretkey123"
+        peer_address:
+          ip: "192.0.2.1"
+        protocol:
+          version: "ikev2-preferred"
+          ikev2:
+            ike_crypto_profile: "ike-crypto-default"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: gateway_a
+
+    - name: Create IKE gateway with dynamic peer
+      cdot65.scm.ike_gateway:
+        name: "ike-gateway-dynamic"
+        authentication:
+          pre_shared_key:
+            key: "anothersecretkey"
+        peer_address:
+          dynamic: {}
+        protocol:
+          version: "ikev2"
+          ikev2:
+            ike_crypto_profile: "ike-crypto-strong"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create IKE gateway with FQDN peer
+      cdot65.scm.ike_gateway:
+        name: "ike-gateway-fqdn"
+        authentication:
+          pre_shared_key:
+            key: "fqdnsecretkey"
+        peer_address:
+          fqdn: "vpn.example.com"
+        protocol:
+          version: "ikev2-preferred"
+          ikev2:
+            ike_crypto_profile: "ike-crypto-default"
+        protocol_common:
+          nat_traversal:
+            enable: true
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create IKE Gateway with Peer/Local ID
+    # =========================================================================
+    - name: Create IKE gateway with peer and local ID
+      cdot65.scm.ike_gateway:
+        name: "ike-gateway-with-ids"
+        authentication:
+          pre_shared_key:
+            key: "secretkey"
+        peer_address:
+          ip: "198.51.100.1"
+        peer_id:
+          type: "fqdn"
+          id: "peer.example.com"
+        local_id:
+          type: "fqdn"
+          id: "local.example.com"
+        protocol:
+          version: "ikev2"
+          ikev2:
+            ike_crypto_profile: "ike-crypto-default"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Query IKE Gateways
+    # =========================================================================
+    - name: Get all IKE gateways
+      cdot65.scm.ike_gateway_info:
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_gateways
+
+    - name: Display gateway count
+      ansible.builtin.debug:
+        msg: "Found {{ all_gateways.ike_gateways | length }} IKE gateways"
+
+    - name: Get specific IKE gateway
+      cdot65.scm.ike_gateway_info:
+        name: "ike-gateway-site-a"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_gateway
+
+    - name: Display gateway details
+      ansible.builtin.debug:
+        var: specific_gateway.ike_gateway
+
+    # =========================================================================
+    # Update IKE Gateway
+    # =========================================================================
+    - name: Update IKE gateway protocol
+      cdot65.scm.ike_gateway:
+        name: "ike-gateway-site-a"
+        authentication:
+          pre_shared_key:
+            key: "newsecretkey"
+        peer_address:
+          ip: "192.0.2.1"
+        protocol:
+          version: "ikev2"
+          ikev2:
+            ike_crypto_profile: "ike-crypto-strong"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Cleanup (Optional)
+    # =========================================================================
+    # - name: Delete IKE gateways
+    #   cdot65.scm.ike_gateway:
+    #     name: "{{ item }}"
+    #     folder: "Shared"
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: absent
+    #   loop:
+    #     - "ike-gateway-site-a"
+    #     - "ike-gateway-dynamic"
+    #     - "ike-gateway-fqdn"
+    #     - "ike-gateway-with-ids"

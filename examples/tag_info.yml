@@ -1,0 +1,209 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM tag information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test folder and tags for examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Tag-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create different tags with various colors for testing
+    - name: Create production tag with red color
+      cdot65.scm.tag:
+        name: "test-production"
+        color: "Red"
+        comments: "Test production environment tag"
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: test_tag
+
+    - name: Create development tag with green color
+      cdot65.scm.tag:
+        name: "test-development"
+        color: "Green"
+        comments: "Test development environment tag"
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create staging tag with yellow color
+      cdot65.scm.tag:
+        name: "test-staging"
+        color: "Yellow"
+        comments: "Test staging environment tag"
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create web tag with cyan color
+      cdot65.scm.tag:
+        name: "test-web"
+        color: "Cyan"
+        comments: "Test web service tag"
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create database tag with blue color
+      cdot65.scm.tag:
+        name: "test-database"
+        color: "Blue"
+        comments: "Test database service tag"
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing tags in snippets
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Tag-Test-Snippet"
+        description: "Snippet for tag testing"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create snippet-based tag
+      cdot65.scm.tag:
+        name: "test-critical"
+        color: "Magenta"
+        comments: "Test critical services tag"
+        snippet: "Tag-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Query information examples - all queries require a container parameter
+
+    # Get tags in a specific folder
+    - name: Get tags in a specific folder
+      cdot65.scm.tag_info:
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_tags
+
+    - name: Show tags in folder
+      debug:
+        var: folder_tags.tags
+
+    # Get tags in a specific snippet
+    - name: Get tags in a specific snippet
+      cdot65.scm.tag_info:
+        snippet: "Tag-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_tags
+
+    - name: Show tags in snippet
+      debug:
+        var: snippet_tags.tags
+
+    # Get a specific tag by name (requires a container parameter)
+    - name: Get a specific tag by name in a folder
+      cdot65.scm.tag_info:
+        name: "test-production"
+        folder: "Tag-Test"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_folder_tag
+
+    - name: Show named tag in folder
+      debug:
+        var: named_folder_tag.tags
+      when: named_folder_tag.tags | length > 0
+
+    # Get a specific tag by name in a snippet
+    - name: Get a specific tag by name in a snippet
+      cdot65.scm.tag_info:
+        name: "test-critical"
+        snippet: "Tag-Test-Snippet"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_snippet_tag
+
+    - name: Show named tag in snippet
+      debug:
+        var: named_snippet_tag.tags
+      when: named_snippet_tag.tags | length > 0
+
+    # Get tags by color
+    - name: Get tags with red color
+      cdot65.scm.tag_info:
+        colors: ["Red"]
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: red_tags
+
+    - name: Show red tags
+      debug:
+        var: red_tags.tags
+
+    # Get tags by multiple colors
+    - name: Get tags with red or green color
+      cdot65.scm.tag_info:
+        colors: ["Red", "Green"]
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: multi_color_tags
+
+    - name: Show tags with multiple colors
+      debug:
+        var: multi_color_tags.tags
+
+    # Get tag by ID (no container parameter needed)
+    - name: Get tag by ID
+      cdot65.scm.tag_info:
+        id: "{{ test_tag.tag.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: id_tag
+      when: test_tag.tag is defined and test_tag.tag.id is defined
+
+    - name: Show tag by ID
+      debug:
+        var: id_tag.tags
+      when: id_tag is defined and id_tag.tags | length > 0
+
+    # Cleanup
+    - name: Delete the test tags in folder
+      cdot65.scm.tag:
+        name: "{{ item }}"
+        folder: "Tag-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "test-production"
+        - "test-development"
+        - "test-staging"
+        - "test-web"
+        - "test-database"
+
+    - name: Delete the test tag in snippet
+      cdot65.scm.tag:
+        name: "test-critical"
+        snippet: "Tag-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Tag-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Tag-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

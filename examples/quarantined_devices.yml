@@ -1,0 +1,100 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM quarantined device operations using the established session
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Display authentication info
+      ansible.builtin.debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    - name: Create a quarantined device with host ID only
+      cdot65.scm.quarantined_devices:
+        host_id: "device-test-001"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: simple_device
+
+    - name: Display created quarantined device
+      ansible.builtin.debug:
+        var: simple_device.quarantined_device
+
+    - name: Create a quarantined device with both host ID and serial number
+      cdot65.scm.quarantined_devices:
+        host_id: "device-test-002"
+        serial_number: "PA-123456789"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: detailed_device
+
+    - name: Display created detailed device
+      ansible.builtin.debug:
+        var: detailed_device.quarantined_device
+
+    - name: List all quarantined devices
+      cdot65.scm.quarantined_devices_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_devices
+
+    - name: Display all quarantined devices
+      ansible.builtin.debug:
+        msg: "Found {{ all_devices.quarantined_devices | length }} quarantined devices"
+
+    - name: Get quarantined devices by host ID
+      cdot65.scm.quarantined_devices_info:
+        host_id: "device-test-001"
+        scm_access_token: "{{ scm_access_token }}"
+      register: devices_by_host
+
+    - name: Display devices filtered by host ID
+      ansible.builtin.debug:
+        var: devices_by_host.quarantined_devices
+
+    - name: Get quarantined devices by serial number
+      cdot65.scm.quarantined_devices_info:
+        serial_number: "PA-123456789"
+        scm_access_token: "{{ scm_access_token }}"
+      register: devices_by_serial
+
+    - name: Display devices filtered by serial number
+      ansible.builtin.debug:
+        var: devices_by_serial.quarantined_devices
+
+    # Cleanup tasks
+    - name: Delete the first quarantined device
+      cdot65.scm.quarantined_devices:
+        host_id: "device-test-001"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: delete_result_1
+
+    - name: Display deletion result for first device
+      ansible.builtin.debug:
+        msg: "Device deleted: {{ delete_result_1.changed }}"
+
+    - name: Delete the second quarantined device
+      cdot65.scm.quarantined_devices:
+        host_id: "device-test-002"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: delete_result_2
+
+    - name: Display deletion result for second device
+      ansible.builtin.debug:
+        msg: "Device deleted: {{ delete_result_2.changed }}"
+
+    - name: Verify all devices are deleted
+      cdot65.scm.quarantined_devices_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: final_check
+
+    - name: Display final device count
+      ansible.builtin.debug:
+        msg: "Remaining quarantined devices: {{ final_check.quarantined_devices | length }}"

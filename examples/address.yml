@@ -1,0 +1,142 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM address object operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder to use for our address object examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Network-Objects"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a folder-based IP address object
+    - name: Create a folder-based IP address object
+      cdot65.scm.address:
+        name: "web-server"
+        description: "Web server IP address"
+        ip_netmask: "192.168.1.100/32"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: address_object
+
+    - name: Display created address object information
+      debug:
+        var: address_object.address
+
+    # Add another address object with tags
+    - name: Create a folder-based address object with tags
+      cdot65.scm.address:
+        name: "db-server"
+        description: "Database server IP address"
+        ip_netmask: "192.168.1.200/32"
+        folder: "Network-Objects"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: tagged_address
+
+    - name: Display tagged address object information
+      debug:
+        var: tagged_address.address
+
+    # Create a snippet and a snippet-based FQDN address object
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Web-ACL"
+        description: "Snippet for web traffic ACLs"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a snippet-based FQDN address object
+      cdot65.scm.address:
+        name: "example-site"
+        description: "Example website"
+        fqdn: "example.com"
+        snippet: "Web-ACL"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: fqdn_address
+
+    - name: Display FQDN address object information
+      debug:
+        var: fqdn_address.address
+
+    # Update an existing address object
+    - name: Update the web-server address object
+      cdot65.scm.address:
+        name: "web-server"
+        description: "Updated web server description"
+        ip_netmask: "192.168.1.100/32"
+        folder: "Network-Objects"
+        tag:
+          - "Ansible"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_address
+
+    - name: Display updated address object information
+      debug:
+        var: updated_address.address
+
+    # Create an IP range address object
+    - name: Create an IP range address object
+      cdot65.scm.address:
+        name: "dhcp-range"
+        description: "DHCP address range"
+        ip_range: "10.0.0.100-10.0.0.200"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: range_address
+
+    - name: Display IP range address object information
+      debug:
+        var: range_address.address
+
+    # Cleanup
+    - name: Delete the address objects
+      cdot65.scm.address:
+        name: "{{ item }}"
+        folder: "Network-Objects"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "web-server"
+        - "db-server"
+        - "dhcp-range"
+
+    - name: Delete the FQDN address object
+      cdot65.scm.address:
+        name: "example-site"
+        snippet: "Web-ACL"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Web-ACL"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Network-Objects"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

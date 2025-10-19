@@ -1,0 +1,45 @@
+---
+# Example playbook for retrieving Prisma Access remote network information
+
+- name: Remote Network Info Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # Setup authentication
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # List all remote networks in a folder
+    - name: List all remote networks
+      cdot65.scm.remote_network_info:
+        folder: "Remote Networks"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_networks
+
+    - name: Display network count
+      ansible.builtin.debug:
+        msg: "Found {{ all_networks.remote_networks | length }} remote networks"
+
+    - name: Display all networks
+      ansible.builtin.debug:
+        var: all_networks.remote_networks
+
+    # Get specific network by name
+    - name: Get specific network by name
+      cdot65.scm.remote_network_info:
+        name: "ansible-test-branch"
+        folder: "Remote Networks"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_network
+
+    - name: Display specific network
+      ansible.builtin.debug:
+        var: specific_network.remote_networks

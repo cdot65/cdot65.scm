@@ -1,0 +1,189 @@
+---
+# =========================================================================
+# Example playbook: DNS Security Profile Management
+# =========================================================================
+#
+# Description:
+#   This playbook demonstrates managing DNS Security profiles in Strata
+#   Cloud Manager using the cdot65.scm.dns_security_profile module.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - SCM credentials stored in vault.yml (scm_client_id, scm_client_secret, scm_tsg_id)
+#
+# Usage:
+#   ansible-playbook dns_security_profile.yml --vault-password-file .vault_pass
+#
+# =========================================================================
+
+- name: Manage DNS Security Profiles
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Create Basic DNS Security Profile
+    # =========================================================================
+    - name: Create a basic DNS Security profile
+      cdot65.scm.dns_security_profile:
+        name: "Example-Basic-DNS-Security"
+        description: "Basic DNS security profile"
+        botnet_domains:
+          dns_security_categories:
+            - name: "pan-dns-sec-benign"
+              action: "allow"
+              log_level: "default"
+            - name: "pan-dns-sec-cc"
+              action: "sinkhole"
+              log_level: "medium"
+          sinkhole:
+            ipv4_address: "pan-sinkhole-default-ip"
+            ipv6_address: "::1"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_profile
+
+    - name: Display basic DNS Security profile
+      ansible.builtin.debug:
+        var: basic_profile
+
+    # =========================================================================
+    # Create Comprehensive DNS Security Profile
+    # =========================================================================
+    - name: Create a comprehensive DNS Security profile
+      cdot65.scm.dns_security_profile:
+        name: "Example-Comprehensive-DNS"
+        description: "Comprehensive DNS security with multiple categories"
+        botnet_domains:
+          dns_security_categories:
+            - name: "pan-dns-sec-adtracking"
+              action: "allow"
+              log_level: "none"
+            - name: "pan-dns-sec-cc"
+              action: "sinkhole"
+              log_level: "high"
+            - name: "pan-dns-sec-ddns"
+              action: "block"
+              log_level: "medium"
+            - name: "pan-dns-sec-malware"
+              action: "sinkhole"
+              log_level: "critical"
+            - name: "pan-dns-sec-phishing"
+              action: "sinkhole"
+              log_level: "high"
+          sinkhole:
+            ipv4_address: "pan-sinkhole-default-ip"
+            ipv6_address: "::1"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: comprehensive_profile
+
+    - name: Display comprehensive DNS Security profile
+      ansible.builtin.debug:
+        var: comprehensive_profile
+
+    # =========================================================================
+    # Create DNS Security Profile with Whitelist
+    # =========================================================================
+    - name: Create DNS Security profile with whitelist
+      cdot65.scm.dns_security_profile:
+        name: "Example-Whitelist-DNS-Security"
+        description: "DNS security with whitelisted domains"
+        botnet_domains:
+          dns_security_categories:
+            - name: "pan-dns-sec-cc"
+              action: "sinkhole"
+              log_level: "medium"
+          whitelist:
+            - name: "trusted-domain-1"
+              description: "Corporate approved domain"
+            - name: "trusted-domain-2"
+              description: "Partner domain"
+          sinkhole:
+            ipv4_address: "pan-sinkhole-default-ip"
+            ipv6_address: "::1"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: whitelist_profile
+
+    - name: Display whitelist DNS Security profile
+      ansible.builtin.debug:
+        var: whitelist_profile
+
+    # =========================================================================
+    # Modify DNS Security Profile
+    # =========================================================================
+    - name: Update DNS Security profile description
+      cdot65.scm.dns_security_profile:
+        name: "Example-Basic-DNS-Security"
+        description: "Updated basic DNS security profile"
+        botnet_domains:
+          dns_security_categories:
+            - name: "pan-dns-sec-benign"
+              action: "allow"
+              log_level: "default"
+            - name: "pan-dns-sec-cc"
+              action: "sinkhole"
+              log_level: "high"
+          sinkhole:
+            ipv4_address: "pan-sinkhole-default-ip"
+            ipv6_address: "::1"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display updated DNS Security profile
+      ansible.builtin.debug:
+        var: updated_profile
+
+    # =========================================================================
+    # Delete DNS Security Profiles
+    # =========================================================================
+    - name: Delete whitelist DNS Security profile
+      cdot65.scm.dns_security_profile:
+        name: "Example-Whitelist-DNS-Security"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_whitelist
+
+    - name: Delete comprehensive DNS Security profile
+      cdot65.scm.dns_security_profile:
+        name: "Example-Comprehensive-DNS"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_comprehensive
+
+    - name: Delete basic DNS Security profile
+      cdot65.scm.dns_security_profile:
+        name: "Example-Basic-DNS-Security"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_basic
+
+    - name: Display deletion results
+      ansible.builtin.debug:
+        msg:
+          - "Whitelist profile deleted: {{ deleted_whitelist.changed }}"
+          - "Comprehensive profile deleted: {{ deleted_comprehensive.changed }}"
+          - "Basic profile deleted: {{ deleted_basic.changed }}"

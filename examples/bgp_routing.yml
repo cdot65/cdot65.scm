@@ -1,0 +1,123 @@
+---
+# =============================================================================
+# BGP Routing Configuration Examples
+# =============================================================================
+# Description:
+#   This playbook demonstrates how to manage BGP routing configuration in
+#   Strata Cloud Manager (SCM) using the cdot65.scm Ansible collection.
+#
+#   Note: BGP routing is a singleton configuration (only one exists globally).
+#
+# Usage:
+#   ansible-playbook -i inventory.yml bgp_routing.yml
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+# =============================================================================
+
+- name: BGP Routing Configuration Management
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM and get access token
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Query Current BGP Routing Configuration
+    # =========================================================================
+    - name: Get current BGP routing configuration
+      cdot65.scm.bgp_routing_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: current_bgp
+
+    - name: Display current BGP routing configuration
+      ansible.builtin.debug:
+        var: current_bgp.bgp_routing
+
+    # =========================================================================
+    # Configure BGP Routing with Default Routing Preference
+    # =========================================================================
+    - name: Configure BGP routing with default routing preference
+      cdot65.scm.bgp_routing:
+        routing_preference: "default"
+        backbone_routing: "no-asymmetric-routing"
+        accept_route_over_sc: false
+        add_host_route_to_ike_peer: true
+        withdraw_static_route: false
+        outbound_routes_for_services:
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: bgp_config
+
+    - name: Display BGP configuration result
+      ansible.builtin.debug:
+        msg: "BGP routing configured: {{ bgp_config.changed }}"
+
+    # =========================================================================
+    # Configure BGP Routing with Hot Potato Routing
+    # =========================================================================
+    - name: Configure BGP routing with hot potato routing
+      cdot65.scm.bgp_routing:
+        routing_preference: "hot_potato_routing"
+        backbone_routing: "asymmetric-routing-with-load-share"
+        accept_route_over_sc: true
+        add_host_route_to_ike_peer: true
+        withdraw_static_route: true
+        outbound_routes_for_services:
+          - "192.168.0.0/16"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Configure BGP Routing for Asymmetric Routing Only
+    # =========================================================================
+    - name: Configure BGP routing for asymmetric routing only
+      cdot65.scm.bgp_routing:
+        routing_preference: "default"
+        backbone_routing: "asymmetric-routing-only"
+        accept_route_over_sc: false
+        add_host_route_to_ike_peer: false
+        withdraw_static_route: false
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Verify Updated Configuration
+    # =========================================================================
+    - name: Get updated BGP routing configuration
+      cdot65.scm.bgp_routing_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: updated_bgp
+
+    - name: Display updated BGP routing configuration
+      ansible.builtin.debug:
+        var: updated_bgp.bgp_routing
+
+    # =========================================================================
+    # Reset BGP Routing to Defaults (Optional)
+    # =========================================================================
+    # - name: Reset BGP routing to default configuration
+    #   cdot65.scm.bgp_routing:
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: reset
+    #   register: bgp_reset
+
+    # - name: Verify BGP routing was reset
+    #   cdot65.scm.bgp_routing_info:
+    #     scm_access_token: "{{ scm_access_token }}"
+    #   register: reset_bgp
+
+    # - name: Display reset configuration
+    #   ansible.builtin.debug:
+    #     var: reset_bgp.bgp_routing

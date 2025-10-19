@@ -1,0 +1,148 @@
+[
+    {
+        "botnet_domains": {
+            "dns_security_categories": [
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-grayware",
+                    "packet_capture": null
+                },
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-recent",
+                    "packet_capture": null
+                },
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-parked",
+                    "packet_capture": null
+                },
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-proxy",
+                    "packet_capture": null
+                },
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-cc",
+                    "packet_capture": null
+                },
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-ddns",
+                    "packet_capture": null
+                },
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-phishing",
+                    "packet_capture": null
+                },
+                {
+                    "action": "default",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-malware",
+                    "packet_capture": null
+                }
+            ],
+            "lists": null,
+            "sinkhole": {
+                "ipv4_address": "pan-sinkhole-default-ip",
+                "ipv6_address": "::1"
+            },
+            "whitelist": null
+        },
+        "description": null,
+        "device": null,
+        "folder": "All",
+        "id": "e4af4e61-29aa-4454-86f7-269a6e6c5868",
+        "name": "web-security-default",
+        "snippet": "Web-Security-Default"
+    },
+    {
+        "botnet_domains": {
+            "dns_security_categories": [
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-grayware",
+                    "packet_capture": "disable"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-adtracking",
+                    "packet_capture": "disable"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-recent",
+                    "packet_capture": "disable"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-parked",
+                    "packet_capture": "disable"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-proxy",
+                    "packet_capture": "disable"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-cc",
+                    "packet_capture": "extended-capture"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-ddns",
+                    "packet_capture": "disable"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-phishing",
+                    "packet_capture": "disable"
+                },
+                {
+                    "action": "sinkhole",
+                    "log_level": "default",
+                    "name": "pan-dns-sec-malware",
+                    "packet_capture": "disable"
+                }
+            ],
+            "lists": [
+                {
+                    "action": {
+                        "sinkhole": {}
+                    },
+                    "name": "default-paloalto-dns",
+                    "packet_capture": "single-packet"
+                }
+            ],
+            "sinkhole": {
+                "ipv4_address": "pan-sinkhole-default-ip",
+                "ipv6_address": "::1"
+            },
+            "whitelist": null
+        },
+        "description": "Best practice dns security profile",
+        "device": null,
+        "folder": "Texas",
+        "id": "d2b6f0aa-e08d-47f5-8ef9-63d85c4d6dea",
+        "name": "best-practice",
+        "snippet": null
+    }
+]

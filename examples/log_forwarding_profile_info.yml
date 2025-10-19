@@ -1,0 +1,200 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM Log Forwarding Profile Info operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First, we create test containers to use for our examples
+    - name: Create a test folder for log forwarding profiles
+      cdot65.scm.folder:
+        name: "Log-Forwarding-Demo"
+        parent: "Shared"
+        description: "Folder for log forwarding profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: log_folder
+
+    - name: Create a test snippet for log forwarding profiles
+      cdot65.scm.snippet:
+        name: "Log-Forwarding-Snippet"
+        description: "Snippet for log forwarding profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: log_snippet
+
+    # Create example HTTP server profiles for log destinations
+    - name: Create HTTP server profile for logs
+      cdot65.scm.http_server_profile:
+        name: "http-log-profile"
+        folder: "Log-Forwarding-Demo"
+        protocol: "HTTP"
+        server:
+          - name: "log-server"
+            address: "192.168.1.10"
+            protocol: "HTTP"
+            port: 8080
+            http_method: "POST"
+            uri_format: "/logs"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: http_profile
+
+    # Create sample log forwarding profiles
+    - name: Create sample log forwarding profiles
+      cdot65.scm.log_forwarding_profile:
+        name: "{{ item.name }}"
+        folder: "Log-Forwarding-Demo"
+        description: "{{ item.description }}"
+        match_list: "{{ item.match_list }}"
+        enhanced_application_logging: "{{ item.enhanced_app_logging | default(false) }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - name: log-info-example-1
+          description: "Traffic log forwarding profile"
+          match_list:
+            - name: "traffic-match"
+              log_type: "traffic"
+              send_http: ["http-log-profile"]
+          enhanced_app_logging: false
+        - name: log-info-example-2
+          description: "Threat log forwarding profile"
+          match_list:
+            - name: "threat-match"
+              log_type: "threat"
+              send_http: ["http-log-profile"]
+          enhanced_app_logging: false
+        - name: log-info-example-3
+          description: "Multiple log types profile"
+          match_list:
+            - name: "traffic-match"
+              log_type: "traffic"
+              send_http: ["http-log-profile"]
+            - name: "threat-match"
+              log_type: "threat"
+              send_http: ["http-log-profile"]
+          enhanced_app_logging: true
+      register: sample_profiles
+
+    # Create a profile in snippet
+    - name: Create a profile in snippet
+      cdot65.scm.log_forwarding_profile:
+        name: "snippet-log-profile"
+        description: "Log forwarding profile in a snippet"
+        match_list:
+          - name: "url-logs"
+            log_type: "url"
+            send_http: ["http-log-profile"]
+        snippet: "Log-Forwarding-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: snippet_profile
+
+    # Get a specific profile by name
+    - name: Get log forwarding profile by name
+      cdot65.scm.log_forwarding_profile_info:
+        name: "log-info-example-1"
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: profile_by_name
+    
+    - name: Show profile retrieved by name
+      debug:
+        var: profile_by_name
+
+    # Get all log forwarding profiles in folder
+    - name: Get all log forwarding profiles in the folder
+      cdot65.scm.log_forwarding_profile_info:
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+    
+    - name: Show all profiles in folder
+      debug:
+        var: all_profiles
+
+    # Filter profiles by log type
+    - name: Get profiles with traffic log type
+      cdot65.scm.log_forwarding_profile_info:
+        folder: "Log-Forwarding-Demo"
+        log_type: traffic
+        scm_access_token: "{{ scm_access_token }}"
+      register: traffic_profiles
+    
+    - name: Show traffic profiles
+      debug:
+        var: traffic_profiles
+    
+    - name: Get profiles with threat log type
+      cdot65.scm.log_forwarding_profile_info:
+        folder: "Log-Forwarding-Demo"
+        log_type: threat
+        scm_access_token: "{{ scm_access_token }}"
+      register: threat_profiles
+    
+    - name: Show threat profiles
+      debug:
+        var: threat_profiles
+
+    # Get all profiles in snippet
+    - name: Get all profiles in snippet
+      cdot65.scm.log_forwarding_profile_info:
+        snippet: "Log-Forwarding-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_profiles
+    
+    - name: Show profiles in snippet
+      debug:
+        var: snippet_profiles
+
+    # Clean up
+    - name: Delete log forwarding profiles in folder
+      cdot65.scm.log_forwarding_profile:
+        name: "{{ item }}"
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - log-info-example-1
+        - log-info-example-2
+        - log-info-example-3
+
+    - name: Delete log forwarding profile in snippet
+      cdot65.scm.log_forwarding_profile:
+        name: "snippet-log-profile"
+        snippet: "Log-Forwarding-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up HTTP server profiles
+    - name: Delete HTTP server profile
+      cdot65.scm.http_server_profile:
+        name: "http-log-profile"
+        folder: "Log-Forwarding-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up the containers
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Log-Forwarding-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Log-Forwarding-Demo"
+        parent: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

@@ -1,0 +1,124 @@
+[project]
+name = "cdot65-scm"
+version = "0.1.0"
+description = "Ansible collection for Strata Cloud Manager (SCM) automation"
+authors = [
+    {name = "cdot65", email = "calvin@cdot.io"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+
+[tool.poetry]
+# This is an Ansible collection, not a standard Python package. Poetry is used for developer tooling only.
+package-mode = false
+
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+ansible-core = "^2.18.0"
+pan-scm-sdk = "^0.3.44"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-mock = "^3.14.0"
+pytest-ansible = "^25.4.0"
+pytest-xdist = "^3.6.1"
+pytest-cov = "^6.1.1"
+tox = "^4.0.0"
+flake8 = "^6.1.0"
+ruff = "^0.11.5"
+mypy = "^1.15.0"
+mock = "^5.2.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+python-dotenv = "^1.1.0"
+ipython = "^9.2.0"
+ansible-lint = "^25.4.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ansible.lint]
+skip_list = ["no-handler"]
+
+[tool.black]
+line-length = 128
+# Minimum Python 3.11 required by pan-scm-sdk
+target-version = ['py311', 'py312', 'py313']
+extend-exclude = '''
+/(
+  \.venv
+  | \.tox
+  | build
+  | dist
+  | ansible_collections
+)/
+'''
+
+[tool.ruff]
+line-length = 128
+# Minimum Python 3.11 required by pan-scm-sdk
+target-version = "py311"
+extend-exclude = [".venv", ".tox", "build", "dist", "ansible_collections"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "D", "UP", "S", "BLE", "C4", "T20", "RET", "SIM", "ERA"]
+ignore = [
+    "E402", "E501", "D100", "D101", "D102", "D103", "D107",
+]
+
+# Ignore some rules in tests files and Ansible code
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S106", "S603", "S607", "T201", "ANN", "C408"]  # S105/S106 for test credentials
+"plugins/modules/*.py" = ["C408", "BLE001", "SIM102"]  # Ansible module conventions and intentional broad exception handling
+"plugins/module_utils/*.py" = ["C408"]  # Ansible module utils also use dict() calls for argument specs
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.isort]
+profile = "black"
+line_length = 128
+force_single_line = false  # Allow multiple imports on one line (matches ruff)
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "ANSIBLE_CDOT65_SCM", "LOCALFOLDER"]
+known_first_party = ["pan_scm_sdk"]
+known_ansible_core = ["ansible"]
+known_ansible_cdot65_scm = ["ansible_collections.cdot65.scm"]
+from_first = false
+# Skip Ansible modules as they have specific import requirements
+skip_glob = ["plugins/modules/*.py", ".venv/**", ".tox/**", "build/**", "dist/**", "ansible_collections/**"]
+
+[tool.mypy]
+# Minimum Python 3.11 required by pan-scm-sdk
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+# Ignore missing imports for external dependencies without type stubs
+ignore_missing_imports = true
+# Allow untyped calls from external libraries
+allow_untyped_calls = true
+# Exclude directories
+exclude = [
+    '\.venv',
+    '\.tox',
+    'build',
+    'dist',
+    'ansible_collections',
+]
+
+# Ignore type checking for Ansible modules/collections
+[[tool.mypy.overrides]]
+module = [
+    "ansible.*",
+    "ansible_collections.*"
+]
+ignore_errors = true
+ignore_missing_imports = true
+
+# NOTE:
+# - All runtime dependencies for collection users (for Galaxy) must be listed in galaxy.yml, not here.
+# - This file is for developer tooling, linting, and virtualenv management only.
+# - Do NOT add collection metadata here for publishing to Galaxy; use galaxy.yml.

@@ -1,0 +1,23 @@
+# Core testing requirements
+pytest>=8.3.5
+pytest-forked>=1.5.0
+pytest-mock>=3.14.0
+pytest-xdist>=3.6.1
+pytest-cov>=6.1.1
+pytest-ansible>=25.4.0
+mock>=5.2.0
+
+# Required for the SCM SDK
+pan-scm-sdk>=0.3.38
+
+# Linting and formatting tools
+flake8>=6.1.0
+ruff>=0.11.5
+black>=25.1.0
+isort>=6.0.1
+mypy>=1.15.0
+ansible-lint>=6.21.1
+
+# For unit tests
+cryptography>=37.0.4,<38.0.0
+netaddr>=0.8.0

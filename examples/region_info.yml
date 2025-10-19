@@ -1,0 +1,191 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM region information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      ansible.builtin.debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test folder and region objects for examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Region-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create test regions
+    - name: Create US West region
+      cdot65.scm.region:
+        name: "us-west-region"
+        folder: "Region-Test"
+        geo_location:
+          latitude: 37.7749
+          longitude: -122.4194
+        address:
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create US East region
+      cdot65.scm.region:
+        name: "us-east-region"
+        folder: "Region-Test"
+        geo_location:
+          latitude: 40.7128
+          longitude: -74.0060
+        address:
+          - "192.168.0.0/16"
+          - "10.1.0.0/16"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create EU region
+      cdot65.scm.region:
+        name: "eu-central-region"
+        folder: "Region-Test"
+        geo_location:
+          latitude: 52.5200
+          longitude: 13.4050
+        address:
+          - "172.17.0.0/16"
+          - "10.2.0.0/16"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing regions in snippets
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "AnsibleTest"
+        description: "Snippet for region testing"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create Asia region in snippet
+      cdot65.scm.region:
+        name: "asia-pacific-region"
+        snippet: "AnsibleTest"
+        geo_location:
+          latitude: 35.6762
+          longitude: 139.6503
+        address:
+          - "172.18.0.0/16"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Query examples
+
+    # Get all regions in a folder
+    - name: Get all regions in folder
+      cdot65.scm.region_info:
+        folder: "Region-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_folder_regions
+
+    - name: Show all regions in folder
+      ansible.builtin.debug:
+        var: all_folder_regions.regions
+
+    # Get all regions in a snippet
+    - name: Get all regions in snippet
+      cdot65.scm.region_info:
+        snippet: "AnsibleTest"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_snippet_regions
+
+    - name: Show all regions in snippet
+      ansible.builtin.debug:
+        var: all_snippet_regions.regions
+
+    # Get a specific region by name
+    - name: Get specific region by name
+      cdot65.scm.region_info:
+        name: "us-west-region"
+        folder: "Region-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_region
+
+    - name: Show specific region
+      ansible.builtin.debug:
+        var: specific_region.regions
+
+    # Test exclusion filters
+    - name: Create secondary folder
+      cdot65.scm.folder:
+        name: "Region-Dev"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create test region in secondary folder
+      cdot65.scm.region:
+        name: "dev-region"
+        address:
+          - "192.168.1.0/24"
+        folder: "Region-Dev"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Test exact_match parameter
+    - name: Get regions with exact folder match
+      cdot65.scm.region_info:
+        folder: "Region-Test"
+        exact_match: true
+        scm_access_token: "{{ scm_access_token }}"
+      register: exact_match_regions
+
+    - name: Show exact match results
+      ansible.builtin.debug:
+        var: exact_match_regions.regions
+
+    # Cleanup
+    - name: Delete regions in folder
+      cdot65.scm.region:
+        name: "{{ item }}"
+        folder: "Region-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "us-west-region"
+        - "us-east-region"
+        - "eu-central-region"
+
+    - name: Delete region in snippet
+      cdot65.scm.region:
+        name: "asia-pacific-region"
+        snippet: "AnsibleTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete region in secondary folder
+      cdot65.scm.region:
+        name: "dev-region"
+        folder: "Region-Dev"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "AnsibleTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folders
+      cdot65.scm.folder:
+        name: "{{ item }}"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "Region-Test"
+        - "Region-Dev"

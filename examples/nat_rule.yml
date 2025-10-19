@@ -1,0 +1,282 @@
+---
+# =============================================================================
+# NAT Rule Management Examples
+# =============================================================================
+# Description:
+#   This playbook demonstrates how to manage NAT rules in Strata Cloud Manager
+#   (SCM) using the cdot65.scm Ansible collection.
+#
+# Usage:
+#   ansible-playbook -i inventory.yml nat_rule.yml
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+# =============================================================================
+
+- name: NAT Rule Management
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM and get access token
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Create Source NAT Rules
+    # =========================================================================
+    - name: Create source NAT rule with dynamic IP and port
+      cdot65.scm.nat_rule:
+        name: "SNAT-Internet-Access"
+        description: "Source NAT for internal users accessing internet"
+        position: "pre"
+        from:
+          - "trust"
+        to:
+          - "untrust"
+        source:
+          - "10.0.0.0/8"
+        destination:
+          - "any"
+        service: "any"
+        source_translation:
+          dynamic_ip_and_port:
+            translated_address:
+              - "203.0.113.10"
+              - "203.0.113.11"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: snat_rule
+
+    - name: Create source NAT rule with interface address
+      cdot65.scm.nat_rule:
+        name: "SNAT-Interface"
+        description: "Source NAT using interface address"
+        position: "pre"
+        from:
+          - "trust"
+        to:
+          - "untrust"
+        source:
+          - "192.168.1.0/24"
+        destination:
+          - "any"
+        service: "any"
+        source_translation:
+          dynamic_ip_and_port:
+            interface_address:
+              interface: "ethernet1/1"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Destination NAT Rules
+    # =========================================================================
+    - name: Create destination NAT rule for web server
+      cdot65.scm.nat_rule:
+        name: "DNAT-Web-Server"
+        description: "Destination NAT for web server"
+        position: "pre"
+        from:
+          - "untrust"
+        to:
+          - "dmz"
+        source:
+          - "any"
+        destination:
+          - "203.0.113.20"
+        service: "service-http"
+        destination_translation:
+          translated_address: "10.1.1.10"
+          translated_port: 80
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create destination NAT with port translation
+      cdot65.scm.nat_rule:
+        name: "DNAT-SSH-Server"
+        description: "Destination NAT for SSH server with port change"
+        position: "pre"
+        from:
+          - "untrust"
+        to:
+          - "dmz"
+        source:
+          - "any"
+        destination:
+          - "203.0.113.21"
+        service: "service-ssh"
+        destination_translation:
+          translated_address: "10.1.1.20"
+          translated_port: 22
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Bi-Directional NAT Rule
+    # =========================================================================
+    - name: Create bi-directional static NAT
+      cdot65.scm.nat_rule:
+        name: "Static-NAT-Server"
+        description: "Bi-directional NAT for server"
+        position: "pre"
+        from:
+          - "any"
+        to:
+          - "any"
+        source:
+          - "10.2.1.50"
+        destination:
+          - "any"
+        service: "any"
+        source_translation:
+          static_ip:
+            translated_address: "203.0.113.50"
+            bi_directional: true
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create NAT Rule with Tags
+    # =========================================================================
+    - name: Create NAT rule with tags
+      cdot65.scm.nat_rule:
+        name: "SNAT-Production"
+        description: "Source NAT for production traffic"
+        position: "pre"
+        tag:
+          - "Production"
+          - "Internet-Access"
+        from:
+          - "trust"
+        to:
+          - "untrust"
+        source:
+          - "10.10.0.0/16"
+        destination:
+          - "any"
+        service: "any"
+        source_translation:
+          dynamic_ip_and_port:
+            translated_address:
+              - "203.0.113.100"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Query NAT Rules
+    # =========================================================================
+    - name: Get all pre-NAT rules
+      cdot65.scm.nat_rule_info:
+        folder: "Shared"
+        position: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: pre_nat_rules
+
+    - name: Display NAT rule count
+      ansible.builtin.debug:
+        msg: "Found {{ pre_nat_rules.nat_rules | length }} pre-NAT rules"
+
+    - name: Get specific NAT rule
+      cdot65.scm.nat_rule_info:
+        name: "SNAT-Internet-Access"
+        folder: "Shared"
+        position: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_rule
+
+    - name: Display NAT rule details
+      ansible.builtin.debug:
+        var: specific_rule.nat_rule
+
+    - name: Get NAT rules filtered by tag
+      cdot65.scm.nat_rule_info:
+        folder: "Shared"
+        position: "pre"
+        tag:
+          - "Production"
+        scm_access_token: "{{ scm_access_token }}"
+      register: tagged_rules
+
+    # =========================================================================
+    # Update NAT Rule
+    # =========================================================================
+    - name: Update NAT rule description
+      cdot65.scm.nat_rule:
+        name: "SNAT-Internet-Access"
+        description: "Updated: Source NAT for all internal users"
+        position: "pre"
+        from:
+          - "trust"
+        to:
+          - "untrust"
+        source:
+          - "10.0.0.0/8"
+        destination:
+          - "any"
+        service: "any"
+        source_translation:
+          dynamic_ip_and_port:
+            translated_address:
+              - "203.0.113.10"
+              - "203.0.113.11"
+              - "203.0.113.12"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Disable NAT Rule
+    # =========================================================================
+    - name: Disable NAT rule
+      cdot65.scm.nat_rule:
+        name: "DNAT-SSH-Server"
+        description: "Destination NAT for SSH server with port change"
+        disabled: true
+        position: "pre"
+        from:
+          - "untrust"
+        to:
+          - "dmz"
+        source:
+          - "any"
+        destination:
+          - "203.0.113.21"
+        service: "service-ssh"
+        destination_translation:
+          translated_address: "10.1.1.20"
+          translated_port: 22
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Cleanup (Optional)
+    # =========================================================================
+    # - name: Delete NAT rules
+    #   cdot65.scm.nat_rule:
+    #     name: "{{ item }}"
+    #     folder: "Shared"
+    #     position: "pre"
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: absent
+    #   loop:
+    #     - "SNAT-Internet-Access"
+    #     - "SNAT-Interface"
+    #     - "DNAT-Web-Server"
+    #     - "DNAT-SSH-Server"
+    #     - "Static-NAT-Server"
+    #     - "SNAT-Production"

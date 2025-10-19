@@ -1,0 +1,199 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM HIP object info operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create test containers and HIP objects to use for our examples
+    - name: Create a test folder for HIP objects
+      cdot65.scm.folder:
+        name: "HIP-Demo"
+        parent: "Texas"
+        description: "Folder for HIP object examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_folder
+
+    - name: Create a test snippet for HIP objects
+      cdot65.scm.snippet:
+        name: "HIP-Snippet"
+        description: "Snippet for HIP object examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_snippet
+
+    # Create different types of HIP objects for demo and testing
+    - name: Create a Host Info HIP object
+      cdot65.scm.hip_object:
+        name: "windows-workstations"
+        description: "Windows workstation requirements"
+        folder: "HIP-Demo"
+        host_info:
+          criteria:
+            os:
+              contains:
+                Microsoft: "All"
+            managed: true
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a Disk Encryption HIP object
+      cdot65.scm.hip_object:
+        name: "encrypted-endpoints"
+        description: "Disk encryption requirements"
+        folder: "HIP-Demo"
+        disk_encryption:
+          criteria:
+            is_installed: true
+            encrypted_locations:
+              - name: "C:"
+                encryption_state:
+                  is: "encrypted"
+          vendor:
+            - name: "Microsoft"
+              product: ["BitLocker"]
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a Network Info HIP object in snippet
+      cdot65.scm.hip_object:
+        name: "corporate-wifi"
+        description: "Corporate WiFi requirements"
+        snippet: "HIP-Snippet"
+        network_info:
+          criteria:
+            network_type:  # Using network_type instead of network
+              is: "wifi"   # Direct string value for network type
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Now demonstrate various ways to retrieve HIP object information
+    
+    # Get all HIP objects in a folder
+    - name: List all HIP objects in the folder
+      cdot65.scm.hip_object_info:
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_hip_objects
+
+    - name: Display folder HIP objects
+      debug:
+        var: folder_hip_objects.hip_objects
+        
+    # Get all HIP objects in a snippet
+    - name: List all HIP objects in the snippet
+      cdot65.scm.hip_object_info:
+        snippet: "HIP-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_hip_objects
+
+    - name: Display snippet HIP objects
+      debug:
+        var: snippet_hip_objects.hip_objects
+
+    # Get a specific HIP object by name
+    - name: Get specific HIP object by name
+      cdot65.scm.hip_object_info:
+        name: "windows-workstations"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_hip_object
+
+    - name: Display specific HIP object
+      debug:
+        var: specific_hip_object.hip_objects
+
+    # Get by ID (assuming we have the ID from previous fetch)
+    - name: Get HIP object by ID
+      cdot65.scm.hip_object_info:
+        id: "{{ specific_hip_object.hip_objects[0].id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: hip_by_id
+
+    - name: Display HIP object by ID
+      debug:
+        var: hip_by_id.hip_objects
+
+    # Get HIP objects filtered by criteria types
+    - name: Get Host Information type HIP objects
+      cdot65.scm.hip_object_info:
+        folder: "HIP-Demo"
+        criteria_types:
+          - "host_info"
+        scm_access_token: "{{ scm_access_token }}"
+      register: host_info_objects
+
+    - name: Display Host Information type HIP objects
+      debug:
+        var: host_info_objects.hip_objects
+        
+    - name: Get Disk Encryption type HIP objects
+      cdot65.scm.hip_object_info:
+        folder: "HIP-Demo"
+        criteria_types:
+          - "disk_encryption"
+        scm_access_token: "{{ scm_access_token }}"
+      register: disk_encryption_objects
+
+    - name: Display Disk Encryption type HIP objects
+      debug:
+        var: disk_encryption_objects.hip_objects
+
+    # Get HIP objects with exact matching
+    - name: Get HIP objects with exact folder matching
+      cdot65.scm.hip_object_info:
+        folder: "HIP-Demo"
+        exact_match: true
+        scm_access_token: "{{ scm_access_token }}"
+      register: exact_folder_objects
+
+    - name: Display exact folder match results
+      debug:
+        var: exact_folder_objects.hip_objects
+    
+    # Cleanup - delete the HIP objects
+    - name: Delete the Network Info HIP object
+      cdot65.scm.hip_object:
+        name: "corporate-wifi"
+        snippet: "HIP-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the Disk Encryption HIP object
+      cdot65.scm.hip_object:
+        name: "encrypted-endpoints"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the Host Info HIP object
+      cdot65.scm.hip_object:
+        name: "windows-workstations"
+        folder: "HIP-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up the containers
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "HIP-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "HIP-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

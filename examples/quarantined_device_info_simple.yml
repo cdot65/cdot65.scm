@@ -1,0 +1,24 @@
+---
+# Simple example playbook for querying quarantined devices
+# This playbook just queries existing quarantined devices without trying to create test data
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query quarantined device information
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Query all quarantined devices
+      cdot65.scm.quarantined_device_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_devices
+
+    - name: Display all quarantined devices
+      ansible.builtin.debug:
+        var: all_devices.quarantined_devices

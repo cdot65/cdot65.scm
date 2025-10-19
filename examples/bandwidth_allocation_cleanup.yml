@@ -1,0 +1,49 @@
+---
+# Cleanup playbook to remove test bandwidth allocations
+
+- name: Cleanup Bandwidth Allocations
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # Setup authentication
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # Get all allocations first
+    - name: List all bandwidth allocations
+      cdot65.scm.bandwidth_allocation_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_allocs
+
+    - name: Display allocations
+      ansible.builtin.debug:
+        msg: "{{ all_allocs.allocations | map(attribute='name') | list }}"
+
+    # Delete test allocations
+    - name: Delete Example-Region-East
+      cdot65.scm.bandwidth_allocation:
+        name: "Example-Region-East"
+        spn_name_list: "{{ item.spn_name_list }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop: "{{ all_allocs.allocations }}"
+      when: item.name == "Example-Region-East"
+      ignore_errors: yes
+
+    - name: Delete Example-Region-West
+      cdot65.scm.bandwidth_allocation:
+        name: "Example-Region-West"
+        spn_name_list: "{{ item.spn_name_list }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop: "{{ all_allocs.allocations }}"
+      when: item.name == "Example-Region-West"
+      ignore_errors: yes

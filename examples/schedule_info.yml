@@ -1,0 +1,175 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM schedule information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test folder and schedule objects for examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Schedule-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create different types of schedule objects for testing
+    - name: Create a daily recurring schedule
+      cdot65.scm.schedule:
+        name: "daily-backup"
+        schedule_type:
+          recurring:
+            daily:
+              - "02:00-03:00"
+        folder: "Schedule-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: test_schedule
+
+    - name: Create a weekly recurring schedule
+      cdot65.scm.schedule:
+        name: "weekly-maintenance"
+        schedule_type:
+          recurring:
+            weekly:
+              sunday:
+                - "01:00-05:00"
+              saturday:
+                - "22:00-23:59"
+        folder: "Schedule-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a non-recurring schedule
+      cdot65.scm.schedule:
+        name: "project-deadline"
+        schedule_type:
+          non_recurring:
+            - "2025/12/31@23:00-2025/12/31@23:59"
+        folder: "Schedule-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing schedule objects in snippets
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Schedule-Test-Snippet"
+        description: "Snippet for schedule testing"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a snippet-based schedule
+      cdot65.scm.schedule:
+        name: "snippet-schedule"
+        schedule_type:
+          recurring:
+            daily:
+              - "09:00-17:00"
+        snippet: "Schedule-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Query information examples - all queries require a container parameter
+
+    # Get schedules in a specific folder
+    - name: Get schedules in a specific folder
+      cdot65.scm.schedule_info:
+        folder: "Schedule-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_schedules
+
+    - name: Show schedules in folder
+      debug:
+        var: folder_schedules.schedules
+
+    # Get schedules in a specific snippet
+    - name: Get schedules in a specific snippet
+      cdot65.scm.schedule_info:
+        snippet: "Schedule-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_schedules
+
+    - name: Show schedules in snippet
+      debug:
+        var: snippet_schedules.schedules
+
+    # Get a specific schedule by name (requires a container parameter)
+    - name: Get a specific schedule by name in a folder
+      cdot65.scm.schedule_info:
+        name: "daily-backup"
+        folder: "Schedule-Test"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_folder_schedule
+
+    - name: Show named schedule in folder
+      debug:
+        var: named_folder_schedule.schedules
+      when: named_folder_schedule.schedules | length > 0
+
+    # Get a specific schedule by name in a snippet
+    - name: Get a specific schedule by name in a snippet
+      cdot65.scm.schedule_info:
+        name: "snippet-schedule"
+        snippet: "Schedule-Test-Snippet"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_snippet_schedule
+
+    - name: Show named schedule in snippet
+      debug:
+        var: named_snippet_schedule.schedules
+      when: named_snippet_schedule.schedules | length > 0
+
+    # Get schedule by ID (no container parameter needed)
+    - name: Get schedule by ID
+      cdot65.scm.schedule_info:
+        id: "{{ test_schedule.schedule.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: id_schedule
+      when: test_schedule.schedule is defined and test_schedule.schedule.id is defined
+
+    - name: Show schedule by ID
+      debug:
+        var: id_schedule.schedules
+      when: id_schedule is defined and id_schedule.schedules | length > 0
+
+    # Cleanup
+    - name: Delete the test schedules in folder
+      cdot65.scm.schedule:
+        name: "{{ item }}"
+        folder: "Schedule-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "daily-backup"
+        - "weekly-maintenance"
+        - "project-deadline"
+
+    - name: Delete the test schedule in snippet
+      cdot65.scm.schedule:
+        name: "snippet-schedule"
+        snippet: "Schedule-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Schedule-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Schedule-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

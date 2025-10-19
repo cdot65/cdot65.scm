@@ -1,0 +1,182 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM HTTP Server Profile Info operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First, we create test containers to use for our examples
+    - name: Create a test folder for HTTP server profiles
+      cdot65.scm.folder:
+        name: "HTTP-Server-Demo"
+        parent: "Texas"
+        description: "Folder for HTTP server profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: http_folder
+
+    - name: Create a test snippet for HTTP server profiles
+      cdot65.scm.snippet:
+        name: "HTTP-Server-Snippet"
+        description: "Snippet for HTTP server profile examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: http_snippet
+
+    # Create sample profiles for demonstration
+    - name: Create sample HTTP server profiles
+      cdot65.scm.http_server_profile:
+        name: "{{ item.name }}"
+        folder: "HTTP-Server-Demo"
+        protocol: "{{ item.protocol }}"
+        server:
+          - name: "{{ item.name }}-server"
+            address: "{{ item.address }}"
+            protocol: "{{ item.protocol }}"
+            port: "{{ item.port }}"
+            http_method: "POST"
+            uri_format: "/"
+        tag_registration: "{{ item.tag_registration | default(false) }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      loop:
+        - name: http-info-example-1
+          protocol: HTTP
+          address: 192.168.1.1
+          port: 80
+        - name: https-info-example-1
+          protocol: HTTPS
+          address: 192.168.1.2
+          port: 443
+        - name: https-info-example-2
+          protocol: HTTPS
+          address: 192.168.1.3
+          port: 443
+
+    # Create a sample profile in snippet
+    - name: Create a sample HTTP server profile in snippet
+      cdot65.scm.http_server_profile:
+        name: "snippet-http-server"
+        snippet: "HTTP-Server-Snippet"
+        protocol: HTTP
+        server:
+          - name: "snippet-server"
+            address: "192.168.1.4"
+            protocol: "HTTP"
+            port: 8080
+            http_method: "POST"
+            uri_format: "/snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Get a specific profile by name
+    - name: Get HTTP server profile by name
+      cdot65.scm.http_server_profile_info:
+        name: "http-info-example-1"
+        folder: "HTTP-Server-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: profile_by_name
+    
+    - name: Show profile retrieved by name
+      debug:
+        var: profile_by_name
+
+    # Get all HTTP server profiles in folder
+    - name: Get all HTTP server profiles in the folder
+      cdot65.scm.http_server_profile_info:
+        folder: "HTTP-Server-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+    
+    - name: Show all profiles in folder
+      debug:
+        var: all_profiles
+
+    # Filter profiles by protocol
+    - name: Get profiles with HTTP protocol
+      cdot65.scm.http_server_profile_info:
+        folder: "HTTP-Server-Demo"
+        protocol: HTTP
+        scm_access_token: "{{ scm_access_token }}"
+      register: http_profiles
+    
+    - name: Show HTTP profiles
+      debug:
+        var: http_profiles
+    
+    - name: Get profiles with HTTPS protocol
+      cdot65.scm.http_server_profile_info:
+        folder: "HTTP-Server-Demo"
+        protocol: HTTPS
+        scm_access_token: "{{ scm_access_token }}"
+      register: https_profiles
+    
+    - name: Show HTTPS profiles
+      debug:
+        var: https_profiles
+
+    # Filter profiles by tag registration
+    - name: Get profiles with tag registration enabled
+      cdot65.scm.http_server_profile_info:
+        folder: "HTTP-Server-Demo"
+        tag_registration: true
+        scm_access_token: "{{ scm_access_token }}"
+      register: tag_profiles
+    
+    - name: Show tag registration profiles
+      debug:
+        var: tag_profiles
+
+    # Get all profiles in snippet
+    - name: Get all profiles in snippet
+      cdot65.scm.http_server_profile_info:
+        snippet: "HTTP-Server-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_profiles
+    
+    - name: Show profiles in snippet
+      debug:
+        var: snippet_profiles
+
+    # Clean up
+    - name: Delete sample HTTP server profiles in folder
+      cdot65.scm.http_server_profile:
+        name: "{{ item }}"
+        folder: "HTTP-Server-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - http-info-example-1
+        - https-info-example-1
+        - https-info-example-2
+
+    - name: Delete sample HTTP server profile in snippet
+      cdot65.scm.http_server_profile:
+        name: "snippet-http-server"
+        snippet: "HTTP-Server-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # Clean up the containers
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "HTTP-Server-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "HTTP-Server-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

@@ -1,0 +1,177 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM external dynamic list info operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder and EDLs to use for our examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "EDL-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "EDL-Snippet"
+        description: "Snippet for external dynamic list demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create different external dynamic lists for demonstration
+    - name: Create an IP type external dynamic list
+      cdot65.scm.external_dynamic_list:
+        name: "malicious-ips"
+        folder: "EDL-Demo"
+        description: "Dynamic list of known malicious IP addresses"
+        type: "ip"
+        url: "https://threatfeeds.example.org/malicious-ips.txt"
+        recurring:
+          hourly: {}
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a domain type external dynamic list
+      cdot65.scm.external_dynamic_list:
+        name: "malware-domains"
+        folder: "EDL-Demo"
+        description: "Dynamic list of domains associated with malware"
+        type: "domain"
+        url: "https://threatfeeds.example.org/malware-domains.txt"
+        recurring:
+          daily:
+            at: "02"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a URL type external dynamic list
+      cdot65.scm.external_dynamic_list:
+        name: "phishing-urls"
+        description: "Dynamic list of known phishing URLs"
+        type: "url"
+        url: "https://threatfeeds.example.org/phishing-urls.txt"
+        recurring:
+          weekly:
+            day_of_week: "monday"
+            at: "01"
+        snippet: "EDL-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+        
+    - name: Create a predefined IP type external dynamic list
+      cdot65.scm.external_dynamic_list:
+        name: "predefined-ips"
+        description: "Predefined list of malicious IPs"
+        type: "predefined_ip"
+        url: "panw-highrisk-ip-list"  # Use a predefined list name, not a URL
+        snippet: "EDL-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Now let's demonstrate various ways to query external dynamic lists
+    
+    # Get all external dynamic lists in a folder
+    - name: List all external dynamic lists in the folder
+      cdot65.scm.external_dynamic_list_info:
+        folder: "EDL-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_edls
+
+    - name: Display external dynamic lists in folder
+      debug:
+        var: folder_edls.external_dynamic_lists
+        
+    # Get all external dynamic lists in a snippet
+    - name: List all external dynamic lists in the snippet
+      cdot65.scm.external_dynamic_list_info:
+        snippet: "EDL-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_edls
+
+    - name: Display external dynamic lists in snippet
+      debug:
+        var: snippet_edls.external_dynamic_lists
+
+    # Get a specific external dynamic list by name
+    - name: Get the malicious-ips external dynamic list
+      cdot65.scm.external_dynamic_list_info:
+        name: "malicious-ips"
+        folder: "EDL-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: edl_by_name
+
+    - name: Display external dynamic list by name
+      debug:
+        var: edl_by_name.external_dynamic_lists
+
+    # Get external dynamic lists by type
+    - name: Get IP type external dynamic lists
+      cdot65.scm.external_dynamic_list_info:
+        folder: "EDL-Demo"
+        list_types: ["ip", "predefined_ip"]
+        scm_access_token: "{{ scm_access_token }}"
+      register: ip_edls
+
+    - name: Display IP type external dynamic lists
+      debug:
+        var: ip_edls.external_dynamic_lists
+
+    # Combine multiple filters
+    - name: Get domain and URL type EDLs in the folder
+      cdot65.scm.external_dynamic_list_info:
+        folder: "EDL-Demo"
+        list_types:
+          - "domain"
+          - "url"
+        scm_access_token: "{{ scm_access_token }}"
+      register: filtered_edls
+
+    - name: Display domain and URL type EDLs in folder
+      debug:
+        var: filtered_edls.external_dynamic_lists
+
+    # Cleanup
+    - name: Delete the external dynamic lists in folder
+      cdot65.scm.external_dynamic_list:
+        name: "{{ item }}"
+        folder: "EDL-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "malicious-ips"
+        - "malware-domains"
+
+    - name: Delete the external dynamic lists in snippet
+      cdot65.scm.external_dynamic_list:
+        name: "{{ item }}"
+        snippet: "EDL-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "phishing-urls"
+        - "predefined-ips"
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "EDL-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "EDL-Demo"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

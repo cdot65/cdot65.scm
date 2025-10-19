@@ -1,0 +1,111 @@
+---
+# Example playbook for managing Prisma Access service connections
+# Service connections link Prisma Access to external cloud services via IPSec
+#
+# IMPORTANT: These examples require:
+# - Existing IPSec tunnel(s) configured in Prisma Access
+# - Proper Prisma Access licensing
+# - Network connectivity to cloud service providers
+
+- name: Service Connection Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # Setup authentication
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # Example 1: Create basic service connection
+    - name: Create basic AWS service connection
+      cdot65.scm.service_connection:
+        name: "ansible-test-aws-connection"
+        region: "us-east-1"
+        ipsec_tunnel: "my-aws-tunnel"  # Replace with your actual tunnel
+        subnets:
+          - "10.100.0.0/24"
+          - "10.100.1.0/24"
+        folder: "Service Connections"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_connection
+
+    - name: Display created connection
+      ansible.builtin.debug:
+        var: basic_connection
+
+    # Example 2: Create service connection with BGP
+    - name: Create Azure service connection with BGP
+      cdot65.scm.service_connection:
+        name: "ansible-test-azure-connection"
+        region: "us-west-1"
+        ipsec_tunnel: "my-azure-tunnel"
+        subnets:
+          - "10.101.0.0/24"
+        protocol:
+          bgp:
+            enable: true
+            local_ip_address: "169.254.30.1"
+            peer_ip_address: "169.254.30.2"
+            peer_as: "65200"
+        folder: "Service Connections"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: bgp_connection
+      when: false  # Set to true when BGP is configured
+
+    # Example 3: Create service connection with redundancy
+    - name: Create GCP service connection with redundancy
+      cdot65.scm.service_connection:
+        name: "ansible-test-gcp-connection"
+        region: "us-central-1"
+        ipsec_tunnel: "my-gcp-tunnel-1"
+        secondary_ipsec_tunnel: "my-gcp-tunnel-2"
+        subnets:
+          - "10.102.0.0/24"
+        source_nat: true
+        folder: "Service Connections"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: redundant_connection
+      when: false  # Set to true when secondary tunnel exists
+
+    # Example 4: Update service connection (add subnet)
+    - name: Update service connection - add subnet
+      cdot65.scm.service_connection:
+        name: "ansible-test-aws-connection"
+        region: "us-east-1"
+        ipsec_tunnel: "my-aws-tunnel"
+        subnets:
+          - "10.100.0.0/24"
+          - "10.100.1.0/24"
+          - "10.100.2.0/24"  # New subnet
+        folder: "Service Connections"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_connection
+
+    - name: Display updated connection
+      ansible.builtin.debug:
+        var: updated_connection
+
+    # Example 5: Delete service connection
+    - name: Delete service connection
+      cdot65.scm.service_connection:
+        id: "{{ basic_connection.service_connection.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_connection
+      when: basic_connection.service_connection.id is defined
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_connection
+      when: basic_connection.service_connection.id is defined

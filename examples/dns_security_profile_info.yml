@@ -1,0 +1,116 @@
+---
+# =========================================================================
+# Example playbook: DNS Security Profile Information Retrieval
+# =========================================================================
+#
+# Description:
+#   This playbook demonstrates retrieving DNS Security profile information
+#   from Strata Cloud Manager using the cdot65.scm.dns_security_profile_info
+#   module.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - SCM credentials stored in vault.yml (scm_client_id, scm_client_secret, scm_tsg_id)
+#
+# Usage:
+#   ansible-playbook dns_security_profile_info.yml --vault-password-file .vault_pass
+#
+# =========================================================================
+
+- name: Retrieve DNS Security Profile Information
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Retrieve All DNS Security Profiles
+    # =========================================================================
+    - name: Get all DNS Security profiles in Texas folder
+      cdot65.scm.dns_security_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display count of DNS Security profiles
+      ansible.builtin.debug:
+        msg: "Found {{ all_profiles.dns_security_profiles | length }} DNS Security profiles in Texas folder"
+
+    - name: Display all DNS Security profile names
+      ansible.builtin.debug:
+        msg: "Profile: {{ item.name }} - Description: {{ item.description | default('No description') }}"
+      loop: "{{ all_profiles.dns_security_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # =========================================================================
+    # Retrieve Specific DNS Security Profile by Name
+    # =========================================================================
+    - name: Get specific DNS Security profile by name
+      cdot65.scm.dns_security_profile_info:
+        name: "Best-Practice"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_profile
+      ignore_errors: true
+
+    - name: Display specific DNS Security profile
+      ansible.builtin.debug:
+        var: specific_profile.dns_security_profiles
+      when: specific_profile.dns_security_profiles | length > 0
+
+    - name: Profile not found message
+      ansible.builtin.debug:
+        msg: "DNS Security profile 'Best-Practice' not found in Texas folder"
+      when: specific_profile.dns_security_profiles | length == 0
+
+    # =========================================================================
+    # Analyze DNS Security Profile Configuration
+    # =========================================================================
+    - name: Analyze DNS Security profiles with sinkhole configured
+      ansible.builtin.debug:
+        msg:
+          - "Profile: {{ item.name }}"
+          - "Sinkhole IPv4: {{ item.botnet_domains.sinkhole.ipv4_address | default('Not configured') }}"
+          - "Sinkhole IPv6: {{ item.botnet_domains.sinkhole.ipv6_address | default('Not configured') }}"
+      loop: "{{ all_profiles.dns_security_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.botnet_domains is defined and item.botnet_domains.sinkhole is defined
+
+    # =========================================================================
+    # Export DNS Security Profile Configuration
+    # =========================================================================
+    - name: Export DNS Security profiles to JSON file
+      ansible.builtin.copy:
+        content: "{{ all_profiles.dns_security_profiles | to_nice_json }}"
+        dest: "./dns_security_profiles_export.json"
+        mode: "0644"
+
+    - name: Display export location
+      ansible.builtin.debug:
+        msg: "DNS Security profiles exported to dns_security_profiles_export.json"
+
+    # =========================================================================
+    # Generate DNS Security Profile Report
+    # =========================================================================
+    - name: Generate DNS Security profile summary report
+      ansible.builtin.debug:
+        msg:
+          - "=== DNS Security Profile Summary ==="
+          - "Total profiles: {{ all_profiles.dns_security_profiles | length }}"
+          - "Profiles with botnet domains: {{ all_profiles.dns_security_profiles | selectattr('botnet_domains', 'defined') | list | length }}"
+          - "Profiles with whitelists: {{ all_profiles.dns_security_profiles | selectattr('botnet_domains.whitelist', 'defined') | list | length }}"

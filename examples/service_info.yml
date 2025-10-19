@@ -1,0 +1,176 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query SCM service information using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # Create test folder and service objects for examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Service-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create different types of service objects for testing
+    - name: Create a TCP service object
+      cdot65.scm.service:
+        name: "test-http"
+        description: "Test HTTP service"
+        protocol:
+          tcp:
+            port: "80"
+        folder: "Service-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: test_service
+
+    - name: Create a UDP service object
+      cdot65.scm.service:
+        name: "test-dns"
+        description: "Test DNS service"
+        protocol:
+          udp:
+            port: "53"
+        folder: "Service-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a TCP service with timeout overrides
+      cdot65.scm.service:
+        name: "test-https"
+        description: "Test HTTPS service with custom timeouts"
+        protocol:
+          tcp:
+            port: "443"
+            override:
+              timeout: 30
+              halfclose_timeout: 15
+        folder: "Service-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a snippet for testing service objects in snippets
+    - name: Create a test snippet
+      cdot65.scm.snippet:
+        name: "Service-Test-Snippet"
+        description: "Snippet for service testing"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create a snippet-based service object
+      cdot65.scm.service:
+        name: "test-ssh"
+        description: "Test SSH service"
+        protocol:
+          tcp:
+            port: "22"
+        snippet: "Service-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Query information examples - all queries require a container parameter
+
+    # Get services in a specific folder
+    - name: Get services in a specific folder
+      cdot65.scm.service_info:
+        folder: "Service-Test"
+        scm_access_token: "{{ scm_access_token }}"
+      register: folder_services
+
+    - name: Show services in folder
+      debug:
+        var: folder_services.services
+
+    # Get services in a specific snippet
+    - name: Get services in a specific snippet
+      cdot65.scm.service_info:
+        snippet: "Service-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_services
+
+    - name: Show services in snippet
+      debug:
+        var: snippet_services.services
+
+    # Get a specific service by name (requires a container parameter)
+    - name: Get a specific service by name in a folder
+      cdot65.scm.service_info:
+        name: "test-http"
+        folder: "Service-Test"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_folder_service
+
+    - name: Show named service in folder
+      debug:
+        var: named_folder_service.services
+      when: named_folder_service.services | length > 0
+
+    # Get a specific service by name in a snippet
+    - name: Get a specific service by name in a snippet
+      cdot65.scm.service_info:
+        name: "test-ssh"
+        snippet: "Service-Test-Snippet"  # Container parameter required when getting by name
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_snippet_service
+
+    - name: Show named service in snippet
+      debug:
+        var: named_snippet_service.services
+      when: named_snippet_service.services | length > 0
+
+    # Get service by ID (no container parameter needed)
+    - name: Get service by ID
+      cdot65.scm.service_info:
+        id: "{{ test_service.service.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: id_service
+      when: test_service.service is defined and test_service.service.id is defined
+
+    - name: Show service by ID
+      debug:
+        var: id_service.services
+      when: id_service is defined and id_service.services | length > 0
+
+    # Cleanup
+    - name: Delete the test services in folder
+      cdot65.scm.service:
+        name: "{{ item }}"
+        folder: "Service-Test"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "test-http"
+        - "test-dns"
+        - "test-https"
+
+    - name: Delete the test service in snippet
+      cdot65.scm.service:
+        name: "test-ssh"
+        snippet: "Service-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test snippet
+      cdot65.scm.snippet:
+        name: "Service-Test-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Service-Test"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

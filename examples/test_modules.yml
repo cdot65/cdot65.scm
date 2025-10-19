@@ -1,0 +1,114 @@
+---
+# Simple test playbook to verify new modules work with vault authentication
+# This is a read-only test that lists existing resources
+
+- name: Test New Modules with Vault Authentication
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Test Security Rule Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all security rules in pre-rulebase
+      cdot65.scm.security_rule_info:
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: security_rules
+      ignore_errors: true
+
+    - name: Display security rules count
+      ansible.builtin.debug:
+        msg: "Found {{ security_rules.security_rules | default([]) | length }} security rules"
+      when: security_rules is defined and not security_rules.failed
+
+    - name: Display security rules error (if any)
+      ansible.builtin.debug:
+        var: security_rules
+      when: security_rules.failed is defined and security_rules.failed
+
+    # =========================================================================
+    # Test URL Categories Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all URL categories
+      cdot65.scm.url_categories_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: url_categories
+      ignore_errors: true
+
+    - name: Display URL categories count
+      ansible.builtin.debug:
+        msg: "Found {{ url_categories.url_categories | default([]) | length }} URL categories"
+      when: url_categories is defined and not url_categories.failed
+
+    - name: Display URL categories error (if any)
+      ansible.builtin.debug:
+        var: url_categories
+      when: url_categories.failed is defined and url_categories.failed
+
+    # =========================================================================
+    # Test Anti-Spyware Profile Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all Anti-Spyware profiles
+      cdot65.scm.anti_spyware_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: anti_spyware_profiles
+      ignore_errors: true
+
+    - name: Display Anti-Spyware profiles count
+      ansible.builtin.debug:
+        msg: "Found {{ anti_spyware_profiles.anti_spyware_profiles | default([]) | length }} Anti-Spyware profiles"
+      when: anti_spyware_profiles is defined and not anti_spyware_profiles.failed
+
+    - name: Display Anti-Spyware profiles error (if any)
+      ansible.builtin.debug:
+        var: anti_spyware_profiles
+      when: anti_spyware_profiles.failed is defined and anti_spyware_profiles.failed
+
+    # =========================================================================
+    # Test Vulnerability Protection Profile Info Module (Read-Only)
+    # =========================================================================
+    - name: Get all Vulnerability Protection profiles
+      cdot65.scm.vulnerability_protection_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: vulnerability_protection_profiles
+      ignore_errors: true
+
+    - name: Display Vulnerability Protection profiles count
+      ansible.builtin.debug:
+        msg: "Found {{ vulnerability_protection_profiles.vulnerability_protection_profiles | default([]) | length }} Vulnerability Protection profiles"
+      when: vulnerability_protection_profiles is defined and not vulnerability_protection_profiles.failed
+
+    - name: Display Vulnerability Protection profiles error (if any)
+      ansible.builtin.debug:
+        var: vulnerability_protection_profiles
+      when: vulnerability_protection_profiles.failed is defined and vulnerability_protection_profiles.failed
+
+    # =========================================================================
+    # Test Summary
+    # =========================================================================
+    - name: Display test summary
+      ansible.builtin.debug:
+        msg:
+          - "=== Module Test Summary ==="
+          - "Security Rules module: {{ 'PASS' if (security_rules is defined and not security_rules.failed) else 'FAIL' }}"
+          - "URL Categories module: {{ 'PASS' if (url_categories is defined and not url_categories.failed) else 'FAIL' }}"
+          - "Anti-Spyware Profiles module: {{ 'PASS' if (anti_spyware_profiles is defined and not anti_spyware_profiles.failed) else 'FAIL' }}"
+          - "Vulnerability Protection Profiles module: {{ 'PASS' if (vulnerability_protection_profiles is defined and not vulnerability_protection_profiles.failed) else 'FAIL' }}"

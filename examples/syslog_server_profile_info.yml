@@ -1,0 +1,294 @@
+---
+# Example playbook demonstrating syslog_server_profile_info module usage
+# This playbook shows how to query and retrieve syslog server profile information from SCM
+
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query syslog server profile information from SCM
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      ansible.builtin.debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # ============================================================================
+    # Setup: Create Test Folder and Snippet
+    # ============================================================================
+    - name: Create test folder for syslog profiles
+      cdot65.scm.folder:
+        name: "SyslogTest"
+        description: "Test folder for syslog server profile queries"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: test_folder
+
+    - name: Display test folder creation
+      ansible.builtin.debug:
+        msg: "Test folder created: {{ test_folder.folder.name }}"
+
+    - name: Create test snippet for syslog profiles
+      cdot65.scm.snippet:
+        name: "SyslogSnippet"
+        description: "Test snippet for syslog server profile queries"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: test_snippet
+
+    - name: Display test snippet creation
+      ansible.builtin.debug:
+        msg: "Test snippet created: {{ test_snippet.snippet.name }}"
+
+    # ============================================================================
+    # Setup: Create Test Profiles in Different Containers
+    # ============================================================================
+    - name: Create syslog profile in test folder (profile 1)
+      cdot65.scm.syslog_server_profile:
+        name: "folder-syslog-01"
+        folder: "SyslogTest"
+        server:
+          - name: "server-01"
+            server: "10.10.1.100"
+            transport: "UDP"
+            port: 514
+            format: "BSD"
+            facility: "LOG_LOCAL0"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: folder_profile_01
+
+    - name: Create syslog profile in test folder (profile 2)
+      cdot65.scm.syslog_server_profile:
+        name: "folder-syslog-02"
+        folder: "SyslogTest"
+        server:
+          - name: "server-02"
+            server: "10.10.1.101"
+            transport: "TCP"
+            port: 6514
+            format: "IETF"
+            facility: "LOG_LOCAL1"
+        format:
+          traffic: "$time_generated $src $dst"
+          threat: "$time_generated $threatid"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: folder_profile_02
+
+    - name: Create syslog profile in snippet
+      cdot65.scm.syslog_server_profile:
+        name: "snippet-syslog-01"
+        snippet: "SyslogSnippet"
+        server:
+          - name: "snippet-server"
+            server: "10.20.1.100"
+            transport: "UDP"
+            port: 514
+            format: "BSD"
+            facility: "LOG_USER"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: snippet_profile
+
+    - name: Display created profiles
+      ansible.builtin.debug:
+        msg:
+          - "Folder profile 1 ID: {{ folder_profile_01.syslog_server_profile.id }}"
+          - "Folder profile 2 ID: {{ folder_profile_02.syslog_server_profile.id }}"
+          - "Snippet profile ID: {{ snippet_profile.syslog_server_profile.id }}"
+
+    # ============================================================================
+    # Query 1: Get All Profiles in a Folder
+    # ============================================================================
+    - name: Query all syslog server profiles in SyslogTest folder
+      cdot65.scm.syslog_server_profile_info:
+        folder: "SyslogTest"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_folder_profiles
+
+    - name: Display all folder profiles
+      ansible.builtin.debug:
+        msg:
+          - "Total profiles in SyslogTest folder: {{ all_folder_profiles.syslog_server_profiles | length }}"
+          - "Profile names: {{ all_folder_profiles.syslog_server_profiles | map(attribute='name') | list }}"
+
+    - name: Show detailed information for each folder profile
+      ansible.builtin.debug:
+        var: item
+      loop: "{{ all_folder_profiles.syslog_server_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # ============================================================================
+    # Query 2: Get Specific Profile by Name
+    # ============================================================================
+    - name: Query specific syslog server profile by name in folder
+      cdot65.scm.syslog_server_profile_info:
+        name: "folder-syslog-01"
+        folder: "SyslogTest"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_profile
+
+    - name: Display specific profile details
+      ansible.builtin.debug:
+        msg:
+          - "Profile Name: {{ specific_profile.syslog_server_profiles[0].name }}"
+          - "Profile ID: {{ specific_profile.syslog_server_profiles[0].id }}"
+          - "Server Count: {{ specific_profile.syslog_server_profiles[0].server | length }}"
+          - "Server Details: {{ specific_profile.syslog_server_profiles[0].server }}"
+
+    # ============================================================================
+    # Query 3: Get Profile by ID
+    # ============================================================================
+    - name: Query syslog server profile by ID
+      cdot65.scm.syslog_server_profile_info:
+        id: "{{ folder_profile_02.syslog_server_profile.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: profile_by_id
+
+    - name: Display profile retrieved by ID
+      ansible.builtin.debug:
+        msg:
+          - "Retrieved profile: {{ profile_by_id.syslog_server_profiles[0].name }}"
+          - "Container: {{ profile_by_id.syslog_server_profiles[0].folder }}"
+          - "Format settings: {{ profile_by_id.syslog_server_profiles[0].format | default('No custom format') }}"
+
+    # ============================================================================
+    # Query 4: Get Profiles in Snippet
+    # ============================================================================
+    - name: Query syslog server profiles in snippet
+      cdot65.scm.syslog_server_profile_info:
+        snippet: "SyslogSnippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_profiles
+
+    - name: Display snippet profiles
+      ansible.builtin.debug:
+        msg:
+          - "Total profiles in SyslogSnippet: {{ snippet_profiles.syslog_server_profiles | length }}"
+          - "Profile names: {{ snippet_profiles.syslog_server_profiles | map(attribute='name') | list }}"
+
+    - name: Show snippet profile server details
+      ansible.builtin.debug:
+        msg:
+          - "Profile: {{ item.name }}"
+          - "Servers: {{ item.server }}"
+      loop: "{{ snippet_profiles.syslog_server_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # ============================================================================
+    # Query 5: Use exact_match Parameter
+    # ============================================================================
+    - name: Query with exact_match=true in SyslogTest folder
+      cdot65.scm.syslog_server_profile_info:
+        folder: "SyslogTest"
+        exact_match: true
+        scm_access_token: "{{ scm_access_token }}"
+      register: exact_match_profiles
+
+    - name: Display exact match results
+      ansible.builtin.debug:
+        msg:
+          - "Exact match profiles found: {{ exact_match_profiles.syslog_server_profiles | length }}"
+          - "Profile names: {{ exact_match_profiles.syslog_server_profiles | map(attribute='name') | list }}"
+
+    - name: Query with exact_match=false (default behavior)
+      cdot65.scm.syslog_server_profile_info:
+        folder: "SyslogTest"
+        exact_match: false
+        scm_access_token: "{{ scm_access_token }}"
+      register: non_exact_profiles
+
+    - name: Display non-exact match results
+      ansible.builtin.debug:
+        msg:
+          - "Non-exact match profiles found: {{ non_exact_profiles.syslog_server_profiles | length }}"
+          - "This may include subcontainer profiles if they exist"
+
+    # ============================================================================
+    # Query 6: Query Specific Profile in Snippet by Name
+    # ============================================================================
+    - name: Query specific syslog server profile by name in snippet
+      cdot65.scm.syslog_server_profile_info:
+        name: "snippet-syslog-01"
+        snippet: "SyslogSnippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_specific
+
+    - name: Display specific snippet profile
+      ansible.builtin.debug:
+        var: snippet_specific.syslog_server_profiles[0]
+
+    # ============================================================================
+    # Query 7: Compare Profiles with and without Custom Formatting
+    # ============================================================================
+    - name: Identify profiles with custom formatting
+      ansible.builtin.set_fact:
+        formatted_profiles: "{{ all_folder_profiles.syslog_server_profiles | selectattr('format', 'defined') | list }}"
+        basic_profiles: "{{ all_folder_profiles.syslog_server_profiles | rejectattr('format', 'defined') | list }}"
+
+    - name: Display profiles with custom formatting
+      ansible.builtin.debug:
+        msg:
+          - "Profiles with custom formatting: {{ formatted_profiles | map(attribute='name') | list }}"
+          - "Profiles without custom formatting: {{ basic_profiles | map(attribute='name') | list }}"
+
+    # ============================================================================
+    # Cleanup: Delete All Test Profiles
+    # ============================================================================
+    - name: Delete folder syslog profile 1
+      cdot65.scm.syslog_server_profile:
+        name: "folder-syslog-01"
+        folder: "SyslogTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete folder syslog profile 2
+      cdot65.scm.syslog_server_profile:
+        name: "folder-syslog-02"
+        folder: "SyslogTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete snippet syslog profile
+      cdot65.scm.syslog_server_profile:
+        name: "snippet-syslog-01"
+        snippet: "SyslogSnippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # ============================================================================
+    # Cleanup: Delete Test Folder and Snippet
+    # ============================================================================
+    - name: Delete test snippet
+      cdot65.scm.snippet:
+        name: "SyslogSnippet"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    - name: Delete test folder
+      cdot65.scm.folder:
+        name: "SyslogTest"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+
+    # ============================================================================
+    # Verify Cleanup
+    # ============================================================================
+    - name: Verify cleanup by checking for remaining test profiles
+      cdot65.scm.syslog_server_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: final_check
+      failed_when: false
+
+    - name: Display final cleanup status
+      ansible.builtin.debug:
+        msg: "Cleanup complete. All test resources have been removed."

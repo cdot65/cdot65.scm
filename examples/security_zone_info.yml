@@ -1,0 +1,25 @@
+---
+- name: Test Security Zone Info
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    - name: Get all security zones
+      cdot65.scm.security_zone_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_zones
+
+    - name: Display zones
+      ansible.builtin.debug:
+        msg: "Found {{ all_zones.zones | length }} security zones"

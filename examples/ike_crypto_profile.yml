@@ -1,0 +1,185 @@
+---
+# =============================================================================
+# IKE Crypto Profile Management Examples
+# =============================================================================
+# Description:
+#   This playbook demonstrates how to manage IKE crypto profiles in Strata
+#   Cloud Manager (SCM) using the cdot65.scm Ansible collection.
+#
+# Usage:
+#   ansible-playbook -i inventory.yml ike_crypto_profile.yml
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+# =============================================================================
+
+- name: IKE Crypto Profile Management
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM and get access token
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Create IKE Crypto Profiles
+    # =========================================================================
+    - name: Create basic IKE crypto profile
+      cdot65.scm.ike_crypto_profile:
+        name: "ike-crypto-basic"
+        hash:
+          - "sha256"
+          - "sha384"
+        encryption:
+          - "aes-256-cbc"
+          - "aes-128-cbc"
+        dh_group:
+          - "group14"
+          - "group19"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_profile
+
+    - name: Display basic profile creation result
+      ansible.builtin.debug:
+        msg: "Created IKE crypto profile: {{ basic_profile.ike_crypto_profile.name }}"
+
+    - name: Create IKE crypto profile with custom lifetime (8 hours)
+      cdot65.scm.ike_crypto_profile:
+        name: "ike-crypto-8hours"
+        hash:
+          - "sha256"
+        encryption:
+          - "aes-256-gcm"
+        dh_group:
+          - "group20"
+        lifetime:
+          hours: 8
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: lifetime_profile
+
+    - name: Create IKE crypto profile with reauthentication
+      cdot65.scm.ike_crypto_profile:
+        name: "ike-crypto-reauth"
+        hash:
+          - "sha384"
+          - "sha512"
+        encryption:
+          - "aes-256-gcm"
+        dh_group:
+          - "group19"
+          - "group20"
+        lifetime:
+          hours: 24
+        authentication_multiple: 3
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: reauth_profile
+
+    - name: Create strong IKE crypto profile (modern algorithms)
+      cdot65.scm.ike_crypto_profile:
+        name: "ike-crypto-strong"
+        hash:
+          - "sha512"
+          - "sha384"
+        encryption:
+          - "aes-256-gcm"
+          - "aes-128-gcm"
+        dh_group:
+          - "group20"
+          - "group19"
+        lifetime:
+          days: 1
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: strong_profile
+
+    # =========================================================================
+    # Query IKE Crypto Profiles
+    # =========================================================================
+    - name: Get all IKE crypto profiles in folder
+      cdot65.scm.ike_crypto_profile_info:
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display all IKE crypto profiles
+      ansible.builtin.debug:
+        msg: "Found {{ all_profiles.ike_crypto_profiles | length }} IKE crypto profiles"
+
+    - name: Display profile details
+      ansible.builtin.debug:
+        msg: |
+          Profile: {{ item.name }}
+          Encryption: {{ item.encryption | join(', ') }}
+          Hash: {{ item.hash | join(', ') }}
+          DH Group: {{ item.dh_group | join(', ') }}
+      loop: "{{ all_profiles.ike_crypto_profiles }}"
+      when: all_profiles.ike_crypto_profiles is defined
+
+    - name: Get specific IKE crypto profile by name
+      cdot65.scm.ike_crypto_profile_info:
+        name: "ike-crypto-basic"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_profile
+
+    - name: Display specific profile
+      ansible.builtin.debug:
+        var: specific_profile.ike_crypto_profile
+
+    # =========================================================================
+    # Update IKE Crypto Profile
+    # =========================================================================
+    - name: Update IKE crypto profile algorithms
+      cdot65.scm.ike_crypto_profile:
+        name: "ike-crypto-basic"
+        hash:
+          - "sha512"
+        encryption:
+          - "aes-256-gcm"
+        dh_group:
+          - "group20"
+        lifetime:
+          hours: 12
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    - name: Display update result
+      ansible.builtin.debug:
+        msg: "Updated profile changed: {{ updated_profile.changed }}"
+
+    # =========================================================================
+    # Cleanup (Optional - uncomment to delete profiles)
+    # =========================================================================
+    # - name: Delete IKE crypto profile by name
+    #   cdot65.scm.ike_crypto_profile:
+    #     name: "{{ item }}"
+    #     folder: "Shared"
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: absent
+    #   loop:
+    #     - "ike-crypto-basic"
+    #     - "ike-crypto-8hours"
+    #     - "ike-crypto-reauth"
+    #     - "ike-crypto-strong"
+    #   register: deleted_profiles
+
+    # - name: Display deletion results
+    #   ansible.builtin.debug:
+    #     msg: "Deleted {{ deleted_profiles.results | selectattr('changed', 'equalto', true) | list | length }} profiles"

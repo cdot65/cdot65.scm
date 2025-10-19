@@ -1,0 +1,223 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Query HIP profile information
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First, we create test containers and profiles to query
+    - name: Create a test folder for HIP profiles
+      cdot65.scm.folder:
+        name: "HIP-Info-Demo"
+        parent: "Texas"
+        description: "Folder for HIP profile info examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_folder
+
+    - name: Create a test snippet for HIP profiles
+      cdot65.scm.snippet:
+        name: "HIP-Info-Snippet"
+        description: "Snippet for HIP profile info examples"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: hip_snippet
+
+    # Create HIP objects to reference in our profiles
+    - name: Create a Windows HIP object
+      cdot65.scm.hip_object:
+        name: "info-is-win"
+        description: "Windows operating system check"
+        folder: "HIP-Info-Demo"
+        host_info:
+          criteria:
+            os:
+              contains:
+                Microsoft: "All"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: windows_hip_object
+
+    - name: Create a Mac HIP object
+      cdot65.scm.hip_object:
+        name: "info-is-mac"
+        description: "Mac operating system check"
+        folder: "HIP-Info-Demo"
+        host_info:
+          criteria:
+            os:
+              contains:
+                Apple: "All"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: mac_hip_object
+
+    # Create some HIP profiles to query
+    - name: Create a Windows HIP profile
+      cdot65.scm.hip_profile:
+        name: "info-windows-profile"
+        description: "Profile for Windows workstations"
+        folder: "HIP-Info-Demo"
+        match: '"info-is-win"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: windows_profile
+
+    - name: Create a Mac HIP profile
+      cdot65.scm.hip_profile:
+        name: "info-mac-profile"
+        description: "Profile for Mac workstations"
+        folder: "HIP-Info-Demo"
+        match: '"info-is-mac"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: mac_profile
+
+    - name: Create a combined HIP profile
+      cdot65.scm.hip_profile:
+        name: "info-combined-profile"
+        description: "Profile for all workstations"
+        folder: "HIP-Info-Demo"
+        match: '"info-is-win" or "info-is-mac"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: combined_profile
+
+    - name: Create a HIP profile in a snippet
+      cdot65.scm.hip_profile:
+        name: "info-snippet-profile"
+        description: "Profile defined in a snippet"
+        snippet: "HIP-Info-Snippet"
+        match: '"info-is-win"'
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: snippet_profile
+
+    # Now demonstrate the info module with various query options
+    - name: Get all HIP profiles in the demo folder
+      cdot65.scm.hip_profile_info:
+        folder: "HIP-Info-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display all profiles in the folder
+      debug:
+        msg: "Found {{ all_profiles.hip_profiles | length }} profiles in the folder"
+
+    - name: Display names of all profiles in the folder
+      debug:
+        msg: "Profile names: {{ all_profiles.hip_profiles | map(attribute='name') | list }}"
+
+    # Query by profile ID
+    - name: Get a specific HIP profile by ID
+      cdot65.scm.hip_profile_info:
+        id: "{{ windows_profile.hip_profile.id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: profile_by_id
+
+    - name: Display profile found by ID
+      debug:
+        msg: "Found profile by ID: {{ profile_by_id.hip_profiles[0].name }}"
+
+    # Query by profile name
+    - name: Get a specific HIP profile by name
+      cdot65.scm.hip_profile_info:
+        name: "info-mac-profile"
+        folder: "HIP-Info-Demo"
+        scm_access_token: "{{ scm_access_token }}"
+      register: profile_by_name
+
+    - name: Display profile found by name
+      debug:
+        msg: "Found profile by name: {{ profile_by_name.hip_profiles[0].name }}"
+
+    # Query with exact matching
+    - name: Get profiles with exact folder matching
+      cdot65.scm.hip_profile_info:
+        folder: "HIP-Info-Demo"
+        exact_match: true
+        scm_access_token: "{{ scm_access_token }}"
+      register: exact_profiles
+
+    - name: Display profiles with exact matching
+      debug:
+        msg: "Found {{ exact_profiles.hip_profiles | length }} profiles with exact matching"
+
+    # Query with exclusion
+    - name: Get profiles with exclusion
+      cdot65.scm.hip_profile_info:
+        folder: "HIP-Info-Demo"
+        exclude_folders: ["Some-Other-Folder"]
+        scm_access_token: "{{ scm_access_token }}"
+      register: filtered_profiles
+
+    - name: Display filtered profiles
+      debug:
+        msg: "Found {{ filtered_profiles.hip_profiles | length }} profiles after filtering"
+
+    # Query profiles in a snippet
+    - name: Get profiles in a snippet
+      cdot65.scm.hip_profile_info:
+        snippet: "HIP-Info-Snippet"
+        scm_access_token: "{{ scm_access_token }}"
+      register: snippet_profiles
+
+    - name: Display profiles in snippet
+      debug:
+        msg: "Found {{ snippet_profiles.hip_profiles | length }} profiles in the snippet"
+
+    # Cleanup - delete all created resources
+    - name: Delete all created HIP profiles
+      block:
+        - name: Delete the snippet profile
+          cdot65.scm.hip_profile:
+            name: "info-snippet-profile"
+            snippet: "HIP-Info-Snippet"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete the folder profiles
+          cdot65.scm.hip_profile:
+            name: "{{ item }}"
+            folder: "HIP-Info-Demo"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+          loop:
+            - "info-combined-profile"
+            - "info-mac-profile"
+            - "info-windows-profile"
+
+        - name: Delete HIP objects
+          cdot65.scm.hip_object:
+            name: "{{ item }}"
+            folder: "HIP-Info-Demo"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+          loop:
+            - "info-is-mac"
+            - "info-is-win"
+
+        - name: Delete the containers
+          block:
+            - name: Delete the test snippet
+              cdot65.scm.snippet:
+                name: "HIP-Info-Snippet"
+                scm_access_token: "{{ scm_access_token }}"
+                state: absent
+
+            - name: Delete the test folder
+              cdot65.scm.folder:
+                name: "HIP-Info-Demo"
+                parent: "Texas"
+                scm_access_token: "{{ scm_access_token }}"
+                state: absent

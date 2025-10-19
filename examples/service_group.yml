@@ -1,0 +1,191 @@
+---
+- name: Authenticate with SCM using the auth role
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - cdot65.scm.auth
+  vars_files:
+    - ../vault.yml
+
+- name: Perform SCM service group operations using the established session
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display authentication info
+      debug:
+        msg: "Authenticated with token: {{ scm_access_token | default('No token available!', true) | truncate(15, true, '...') }}"
+
+    # First we create a folder and service objects to use in our service group examples
+    - name: Create a test folder
+      cdot65.scm.folder:
+        name: "Services"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create some service objects to use in groups
+    - name: Create HTTP service
+      cdot65.scm.service:
+        name: "service-http"
+        description: "HTTP service"
+        protocol:
+          tcp:
+            port: "80"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create HTTPS service
+      cdot65.scm.service:
+        name: "service-https"
+        description: "HTTPS service"
+        protocol:
+          tcp:
+            port: "443"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create SSH service
+      cdot65.scm.service:
+        name: "service-ssh"
+        description: "SSH service"
+        protocol:
+          tcp:
+            port: "22"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create DNS service
+      cdot65.scm.service:
+        name: "service-dns"
+        description: "DNS service"
+        protocol:
+          udp:
+            port: "53"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create tags for use in service groups
+    - name: Create web tag
+      cdot65.scm.tag:
+        name: "web"
+        color: "Cyan"
+        comments: "Web services tag"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create admin tag
+      cdot65.scm.tag:
+        name: "admin"
+        color: "Red"
+        comments: "Administrative services tag"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create management tag
+      cdot65.scm.tag:
+        name: "management"
+        color: "Orange"
+        comments: "Management services tag"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # Create a service group with web services
+    - name: Create a web services group
+      cdot65.scm.service_group:
+        name: "web-services"
+        members:
+          - "service-http"
+          - "service-https"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: web_service_group
+
+    - name: Display created web service group information
+      debug:
+        var: web_service_group.service_group
+
+    # Create a service group with tags
+    - name: Create an admin services group with tags
+      cdot65.scm.service_group:
+        name: "admin-services"
+        members:
+          - "service-ssh"
+        folder: "Services"
+        tag:
+          - "admin"
+          - "management"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: admin_service_group
+
+    - name: Display created admin service group information
+      debug:
+        var: admin_service_group.service_group
+
+    # Update an existing service group by adding a member
+    - name: Update the web services group to add DNS
+      cdot65.scm.service_group:
+        name: "web-services"
+        members:
+          - "service-http"
+          - "service-https"
+          - "service-dns"
+        folder: "Services"
+        tag:
+          - "web"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_service_group
+
+    - name: Display updated service group information
+      debug:
+        var: updated_service_group.service_group
+
+    # Cleanup
+    - name: Delete the service groups
+      cdot65.scm.service_group:
+        name: "{{ item }}"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "web-services"
+        - "admin-services"
+
+    - name: Delete the service objects
+      cdot65.scm.service:
+        name: "{{ item }}"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "service-http"
+        - "service-https"
+        - "service-ssh"
+        - "service-dns"
+
+    - name: Delete the tags
+      cdot65.scm.tag:
+        name: "{{ item }}"
+        folder: "Services"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      loop:
+        - "web"
+        - "admin"
+        - "management"
+
+    - name: Delete the test folder
+      cdot65.scm.folder:
+        name: "Services"
+        parent: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent

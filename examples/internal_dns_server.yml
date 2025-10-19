@@ -1,0 +1,141 @@
+---
+# =========================================================================
+# Example playbook: Internal DNS Server Management
+# =========================================================================
+#
+# Description:
+#   This playbook demonstrates managing internal DNS server objects in Strata
+#   Cloud Manager using the cdot65.scm.internal_dns_server module.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - SCM credentials stored in vault.yml (scm_client_id, scm_client_secret, scm_tsg_id)
+#
+# Usage:
+#   ansible-playbook internal_dns_server.yml --vault-password-file .vault_pass
+#
+# =========================================================================
+
+- name: Manage Internal DNS Servers
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Create Basic Internal DNS Server
+    # =========================================================================
+    - name: Create a basic internal DNS server
+      cdot65.scm.internal_dns_server:
+        name: "Example-Corporate-DNS"
+        domain_name:
+          - "example.com"
+          - "internal.local"
+        primary: "10.0.0.10"
+        secondary: "10.0.0.11"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_server
+
+    - name: Display basic internal DNS server
+      ansible.builtin.debug:
+        var: basic_server
+
+    # =========================================================================
+    # Create Internal DNS Server with IPv6
+    # =========================================================================
+    - name: Create internal DNS server with IPv6
+      cdot65.scm.internal_dns_server:
+        name: "Example-IPv6-DNS"
+        domain_name:
+          - "ipv6.example.com"
+        primary: "2001:db8::1"
+        secondary: "2001:db8::2"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: ipv6_server
+
+    - name: Display IPv6 internal DNS server
+      ansible.builtin.debug:
+        var: ipv6_server
+
+    # =========================================================================
+    # Create Internal DNS Server without Secondary
+    # =========================================================================
+    - name: Create internal DNS server without secondary
+      cdot65.scm.internal_dns_server:
+        name: "Example-Single-DNS"
+        domain_name:
+          - "single.example.com"
+        primary: "192.168.1.53"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: single_server
+
+    - name: Display single DNS server
+      ansible.builtin.debug:
+        var: single_server
+
+    # =========================================================================
+    # Update Internal DNS Server
+    # =========================================================================
+    - name: Update internal DNS server with additional domains
+      cdot65.scm.internal_dns_server:
+        name: "Example-Corporate-DNS"
+        domain_name:
+          - "example.com"
+          - "internal.local"
+          - "vpn.example.com"
+        primary: "10.0.0.10"
+        secondary: "10.0.0.11"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_server
+
+    - name: Display updated internal DNS server
+      ansible.builtin.debug:
+        var: updated_server
+
+    # =========================================================================
+    # Delete Internal DNS Servers
+    # =========================================================================
+    - name: Delete IPv6 DNS server
+      cdot65.scm.internal_dns_server:
+        name: "Example-IPv6-DNS"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_ipv6
+
+    - name: Delete single DNS server
+      cdot65.scm.internal_dns_server:
+        name: "Example-Single-DNS"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_single
+
+    - name: Delete corporate DNS server
+      cdot65.scm.internal_dns_server:
+        name: "Example-Corporate-DNS"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_corporate
+
+    - name: Display deletion results
+      ansible.builtin.debug:
+        msg:
+          - "IPv6 server deleted: {{ deleted_ipv6.changed }}"
+          - "Single server deleted: {{ deleted_single.changed }}"
+          - "Corporate server deleted: {{ deleted_corporate.changed }}"
