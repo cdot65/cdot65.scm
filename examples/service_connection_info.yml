@@ -1,0 +1,45 @@
+---
+# Example playbook for retrieving Prisma Access service connection information
+
+- name: Service Connection Info Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # Setup authentication
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # List all service connections
+    - name: List all service connections
+      cdot65.scm.service_connection_info:
+        folder: "Service Connections"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_connections
+
+    - name: Display connection count
+      ansible.builtin.debug:
+        msg: "Found {{ all_connections.service_connections | length }} service connections"
+
+    - name: Display all connections
+      ansible.builtin.debug:
+        var: all_connections.service_connections
+
+    # Get specific connection by name
+    - name: Get specific connection by name
+      cdot65.scm.service_connection_info:
+        name: "ansible-test-aws-connection"
+        folder: "Service Connections"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_connection
+
+    - name: Display specific connection
+      ansible.builtin.debug:
+        var: specific_connection.service_connections

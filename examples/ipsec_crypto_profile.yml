@@ -1,0 +1,163 @@
+---
+# =============================================================================
+# IPsec Crypto Profile Management Examples
+# =============================================================================
+# Description:
+#   This playbook demonstrates how to manage IPsec crypto profiles in Strata
+#   Cloud Manager (SCM) using the cdot65.scm Ansible collection.
+#
+# Usage:
+#   ansible-playbook -i inventory.yml ipsec_crypto_profile.yml
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+# =============================================================================
+
+- name: IPsec Crypto Profile Management
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM and get access token
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        scm_client_id: "{{ scm_client_id }}"
+        scm_client_secret: "{{ scm_client_secret }}"
+        scm_tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Create IPsec Crypto Profiles with ESP
+    # =========================================================================
+    - name: Create basic IPsec crypto profile with ESP
+      cdot65.scm.ipsec_crypto_profile:
+        name: "ipsec-crypto-basic"
+        dh_group: "group14"
+        lifetime:
+          hours: 1
+        esp:
+          encryption:
+            - "aes-256-cbc"
+            - "aes-128-cbc"
+          authentication:
+            - "sha256"
+            - "sha384"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: basic_profile
+
+    - name: Create IPsec crypto profile with AES-GCM
+      cdot65.scm.ipsec_crypto_profile:
+        name: "ipsec-crypto-gcm"
+        dh_group: "group20"
+        lifetime:
+          hours: 8
+        esp:
+          encryption:
+            - "aes-256-gcm"
+            - "aes-128-gcm"
+          authentication:
+            - "sha512"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create IPsec crypto profile with lifesize limit
+      cdot65.scm.ipsec_crypto_profile:
+        name: "ipsec-crypto-lifesize"
+        dh_group: "group14"
+        lifetime:
+          hours: 24
+        lifesize:
+          gb: 10
+        esp:
+          encryption:
+            - "aes-256-cbc"
+          authentication:
+            - "sha256"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create IPsec Crypto Profile with AH
+    # =========================================================================
+    - name: Create IPsec crypto profile with AH
+      cdot65.scm.ipsec_crypto_profile:
+        name: "ipsec-crypto-ah"
+        dh_group: "group19"
+        lifetime:
+          minutes: 60
+        ah:
+          authentication:
+            - "sha256"
+            - "sha384"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Query IPsec Crypto Profiles
+    # =========================================================================
+    - name: Get all IPsec crypto profiles
+      cdot65.scm.ipsec_crypto_profile_info:
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display all profiles
+      ansible.builtin.debug:
+        msg: "Found {{ all_profiles.ipsec_crypto_profiles | length }} IPsec crypto profiles"
+
+    - name: Get specific IPsec crypto profile
+      cdot65.scm.ipsec_crypto_profile_info:
+        name: "ipsec-crypto-basic"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_profile
+
+    - name: Display specific profile details
+      ansible.builtin.debug:
+        var: specific_profile.ipsec_crypto_profile
+
+    # =========================================================================
+    # Update IPsec Crypto Profile
+    # =========================================================================
+    - name: Update IPsec crypto profile
+      cdot65.scm.ipsec_crypto_profile:
+        name: "ipsec-crypto-basic"
+        dh_group: "group20"
+        lifetime:
+          days: 1
+        esp:
+          encryption:
+            - "aes-256-gcm"
+          authentication:
+            - "sha512"
+        folder: "Shared"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_profile
+
+    # =========================================================================
+    # Cleanup (Optional)
+    # =========================================================================
+    # - name: Delete IPsec crypto profiles
+    #   cdot65.scm.ipsec_crypto_profile:
+    #     name: "{{ item }}"
+    #     folder: "Shared"
+    #     scm_access_token: "{{ scm_access_token }}"
+    #     state: absent
+    #   loop:
+    #     - "ipsec-crypto-basic"
+    #     - "ipsec-crypto-gcm"
+    #     - "ipsec-crypto-lifesize"
+    #     - "ipsec-crypto-ah"

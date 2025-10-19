@@ -27,7 +27,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 - **Configuration Management**: Create, read, update, and delete SCM configuration objects such as folders, labels, snippets, and variables.
 - **Network Objects**: Manage address objects, address groups, application objects, application groups, service objects, service groups, and tags.
-- **Comprehensive Module Set**: 44 production-ready modules (22 resource modules + 22 info modules) - all current SDK objects covered (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
+- **Comprehensive Module Set**: 69 production-ready modules (34 resource modules + 35 info modules) - expanding SDK object coverage (see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md)).
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -39,7 +39,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 - **Python 3.11 or higher** (Python 3.13 fully supported)
   - This is a hard requirement enforced by the pan-scm-sdk dependency
 - Ansible Core 2.18 or higher
-- pan-scm-sdk 0.3.33 or higher (installed automatically as a dependency)
+- pan-scm-sdk 0.3.44 or higher (installed automatically as a dependency)
 
 ## Installation
 
@@ -63,9 +63,26 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Available Modules
 
-**Current Status**: 44 production-ready modules (22 resource modules + 22 info modules)
+**Current Status**: 83 production-ready modules (41 resource modules + 42 info modules)
 
-**Coverage**: All available SDK objects now have Ansible modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes.
+**SDK Coverage**: 91% of pan-scm-sdk v0.3.44 services (39 of 43 available services implemented)
+
+**Coverage**: Comprehensive module coverage including VPN, routing, NAT, security profiles, and deployment modules! See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for implementation notes, roadmap, and complete SDK service mapping.
+
+### SDK Integration Status
+
+This collection integrates with **pan-scm-sdk v0.3.44** (latest version). Below is our coverage status:
+
+- ✅ **Implemented**: 39 SDK services (83 modules total)
+- 🟢 **Available in SDK, Ready to Implement**: 4 SDK services (8 potential modules)
+- 🎯 **Target**: 100% SDK coverage (91 total modules)
+
+**Remaining SDK Services Not Yet Implemented:**
+- Mobile Agent: `agent_version`, `auth_setting`
+- Automation: `auto_tag_action`
+- Insights: `alerts`
+
+See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for detailed SDK service mapping and implementation priorities.
 
 ### Module Status Legend
 
@@ -115,6 +132,28 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [tag](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag.py) | Manage tags | ✅ |
 | [tag_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/tag_info.py) | Retrieve tag information | ✅ |
 
+### Network & VPN Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [ike_crypto_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_crypto_profile.py) | Manage IKE crypto profiles for VPN phase 1 | ✅ |
+| [ike_crypto_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_crypto_profile_info.py) | Retrieve IKE crypto profile information | ✅ |
+| [ike_gateway](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_gateway.py) | Manage IKE gateways for VPN tunnels | ✅ |
+| [ike_gateway_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ike_gateway_info.py) | Retrieve IKE gateway information | ✅ |
+| [ipsec_crypto_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ipsec_crypto_profile.py) | Manage IPsec crypto profiles for VPN phase 2 | ✅ |
+| [ipsec_crypto_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/ipsec_crypto_profile_info.py) | Retrieve IPsec crypto profile information | ✅ |
+| [nat_rule](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/nat_rule.py) | Manage NAT rules with source/destination translation | ✅ |
+| [nat_rule_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/nat_rule_info.py) | Retrieve NAT rule information | ✅ |
+| [security_zone](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone.py) | Manage security zones | ✅ |
+| [security_zone_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_zone_info.py) | Retrieve security zone information | ✅ |
+
+### Routing & BGP Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [bgp_routing](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bgp_routing.py) | Manage global BGP routing configuration | ✅ |
+| [bgp_routing_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bgp_routing_info.py) | Retrieve BGP routing configuration | ✅ |
+
 ### User & Device Management Modules
 
 | Module | Description | Status |
@@ -153,6 +192,22 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 > **Note**: Syslog modules are implemented but the SCM API endpoint returns errors in some environments. HTTP Server and Log Forwarding profiles are fully functional.
 
+### Deployment & Infrastructure Modules
+
+| Module | Description | Status |
+|--------|-------------|--------|
+| [bandwidth_allocation](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bandwidth_allocation.py) | Manage bandwidth allocation for SD-WAN | ⚠️ |
+| [bandwidth_allocation_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/bandwidth_allocation_info.py) | Retrieve bandwidth allocation information | ✅ |
+| [internal_dns_server](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_server.py) | Manage internal DNS server objects | ✅ |
+| [internal_dns_server_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/internal_dns_server_info.py) | Retrieve internal DNS server information | ✅ |
+| [network_location_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/network_location_info.py) | Retrieve network location information (read-only) | ✅ |
+| [remote_network](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/remote_network.py) | Manage Prisma Access remote networks | ✅ |
+| [remote_network_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/remote_network_info.py) | Retrieve remote network information | ✅ |
+| [service_connection](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_connection.py) | Manage Prisma Access service connections | ✅ |
+| [service_connection_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/service_connection_info.py) | Retrieve service connection information | ✅ |
+
+> **Note**: Bandwidth allocation modules have API limitations in SCM v0.3.44. Network locations are read-only resources. Remote networks and service connections require Prisma Access infrastructure (SPN, IPSec tunnels).
+
 ### Device Management Modules
 
 | Module | Description | Status |
@@ -162,15 +217,40 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 > **Note**: Quarantined device modules are implemented but require actual firewall devices connected to SCM to function. The API returns errors without connected devices.
 
-## Module Implementation Complete!
+### Security Policy Modules
 
-**All SDK-supported objects now have Ansible modules!** 🎉
+| Module | Description | Status |
+|--------|-------------|--------|
+| [security_rule](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_rule.py) | Manage security rules | ✅ |
+| [security_rule_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/security_rule_info.py) | Retrieve security rule information | ✅ |
+| [url_categories](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/url_categories.py) | Manage custom URL categories | ✅ |
+| [url_categories_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/url_categories_info.py) | Retrieve URL category information | ✅ |
 
-- ✅ **44 total modules** (22 resource + 22 info modules)
-- ✅ **100% SDK coverage** - Every object in pan-scm-sdk has a corresponding Ansible module
-- ⚠️ **2 modules with API limitations** (syslog_server_profile, quarantined_device) - see notes above
+### Security Profile Modules
 
-See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for complete implementation details and status of each module.
+| Module | Description | Status |
+|--------|-------------|--------|
+| [anti_spyware_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/anti_spyware_profile.py) | Manage Anti-Spyware security profiles | ✅ |
+| [anti_spyware_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/anti_spyware_profile_info.py) | Retrieve Anti-Spyware profile information | ✅ |
+| [vulnerability_protection_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/vulnerability_protection_profile.py) | Manage Vulnerability Protection profiles | ✅ |
+| [vulnerability_protection_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/vulnerability_protection_profile_info.py) | Retrieve Vulnerability Protection profile information | ✅ |
+| [wildfire_antivirus_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile.py) | Manage WildFire Antivirus profiles | ✅ |
+| [wildfire_antivirus_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/wildfire_antivirus_profile_info.py) | Retrieve WildFire Antivirus profile information | ✅ |
+| [decryption_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile.py) | Manage Decryption profiles | ✅ |
+| [decryption_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/decryption_profile_info.py) | Retrieve Decryption profile information | ✅ |
+| [dns_security_profile](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dns_security_profile.py) | Manage DNS Security profiles | ✅ |
+| [dns_security_profile_info](https://github.com/cdot65/cdot65.scm/blob/main/plugins/modules/dns_security_profile_info.py) | Retrieve DNS Security profile information | ✅ |
+
+## Module Status
+
+**Comprehensive module coverage with VPN, routing, and security features!** 🚀
+
+- ✅ **83 total modules** (41 resource + 42 info modules)
+- ✅ **91% SDK coverage** - Includes VPN (IKE/IPsec), routing (BGP), NAT rules, security profiles, and deployment modules
+- ✅ **All Priority 8, 9, and 10 modules complete** - Full networking, VPN, and security policy management
+- ⚠️ **3 modules with API limitations** (syslog_server_profile, quarantined_device, bandwidth_allocation) - see notes above
+
+See [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md) for complete implementation details, roadmap, and status of each module.
 
 For complete details on planned features, priorities, and estimated effort, see [DEVELOPMENT_TODO.md](DEVELOPMENT_TODO.md).
 

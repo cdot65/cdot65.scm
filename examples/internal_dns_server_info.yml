@@ -1,0 +1,115 @@
+---
+# =========================================================================
+# Example playbook: Internal DNS Server Information Retrieval
+# =========================================================================
+#
+# Description:
+#   This playbook demonstrates retrieving internal DNS server information
+#   from Strata Cloud Manager using the cdot65.scm.internal_dns_server_info
+#   module.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - SCM credentials stored in vault.yml (scm_client_id, scm_client_secret, scm_tsg_id)
+#
+# Usage:
+#   ansible-playbook internal_dns_server_info.yml --vault-password-file .vault_pass
+#
+# =========================================================================
+
+- name: Retrieve Internal DNS Server Information
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Retrieve All Internal DNS Servers
+    # =========================================================================
+    - name: Get all internal DNS servers
+      cdot65.scm.internal_dns_server_info:
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_servers
+
+    - name: Display count of internal DNS servers
+      ansible.builtin.debug:
+        msg: "Found {{ all_servers.servers | length }} internal DNS servers"
+
+    - name: Display all internal DNS server names
+      ansible.builtin.debug:
+        msg: "Server: {{ item.name }} - Domains: {{ item.domain_name | join(', ') }}"
+      loop: "{{ all_servers.servers }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # =========================================================================
+    # Retrieve Specific Internal DNS Server by Name
+    # =========================================================================
+    - name: Get specific internal DNS server by name
+      cdot65.scm.internal_dns_server_info:
+        name: "corporate-dns"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_server
+      ignore_errors: true
+
+    - name: Display specific internal DNS server
+      ansible.builtin.debug:
+        var: specific_server.servers
+      when: specific_server.servers | length > 0
+
+    - name: Server not found message
+      ansible.builtin.debug:
+        msg: "Internal DNS server 'corporate-dns' not found"
+      when: specific_server.servers | length == 0
+
+    # =========================================================================
+    # Analyze Internal DNS Server Configuration
+    # =========================================================================
+    - name: Analyze DNS servers with secondary server configured
+      ansible.builtin.debug:
+        msg:
+          - "Server: {{ item.name }}"
+          - "Primary: {{ item.primary }}"
+          - "Secondary: {{ item.secondary | default('Not configured') }}"
+          - "Domains: {{ item.domain_name | join(', ') }}"
+      loop: "{{ all_servers.servers }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.secondary is not none
+
+    # =========================================================================
+    # Export Internal DNS Server Configuration
+    # =========================================================================
+    - name: Export internal DNS servers to JSON file
+      ansible.builtin.copy:
+        content: "{{ all_servers.servers | to_nice_json }}"
+        dest: "./internal_dns_servers_export.json"
+        mode: "0644"
+
+    - name: Display export location
+      ansible.builtin.debug:
+        msg: "Internal DNS servers exported to internal_dns_servers_export.json"
+
+    # =========================================================================
+    # Generate Internal DNS Server Report
+    # =========================================================================
+    - name: Generate internal DNS server summary report
+      ansible.builtin.debug:
+        msg:
+          - "=== Internal DNS Server Summary ==="
+          - "Total servers: {{ all_servers.servers | length }}"
+          - "Servers with secondary DNS: {{ all_servers.servers | selectattr('secondary', 'ne', none) | list | length }}"
+          - "Total domains configured: {{ all_servers.servers | map(attribute='domain_name') | flatten | unique | list | length }}"

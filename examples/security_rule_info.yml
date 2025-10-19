@@ -1,0 +1,187 @@
+---
+# Example playbook for retrieving security rule information from Strata Cloud Manager (SCM)
+# This playbook demonstrates various ways to query security rules
+
+- name: Security Rule Info Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # List Security Rules
+    # =========================================================================
+    - name: Get all security rules in pre-rulebase
+      cdot65.scm.security_rule_info:
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_pre_rules
+
+    - name: Display all pre-rulebase rules
+      ansible.builtin.debug:
+        msg: "Found {{ all_pre_rules.security_rules | length }} security rules in pre-rulebase"
+
+    - name: Display rule names in pre-rulebase
+      ansible.builtin.debug:
+        msg: "{{ item.name }}"
+      loop: "{{ all_pre_rules.security_rules }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Get all security rules in post-rulebase
+      cdot65.scm.security_rule_info:
+        folder: "Texas"
+        rulebase: "post"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_post_rules
+
+    - name: Display all post-rulebase rules
+      ansible.builtin.debug:
+        msg: "Found {{ all_post_rules.security_rules | length }} security rules in post-rulebase"
+
+    # =========================================================================
+    # Get Specific Rule by Name
+    # =========================================================================
+    - name: Get a specific security rule by name
+      cdot65.scm.security_rule_info:
+        name: "Allow-Web-Traffic"
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: named_rule
+      ignore_errors: true
+
+    - name: Display named rule details
+      ansible.builtin.debug:
+        var: named_rule.security_rules
+      when: named_rule.security_rules is defined and named_rule.security_rules | length > 0
+
+    # =========================================================================
+    # Filter Security Rules
+    # =========================================================================
+    - name: Get all allow rules
+      cdot65.scm.security_rule_info:
+        action: ["allow"]
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: allow_rules
+
+    - name: Display allow rules count
+      ansible.builtin.debug:
+        msg: "Found {{ allow_rules.security_rules | length }} allow rules"
+
+    - name: Get all deny rules
+      cdot65.scm.security_rule_info:
+        action: ["deny"]
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: deny_rules
+
+    - name: Display deny rules count
+      ansible.builtin.debug:
+        msg: "Found {{ deny_rules.security_rules | length }} deny rules"
+
+    - name: Get rules with specific tags
+      cdot65.scm.security_rule_info:
+        tags: ["production"]
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: tagged_rules
+      ignore_errors: true
+
+    - name: Display tagged rules
+      ansible.builtin.debug:
+        msg: "Found {{ tagged_rules.security_rules | length }} rules with 'production' tag"
+      when: tagged_rules.security_rules is defined
+
+    - name: Get rules matching specific source zone
+      cdot65.scm.security_rule_info:
+        from_: ["trust"]
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: trust_zone_rules
+
+    - name: Display trust zone rules
+      ansible.builtin.debug:
+        msg: "Found {{ trust_zone_rules.security_rules | length }} rules from 'trust' zone"
+
+    - name: Get rules matching specific destination zone
+      cdot65.scm.security_rule_info:
+        to_: ["untrust"]
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: untrust_zone_rules
+
+    - name: Display untrust zone rules
+      ansible.builtin.debug:
+        msg: "Found {{ untrust_zone_rules.security_rules | length }} rules to 'untrust' zone"
+
+    - name: Get rules for specific applications
+      cdot65.scm.security_rule_info:
+        application: ["web-browsing", "ssl"]
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: web_app_rules
+
+    - name: Display web application rules
+      ansible.builtin.debug:
+        msg: "Found {{ web_app_rules.security_rules | length }} rules for web applications"
+
+    - name: Get disabled rules
+      cdot65.scm.security_rule_info:
+        disabled: true
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: disabled_rules
+
+    - name: Display disabled rules count
+      ansible.builtin.debug:
+        msg: "Found {{ disabled_rules.security_rules | length }} disabled rules"
+
+    - name: Get enabled rules
+      cdot65.scm.security_rule_info:
+        disabled: false
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+      register: enabled_rules
+
+    - name: Display enabled rules count
+      ansible.builtin.debug:
+        msg: "Found {{ enabled_rules.security_rules | length }} enabled rules"
+
+    # =========================================================================
+    # Display Summary
+    # =========================================================================
+    - name: Display security rules summary
+      ansible.builtin.debug:
+        msg:
+          - "=== Security Rules Summary ==="
+          - "Pre-rulebase rules: {{ all_pre_rules.security_rules | length }}"
+          - "Post-rulebase rules: {{ all_post_rules.security_rules | length }}"
+          - "Allow rules: {{ allow_rules.security_rules | length }}"
+          - "Deny rules: {{ deny_rules.security_rules | length }}"
+          - "Trust zone rules: {{ trust_zone_rules.security_rules | length }}"
+          - "Untrust zone rules: {{ untrust_zone_rules.security_rules | length }}"
+          - "Disabled rules: {{ disabled_rules.security_rules | length }}"
+          - "Enabled rules: {{ enabled_rules.security_rules | length }}"

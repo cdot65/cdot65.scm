@@ -1,0 +1,238 @@
+---
+# ============================================================================
+# Example Playbook: Anti-Spyware Profile Information Retrieval
+# ============================================================================
+# This playbook demonstrates how to retrieve information about Anti-Spyware
+# profiles from Palo Alto Networks Strata Cloud Manager (SCM) using the
+# cdot65.scm Ansible collection.
+#
+# Prerequisites:
+#   - Ansible 2.14 or higher
+#   - cdot65.scm collection installed
+#   - Valid SCM credentials in vault.yml
+#   - pan-scm-sdk Python package installed
+#
+# Usage:
+#   ansible-playbook anti_spyware_profile_info.yml --vault-password-file .vault_pass
+#
+# ============================================================================
+
+- name: Retrieve Anti-Spyware Profile Information from SCM
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+
+    # =========================================================================
+    # Retrieve All Profiles
+    # =========================================================================
+    - name: Get all Anti-Spyware profiles in Texas folder
+      cdot65.scm.anti_spyware_profile_info:
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: all_profiles
+
+    - name: Display all profiles
+      ansible.builtin.debug:
+        msg:
+          - "Found {{ all_profiles.anti_spyware_profiles | length }} Anti-Spyware profiles"
+          - "Profiles: {{ all_profiles.anti_spyware_profiles | map(attribute='name') | list }}"
+
+    - name: Display detailed information for each profile
+      ansible.builtin.debug:
+        var: item
+      loop: "{{ all_profiles.anti_spyware_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # =========================================================================
+    # Retrieve Specific Profile by Name
+    # =========================================================================
+    - name: Get a specific profile by name
+      cdot65.scm.anti_spyware_profile_info:
+        name: "{{ all_profiles.anti_spyware_profiles[0].name }}"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+      register: specific_profile
+      when: all_profiles.anti_spyware_profiles | length > 0
+
+    - name: Display specific profile details
+      ansible.builtin.debug:
+        msg:
+          - "Profile Name: {{ specific_profile.anti_spyware_profiles[0].name }}"
+          - "Description: {{ specific_profile.anti_spyware_profiles[0].description | default('N/A') }}"
+          - "Folder: {{ specific_profile.anti_spyware_profiles[0].folder }}"
+          - "Number of Rules: {{ specific_profile.anti_spyware_profiles[0].rules | length }}"
+          - "Cloud Inline Analysis: {{ specific_profile.anti_spyware_profiles[0].cloud_inline_analysis | default(false) }}"
+      when:
+        - specific_profile is defined
+        - specific_profile.anti_spyware_profiles | length > 0
+
+    # =========================================================================
+    # Analyze Profile Configurations
+    # =========================================================================
+    - name: Analyze profiles with cloud inline analysis enabled
+      ansible.builtin.set_fact:
+        cloud_enabled_profiles: >-
+          {{
+            all_profiles.anti_spyware_profiles |
+            selectattr('cloud_inline_analysis', 'defined') |
+            selectattr('cloud_inline_analysis', 'equalto', true) |
+            map(attribute='name') |
+            list
+          }}
+
+    - name: Display profiles with cloud inline analysis
+      ansible.builtin.debug:
+        msg:
+          - "Profiles with Cloud Inline Analysis enabled:"
+          - "{{ cloud_enabled_profiles }}"
+      when: cloud_enabled_profiles | length > 0
+
+    # =========================================================================
+    # Analyze MICA Engine Configurations
+    # =========================================================================
+    - name: Find profiles with MICA engine configuration
+      ansible.builtin.set_fact:
+        mica_profiles: >-
+          {{
+            all_profiles.anti_spyware_profiles |
+            selectattr('mica_engine_spyware_enabled', 'defined') |
+            map(attribute='name') |
+            list
+          }}
+
+    - name: Display profiles with MICA engine
+      ansible.builtin.debug:
+        msg:
+          - "Profiles with MICA Engine configuration:"
+          - "{{ mica_profiles }}"
+      when: mica_profiles | length > 0
+
+    # =========================================================================
+    # Analyze Rule Statistics
+    # =========================================================================
+    - name: Calculate rule statistics
+      ansible.builtin.set_fact:
+        profile_stats: "{{ profile_stats | default([]) + [item | combine({'rule_count': item.rules | length})] }}"
+      loop: "{{ all_profiles.anti_spyware_profiles }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Display profile statistics
+      ansible.builtin.debug:
+        msg:
+          - "Profile: {{ item.name }}"
+          - "  Rules: {{ item.rule_count }}"
+          - "  Cloud Analysis: {{ item.cloud_inline_analysis | default(false) }}"
+          - "  MICA Enabled: {{ 'Yes' if item.mica_engine_spyware_enabled is defined else 'No' }}"
+      loop: "{{ profile_stats }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # =========================================================================
+    # Find Profiles by Severity Coverage
+    # =========================================================================
+    - name: Analyze severity coverage across profiles
+      ansible.builtin.set_fact:
+        severity_analysis: |
+          {% set result = [] %}
+          {% for profile in all_profiles.anti_spyware_profiles %}
+            {% set severities = [] %}
+            {% for rule in profile.rules %}
+              {% for severity in rule.severity %}
+                {% if severity not in severities %}
+                  {% set _ = severities.append(severity) %}
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+            {% set _ = result.append({
+              'name': profile.name,
+              'severities': severities | sort,
+              'severity_count': severities | length
+            }) %}
+          {% endfor %}
+          {{ result }}
+
+    - name: Display severity coverage analysis
+      ansible.builtin.debug:
+        msg:
+          - "Profile: {{ item.name }}"
+          - "  Covered Severities: {{ item.severities | join(', ') }}"
+          - "  Total Unique Severities: {{ item.severity_count }}"
+      loop: "{{ severity_analysis | from_yaml }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # =========================================================================
+    # Export Profile Configuration
+    # =========================================================================
+    - name: Export profile configurations to JSON
+      ansible.builtin.copy:
+        content: "{{ all_profiles.anti_spyware_profiles | to_nice_json }}"
+        dest: "/tmp/anti_spyware_profiles_export.json"
+        mode: "0644"
+      when: all_profiles.anti_spyware_profiles | length > 0
+
+    - name: Display export location
+      ansible.builtin.debug:
+        msg: "Profile configurations exported to /tmp/anti_spyware_profiles_export.json"
+      when: all_profiles.anti_spyware_profiles | length > 0
+
+    # =========================================================================
+    # Generate Profile Report
+    # =========================================================================
+    - name: Generate profile summary report
+      ansible.builtin.set_fact:
+        profile_report:
+          total_profiles: "{{ all_profiles.anti_spyware_profiles | length }}"
+          profiles: "{{ all_profiles.anti_spyware_profiles | map(attribute='name') | list }}"
+          total_rules: >-
+            {{
+              all_profiles.anti_spyware_profiles |
+              map(attribute='rules') |
+              map('default', []) |
+              map('length') |
+              list |
+              sum
+            }}
+          cloud_enabled_count: "{{ cloud_enabled_profiles | default([]) | length }}"
+          mica_enabled_count: "{{ mica_profiles | default([]) | length }}"
+
+    - name: Display profile summary report
+      ansible.builtin.debug:
+        msg:
+          - "=== Anti-Spyware Profile Summary ==="
+          - "Total Profiles: {{ profile_report.total_profiles }}"
+          - "Total Rules Across All Profiles: {{ profile_report.total_rules }}"
+          - "Profiles with Cloud Inline Analysis: {{ profile_report.cloud_enabled_count }}"
+          - "Profiles with MICA Engine: {{ profile_report.mica_enabled_count }}"
+          - "Profile Names:"
+          - "{{ profile_report.profiles | to_nice_yaml }}"
+
+    # =========================================================================
+    # Retrieve by ID (if available)
+    # =========================================================================
+    - name: Get profile by ID
+      cdot65.scm.anti_spyware_profile_info:
+        id: "{{ all_profiles.anti_spyware_profiles[0].id }}"
+        scm_access_token: "{{ scm_access_token }}"
+      register: profile_by_id
+      when: all_profiles.anti_spyware_profiles | length > 0
+
+    - name: Display profile retrieved by ID
+      ansible.builtin.debug:
+        msg:
+          - "Retrieved profile by ID: {{ profile_by_id.anti_spyware_profiles[0].name }}"
+          - "ID: {{ profile_by_id.anti_spyware_profiles[0].id }}"
+      when:
+        - profile_by_id is defined
+        - profile_by_id.anti_spyware_profiles | length > 0

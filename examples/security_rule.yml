@@ -1,0 +1,263 @@
+---
+# Example playbook for managing security rules in Strata Cloud Manager (SCM)
+# This playbook demonstrates creating, updating, and deleting security rules
+
+- name: Security Rule Management Examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+
+  tasks:
+    # =========================================================================
+    # Authentication
+    # =========================================================================
+    - name: Authenticate with SCM
+      ansible.builtin.include_role:
+        name: cdot65.scm.auth
+      vars:
+        client_id: "{{ scm_client_id }}"
+        client_secret: "{{ scm_client_secret }}"
+        tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Create Security Rules
+    # =========================================================================
+    - name: Create a basic allow rule for web traffic
+      cdot65.scm.security_rule:
+        name: "Allow-Web-Traffic"
+        description: "Allow web traffic from trust to untrust"
+        from_:
+          - "trust"
+        to_:
+          - "untrust"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "web-browsing"
+          - "ssl"
+        service:
+          - "application-default"
+        action: "allow"
+        log_end: true
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: web_rule
+
+    - name: Display created web rule
+      ansible.builtin.debug:
+        var: web_rule
+
+    - name: Create a deny rule for malicious IPs
+      cdot65.scm.security_rule:
+        name: "Block-Malicious-Traffic"
+        description: "Block known malicious IPs"
+        from_:
+          - "untrust"
+        to_:
+          - "trust"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "any"
+        service:
+          - "any"
+        action: "deny"
+        log_end: true
+        profile_setting:
+          group:
+            - "best-practice"
+        folder: "Texas"
+        rulebase: "pre"
+        tag:
+          - "security"
+          - "block"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: block_rule
+
+    - name: Display created block rule
+      ansible.builtin.debug:
+        var: block_rule
+
+    - name: Create a rule for internal services
+      cdot65.scm.security_rule:
+        name: "Allow-Internal-Services"
+        description: "Allow internal application traffic"
+        from_:
+          - "trust"
+        to_:
+          - "dmz"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "ssl"
+          - "ssh"
+        service:
+          - "application-default"
+        action: "allow"
+        tag:
+          - "internal"
+          - "production"
+        log_end: true
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: internal_rule
+
+    - name: Display created internal rule
+      ansible.builtin.debug:
+        var: internal_rule
+
+    - name: Create a post-rulebase cleanup rule
+      cdot65.scm.security_rule:
+        name: "Cleanup-Rule"
+        description: "Catch-all deny rule"
+        from_:
+          - "any"
+        to_:
+          - "any"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "any"
+        service:
+          - "any"
+        action: "deny"
+        log_end: true
+        folder: "Texas"
+        rulebase: "post"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: cleanup_rule
+
+    - name: Display created cleanup rule
+      ansible.builtin.debug:
+        var: cleanup_rule
+
+    # =========================================================================
+    # Update Security Rule
+    # =========================================================================
+    - name: Update web rule to change action to deny
+      cdot65.scm.security_rule:
+        name: "Allow-Web-Traffic"
+        description: "Temporarily deny web traffic from trust to untrust"
+        from_:
+          - "trust"
+        to_:
+          - "untrust"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "web-browsing"
+          - "ssl"
+        service:
+          - "application-default"
+        action: "deny"
+        log_end: true
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: updated_web_rule
+
+    - name: Display updated web rule
+      ansible.builtin.debug:
+        var: updated_web_rule
+
+    - name: Update web rule back to allow
+      cdot65.scm.security_rule:
+        name: "Allow-Web-Traffic"
+        description: "Allow web traffic from trust to untrust"
+        from_:
+          - "trust"
+        to_:
+          - "untrust"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "web-browsing"
+          - "ssl"
+        service:
+          - "application-default"
+        action: "allow"
+        log_end: true
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: restored_web_rule
+
+    - name: Display restored web rule
+      ansible.builtin.debug:
+        var: restored_web_rule
+
+    # =========================================================================
+    # Delete Security Rules (cleanup)
+    # =========================================================================
+    - name: Delete web traffic rule
+      cdot65.scm.security_rule:
+        name: "Allow-Web-Traffic"
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_web_rule
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_web_rule
+
+    - name: Delete block rule
+      cdot65.scm.security_rule:
+        name: "Block-Malicious-Traffic"
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_block_rule
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_block_rule
+
+    - name: Delete internal services rule
+      cdot65.scm.security_rule:
+        name: "Allow-Internal-Services"
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_internal_rule
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_internal_rule
+
+    - name: Delete cleanup rule
+      cdot65.scm.security_rule:
+        name: "Cleanup-Rule"
+        folder: "Texas"
+        rulebase: "post"
+        scm_access_token: "{{ scm_access_token }}"
+        state: absent
+      register: deleted_cleanup_rule
+
+    - name: Display deletion result
+      ansible.builtin.debug:
+        var: deleted_cleanup_rule
