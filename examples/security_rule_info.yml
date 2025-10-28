@@ -6,7 +6,9 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+    - ../vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+  vars:
+    cleanup_security_resources: false  # Set to true to cleanup all created resources
 
   tasks:
     # =========================================================================
@@ -19,6 +21,231 @@
         client_id: "{{ scm_client_id }}"
         client_secret: "{{ scm_client_secret }}"
         tsg_id: "{{ scm_tsg_id }}"
+
+    # =========================================================================
+    # Create Tags
+    # =========================================================================
+    - name: Create Production tag
+      cdot65.scm.tag:
+        name: "info-Production"
+        color: "Red"
+        comments: "Production environment resources for info examples"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create Security tag
+      cdot65.scm.tag:
+        name: "info-Security"
+        color: "Orange"
+        comments: "Security-related resources for info examples"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create Web-Tier tag
+      cdot65.scm.tag:
+        name: "info-Web-Tier"
+        color: "Green"
+        comments: "Web tier resources for info examples"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Address Objects
+    # Note: Using predefined security zones (dia, mpls, lan, dmz)
+    # =========================================================================
+    - name: Create web-server-1 address
+      cdot65.scm.address:
+        name: "info-web-server-1"
+        description: "Primary web server for info examples"
+        ip_netmask: "192.168.10.10/32"
+        folder: "Texas"
+        tag:
+          - "info-Web-Tier"
+          - "info-Production"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create web-server-2 address
+      cdot65.scm.address:
+        name: "info-web-server-2"
+        description: "Secondary web server for info examples"
+        ip_netmask: "192.168.10.11/32"
+        folder: "Texas"
+        tag:
+          - "info-Web-Tier"
+          - "info-Production"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create internal-network address
+      cdot65.scm.address:
+        name: "info-internal-network"
+        description: "Internal corporate network for info examples"
+        ip_netmask: "10.0.0.0/8"
+        folder: "Texas"
+        tag:
+          - "info-Production"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Address Groups
+    # =========================================================================
+    - name: Create web-servers address group
+      cdot65.scm.address_group:
+        name: "info-web-servers"
+        static_addresses:
+          - "info-web-server-1"
+          - "info-web-server-2"
+        folder: "Texas"
+        tag:
+          - "info-Web-Tier"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Service Objects
+    # =========================================================================
+    - name: Create service-http
+      cdot65.scm.service:
+        name: "info-http"
+        description: "HTTP service for info examples"
+        protocol:
+          tcp:
+            port: "80"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create service-https
+      cdot65.scm.service:
+        name: "info-https"
+        description: "HTTPS service for info examples"
+        protocol:
+          tcp:
+            port: "443"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Service Groups
+    # =========================================================================
+    - name: Create web-services service group
+      cdot65.scm.service_group:
+        name: "info-web-services"
+        members:
+          - "info-http"
+          - "info-https"
+        folder: "Texas"
+        tag:
+          - "info-Web-Tier"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Test Security Rules
+    # =========================================================================
+    - name: Create allow web traffic rule
+      cdot65.scm.security_rule:
+        name: "Info-Allow-Web-Traffic"
+        description: "Allow web traffic for info query examples"
+        from_:
+          - "lan"
+        to_:
+          - "dmz"
+        source:
+          - "info-internal-network"
+        destination:
+          - "info-web-servers"
+        application:
+          - "web-browsing"
+          - "ssl"
+        service:
+          - "info-web-services"
+        action: "allow"
+        log_end: true
+        folder: "Texas"
+        rulebase: "pre"
+        tag:
+          - "info-Production"
+          - "info-Web-Tier"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create deny rule
+      cdot65.scm.security_rule:
+        name: "Info-Block-Traffic"
+        description: "Block traffic for info query examples"
+        from_:
+          - "dia"
+        to_:
+          - "lan"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "any"
+        service:
+          - "any"
+        action: "deny"
+        log_end: true
+        folder: "Texas"
+        rulebase: "pre"
+        tag:
+          - "info-Security"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create disabled rule
+      cdot65.scm.security_rule:
+        name: "Info-Disabled-Rule"
+        description: "Disabled rule for info query examples"
+        from_:
+          - "any"
+        to_:
+          - "any"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "any"
+        service:
+          - "any"
+        action: "allow"
+        disabled: true
+        folder: "Texas"
+        rulebase: "pre"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create post-rulebase cleanup rule
+      cdot65.scm.security_rule:
+        name: "Info-Cleanup-Rule"
+        description: "Post-rulebase catch-all for info examples"
+        from_:
+          - "any"
+        to_:
+          - "any"
+        source:
+          - "any"
+        destination:
+          - "any"
+        application:
+          - "any"
+        service:
+          - "any"
+        action: "deny"
+        log_end: true
+        folder: "Texas"
+        rulebase: "post"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
 
     # =========================================================================
     # List Security Rules
@@ -57,7 +284,7 @@
     # =========================================================================
     - name: Get a specific security rule by name
       cdot65.scm.security_rule_info:
-        name: "Allow-Web-Traffic"
+        name: "Info-Allow-Web-Traffic"
         folder: "Texas"
         rulebase: "pre"
         scm_access_token: "{{ scm_access_token }}"
@@ -98,7 +325,7 @@
 
     - name: Get rules with specific tags
       cdot65.scm.security_rule_info:
-        tags: ["production"]
+        tags: ["info-Production"]
         folder: "Texas"
         rulebase: "pre"
         scm_access_token: "{{ scm_access_token }}"
@@ -107,32 +334,32 @@
 
     - name: Display tagged rules
       ansible.builtin.debug:
-        msg: "Found {{ tagged_rules.security_rules | length }} rules with 'production' tag"
+        msg: "Found {{ tagged_rules.security_rules | length }} rules with 'info-Production' tag"
       when: tagged_rules.security_rules is defined
 
     - name: Get rules matching specific source zone
       cdot65.scm.security_rule_info:
-        from_: ["trust"]
+        from_: ["lan"]
         folder: "Texas"
         rulebase: "pre"
         scm_access_token: "{{ scm_access_token }}"
-      register: trust_zone_rules
+      register: lan_zone_rules
 
-    - name: Display trust zone rules
+    - name: Display lan zone rules
       ansible.builtin.debug:
-        msg: "Found {{ trust_zone_rules.security_rules | length }} rules from 'trust' zone"
+        msg: "Found {{ lan_zone_rules.security_rules | length }} rules from 'lan' zone"
 
     - name: Get rules matching specific destination zone
       cdot65.scm.security_rule_info:
-        to_: ["untrust"]
+        to_: ["dmz"]
         folder: "Texas"
         rulebase: "pre"
         scm_access_token: "{{ scm_access_token }}"
-      register: untrust_zone_rules
+      register: dmz_zone_rules
 
-    - name: Display untrust zone rules
+    - name: Display dmz zone rules
       ansible.builtin.debug:
-        msg: "Found {{ untrust_zone_rules.security_rules | length }} rules to 'untrust' zone"
+        msg: "Found {{ dmz_zone_rules.security_rules | length }} rules to 'dmz' zone"
 
     - name: Get rules for specific applications
       cdot65.scm.security_rule_info:
@@ -181,7 +408,135 @@
           - "Post-rulebase rules: {{ all_post_rules.security_rules | length }}"
           - "Allow rules: {{ allow_rules.security_rules | length }}"
           - "Deny rules: {{ deny_rules.security_rules | length }}"
-          - "Trust zone rules: {{ trust_zone_rules.security_rules | length }}"
-          - "Untrust zone rules: {{ untrust_zone_rules.security_rules | length }}"
+          - "LAN zone rules: {{ lan_zone_rules.security_rules | length }}"
+          - "DMZ zone rules: {{ dmz_zone_rules.security_rules | length }}"
           - "Disabled rules: {{ disabled_rules.security_rules | length }}"
           - "Enabled rules: {{ enabled_rules.security_rules | length }}"
+
+    # =========================================================================
+    # Conditional Cleanup (run with -e cleanup_security_resources=true)
+    # =========================================================================
+    - name: Delete security rules
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete Info-Allow-Web-Traffic rule
+          cdot65.scm.security_rule:
+            name: "Info-Allow-Web-Traffic"
+            folder: "Texas"
+            rulebase: "pre"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete Info-Block-Traffic rule
+          cdot65.scm.security_rule:
+            name: "Info-Block-Traffic"
+            folder: "Texas"
+            rulebase: "pre"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete Info-Disabled-Rule
+          cdot65.scm.security_rule:
+            name: "Info-Disabled-Rule"
+            folder: "Texas"
+            rulebase: "pre"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete Info-Cleanup-Rule
+          cdot65.scm.security_rule:
+            name: "Info-Cleanup-Rule"
+            folder: "Texas"
+            rulebase: "post"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete service groups
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete info-web-services service group
+          cdot65.scm.service_group:
+            name: "info-web-services"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete service objects
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete info-http
+          cdot65.scm.service:
+            name: "info-http"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete info-https
+          cdot65.scm.service:
+            name: "info-https"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete address groups
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete info-web-servers address group
+          cdot65.scm.address_group:
+            name: "info-web-servers"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete address objects
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete info-web-server-1 address
+          cdot65.scm.address:
+            name: "info-web-server-1"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete info-web-server-2 address
+          cdot65.scm.address:
+            name: "info-web-server-2"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete info-internal-network address
+          cdot65.scm.address:
+            name: "info-internal-network"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete tags
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete info-Production tag
+          cdot65.scm.tag:
+            name: "info-Production"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete info-Security tag
+          cdot65.scm.tag:
+            name: "info-Security"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete info-Web-Tier tag
+          cdot65.scm.tag:
+            name: "info-Web-Tier"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Display cleanup completion message
+      when: cleanup_security_resources | default(false) | bool
+      ansible.builtin.debug:
+        msg: "All security rule info test resources have been cleaned up successfully"

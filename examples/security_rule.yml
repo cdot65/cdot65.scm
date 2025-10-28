@@ -6,7 +6,9 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+    - ../vault.yml  # Contains scm_client_id, scm_client_secret, scm_tsg_id
+  vars:
+    cleanup_security_resources: false  # Set to true to cleanup all created resources
 
   tasks:
     # =========================================================================
@@ -21,29 +23,229 @@
         tsg_id: "{{ scm_tsg_id }}"
 
     # =========================================================================
+    # Create Tags
+    # =========================================================================
+    - name: Create Production tag
+      cdot65.scm.tag:
+        name: "Production"
+        color: "Red"
+        comments: "Production environment resources"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create Testing tag
+      cdot65.scm.tag:
+        name: "Testing"
+        color: "Blue"
+        comments: "Testing environment resources"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create Security tag
+      cdot65.scm.tag:
+        name: "Security"
+        color: "Orange"
+        comments: "Security-related resources"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create Web-Tier tag
+      cdot65.scm.tag:
+        name: "Web-Tier"
+        color: "Green"
+        comments: "Web tier resources"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create Database-Tier tag
+      cdot65.scm.tag:
+        name: "Database-Tier"
+        color: "Purple"
+        comments: "Database tier resources"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Address Objects
+    # Note: Using predefined security zones (dia, mpls, lan, dmz)
+    # =========================================================================
+    - name: Create web-server-1 address
+      cdot65.scm.address:
+        name: "web-server-1"
+        description: "Primary web server"
+        ip_netmask: "192.168.10.10/32"
+        folder: "Texas"
+        tag:
+          - "Web-Tier"
+          - "Production"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create web-server-2 address
+      cdot65.scm.address:
+        name: "web-server-2"
+        description: "Secondary web server"
+        ip_netmask: "192.168.10.11/32"
+        folder: "Texas"
+        tag:
+          - "Web-Tier"
+          - "Production"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create database-server address
+      cdot65.scm.address:
+        name: "database-server"
+        description: "Database server"
+        ip_netmask: "192.168.20.10/32"
+        folder: "Texas"
+        tag:
+          - "Database-Tier"
+          - "Production"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create internal-network address
+      cdot65.scm.address:
+        name: "internal-network"
+        description: "Internal corporate network"
+        ip_netmask: "10.0.0.0/8"
+        folder: "Texas"
+        tag:
+          - "Production"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create dmz-network address
+      cdot65.scm.address:
+        name: "dmz-network"
+        description: "DMZ network segment"
+        ip_netmask: "172.16.0.0/24"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Address Groups
+    # =========================================================================
+    - name: Create web-servers address group
+      cdot65.scm.address_group:
+        name: "web-servers"
+        description: "All web servers"
+        static_addresses:
+          - "web-server-1"
+          - "web-server-2"
+        folder: "Texas"
+        tag:
+          - "Web-Tier"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create internal-networks address group
+      cdot65.scm.address_group:
+        name: "internal-networks"
+        description: "All internal networks"
+        static_addresses:
+          - "internal-network"
+          - "dmz-network"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Service Objects
+    # =========================================================================
+    - name: Create service-http
+      cdot65.scm.service:
+        name: "secrule-http"
+        description: "HTTP service for security rules"
+        protocol:
+          tcp:
+            port: "80"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create service-https
+      cdot65.scm.service:
+        name: "secrule-https"
+        description: "HTTPS service for security rules"
+        protocol:
+          tcp:
+            port: "443"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create service-ssh
+      cdot65.scm.service:
+        name: "secrule-ssh"
+        description: "SSH service for security rules"
+        protocol:
+          tcp:
+            port: "22"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    - name: Create service-mysql
+      cdot65.scm.service:
+        name: "secrule-mysql"
+        description: "MySQL database service for security rules"
+        protocol:
+          tcp:
+            port: "3306"
+        folder: "Texas"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
+    # Create Service Groups
+    # =========================================================================
+    - name: Create web-services service group
+      cdot65.scm.service_group:
+        name: "secrule-web-services"
+        members:
+          - "secrule-http"
+          - "secrule-https"
+        folder: "Texas"
+        tag:
+          - "Web-Tier"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+
+    # =========================================================================
     # Create Security Rules
     # =========================================================================
-    - name: Create a basic allow rule for web traffic
+    - name: Create rule allowing web traffic to web servers
       cdot65.scm.security_rule:
-        name: "Allow-Web-Traffic"
-        description: "Allow web traffic from trust to untrust"
+        name: "Allow-Web-Traffic-To-Servers"
+        description: "Allow web traffic from lan zone to web servers using service group"
         from_:
-          - "trust"
+          - "lan"
         to_:
-          - "untrust"
+          - "dmz"
         source:
-          - "any"
+          - "internal-network"
         destination:
-          - "any"
+          - "web-servers"
         application:
           - "web-browsing"
           - "ssl"
         service:
-          - "application-default"
+          - "secrule-web-services"
         action: "allow"
         log_end: true
         folder: "Texas"
         rulebase: "pre"
+        tag:
+          - "Production"
+          - "Web-Tier"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: web_rule
@@ -52,32 +254,59 @@
       ansible.builtin.debug:
         var: web_rule
 
-    - name: Create a deny rule for malicious IPs
+    - name: Create rule for database access
       cdot65.scm.security_rule:
-        name: "Block-Malicious-Traffic"
-        description: "Block known malicious IPs"
+        name: "Allow-Database-Access"
+        description: "Allow web servers to access database server"
         from_:
-          - "untrust"
+          - "dmz"
         to_:
-          - "trust"
+          - "lan"
+        source:
+          - "web-servers"
+        destination:
+          - "database-server"
+        application:
+          - "any"
+        service:
+          - "secrule-mysql"
+        action: "allow"
+        log_end: true
+        folder: "Texas"
+        rulebase: "pre"
+        tag:
+          - "Production"
+          - "Database-Tier"
+        scm_access_token: "{{ scm_access_token }}"
+        state: present
+      register: database_rule
+
+    - name: Display created database rule
+      ansible.builtin.debug:
+        var: database_rule
+
+    - name: Create deny rule from dia to internal networks
+      cdot65.scm.security_rule:
+        name: "Block-Untrust-To-Internal"
+        description: "Block traffic from dia zone to internal networks"
+        from_:
+          - "dia"
+        to_:
+          - "lan"
         source:
           - "any"
         destination:
-          - "any"
+          - "internal-networks"
         application:
           - "any"
         service:
           - "any"
         action: "deny"
         log_end: true
-        profile_setting:
-          group:
-            - "best-practice"
         folder: "Texas"
         rulebase: "pre"
         tag:
-          - "security"
-          - "block"
+          - "Security"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: block_rule
@@ -86,37 +315,36 @@
       ansible.builtin.debug:
         var: block_rule
 
-    - name: Create a rule for internal services
+    - name: Create rule for SSH access to web servers
       cdot65.scm.security_rule:
-        name: "Allow-Internal-Services"
-        description: "Allow internal application traffic"
+        name: "Allow-SSH-To-Web-Servers"
+        description: "Allow SSH from internal network to web servers for management"
         from_:
-          - "trust"
+          - "lan"
         to_:
           - "dmz"
         source:
-          - "any"
+          - "internal-network"
         destination:
-          - "any"
+          - "web-servers"
         application:
-          - "ssl"
           - "ssh"
         service:
-          - "application-default"
+          - "secrule-ssh"
         action: "allow"
         tag:
-          - "internal"
-          - "production"
+          - "Production"
+          - "Web-Tier"
         log_end: true
         folder: "Texas"
         rulebase: "pre"
         scm_access_token: "{{ scm_access_token }}"
         state: present
-      register: internal_rule
+      register: ssh_rule
 
-    - name: Display created internal rule
+    - name: Display created SSH rule
       ansible.builtin.debug:
-        var: internal_rule
+        var: ssh_rule
 
     - name: Create a post-rulebase cleanup rule
       cdot65.scm.security_rule:
@@ -149,27 +377,31 @@
     # =========================================================================
     # Update Security Rule
     # =========================================================================
-    - name: Update web rule to change action to deny
+    - name: Update web rule to add Testing tag
       cdot65.scm.security_rule:
-        name: "Allow-Web-Traffic"
-        description: "Temporarily deny web traffic from trust to untrust"
+        name: "Allow-Web-Traffic-To-Servers"
+        description: "Allow web traffic from lan zone to web servers (testing changes)"
         from_:
-          - "trust"
+          - "lan"
         to_:
-          - "untrust"
+          - "dmz"
         source:
-          - "any"
+          - "internal-network"
         destination:
-          - "any"
+          - "web-servers"
         application:
           - "web-browsing"
           - "ssl"
         service:
-          - "application-default"
-        action: "deny"
+          - "secrule-web-services"
+        action: "allow"
         log_end: true
         folder: "Texas"
         rulebase: "pre"
+        tag:
+          - "Production"
+          - "Web-Tier"
+          - "Testing"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: updated_web_rule
@@ -178,27 +410,30 @@
       ansible.builtin.debug:
         var: updated_web_rule
 
-    - name: Update web rule back to allow
+    - name: Update web rule back to original state
       cdot65.scm.security_rule:
-        name: "Allow-Web-Traffic"
-        description: "Allow web traffic from trust to untrust"
+        name: "Allow-Web-Traffic-To-Servers"
+        description: "Allow web traffic from lan zone to web servers using service group"
         from_:
-          - "trust"
+          - "lan"
         to_:
-          - "untrust"
+          - "dmz"
         source:
-          - "any"
+          - "internal-network"
         destination:
-          - "any"
+          - "web-servers"
         application:
           - "web-browsing"
           - "ssl"
         service:
-          - "application-default"
+          - "secrule-web-services"
         action: "allow"
         log_end: true
         folder: "Texas"
         rulebase: "pre"
+        tag:
+          - "Production"
+          - "Web-Tier"
         scm_access_token: "{{ scm_access_token }}"
         state: present
       register: restored_web_rule
@@ -208,56 +443,186 @@
         var: restored_web_rule
 
     # =========================================================================
-    # Delete Security Rules (cleanup)
+    # Conditional Cleanup (run with -e cleanup_security_resources=true)
     # =========================================================================
-    - name: Delete web traffic rule
-      cdot65.scm.security_rule:
-        name: "Allow-Web-Traffic"
-        folder: "Texas"
-        rulebase: "pre"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-      register: deleted_web_rule
+    - name: Delete security rules
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete web traffic rule
+          cdot65.scm.security_rule:
+            name: "Allow-Web-Traffic-To-Servers"
+            folder: "Texas"
+            rulebase: "pre"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
 
-    - name: Display deletion result
+        - name: Delete database access rule
+          cdot65.scm.security_rule:
+            name: "Allow-Database-Access"
+            folder: "Texas"
+            rulebase: "pre"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete block rule
+          cdot65.scm.security_rule:
+            name: "Block-Untrust-To-Internal"
+            folder: "Texas"
+            rulebase: "pre"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete SSH rule
+          cdot65.scm.security_rule:
+            name: "Allow-SSH-To-Web-Servers"
+            folder: "Texas"
+            rulebase: "pre"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete cleanup rule
+          cdot65.scm.security_rule:
+            name: "Cleanup-Rule"
+            folder: "Texas"
+            rulebase: "post"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete service groups
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete web-services service group
+          cdot65.scm.service_group:
+            name: "secrule-web-services"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete service objects
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete secrule-http
+          cdot65.scm.service:
+            name: "secrule-http"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete secrule-https
+          cdot65.scm.service:
+            name: "secrule-https"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete secrule-ssh
+          cdot65.scm.service:
+            name: "secrule-ssh"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete secrule-mysql
+          cdot65.scm.service:
+            name: "secrule-mysql"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete address groups
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete web-servers address group
+          cdot65.scm.address_group:
+            name: "web-servers"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete internal-networks address group
+          cdot65.scm.address_group:
+            name: "internal-networks"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete address objects
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete web-server-1 address
+          cdot65.scm.address:
+            name: "web-server-1"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete web-server-2 address
+          cdot65.scm.address:
+            name: "web-server-2"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete database-server address
+          cdot65.scm.address:
+            name: "database-server"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete internal-network address
+          cdot65.scm.address:
+            name: "internal-network"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete dmz-network address
+          cdot65.scm.address:
+            name: "dmz-network"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Delete tags
+      when: cleanup_security_resources | default(false) | bool
+      block:
+        - name: Delete Production tag
+          cdot65.scm.tag:
+            name: "Production"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete Testing tag
+          cdot65.scm.tag:
+            name: "Testing"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete Security tag
+          cdot65.scm.tag:
+            name: "Security"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete Web-Tier tag
+          cdot65.scm.tag:
+            name: "Web-Tier"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+        - name: Delete Database-Tier tag
+          cdot65.scm.tag:
+            name: "Database-Tier"
+            folder: "Texas"
+            scm_access_token: "{{ scm_access_token }}"
+            state: absent
+
+    - name: Display cleanup completion message
+      when: cleanup_security_resources | default(false) | bool
       ansible.builtin.debug:
-        var: deleted_web_rule
-
-    - name: Delete block rule
-      cdot65.scm.security_rule:
-        name: "Block-Malicious-Traffic"
-        folder: "Texas"
-        rulebase: "pre"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-      register: deleted_block_rule
-
-    - name: Display deletion result
-      ansible.builtin.debug:
-        var: deleted_block_rule
-
-    - name: Delete internal services rule
-      cdot65.scm.security_rule:
-        name: "Allow-Internal-Services"
-        folder: "Texas"
-        rulebase: "pre"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-      register: deleted_internal_rule
-
-    - name: Display deletion result
-      ansible.builtin.debug:
-        var: deleted_internal_rule
-
-    - name: Delete cleanup rule
-      cdot65.scm.security_rule:
-        name: "Cleanup-Rule"
-        folder: "Texas"
-        rulebase: "post"
-        scm_access_token: "{{ scm_access_token }}"
-        state: absent
-      register: deleted_cleanup_rule
-
-    - name: Display deletion result
-      ansible.builtin.debug:
-        var: deleted_cleanup_rule
+        msg: "All security rule test resources have been cleaned up successfully"
